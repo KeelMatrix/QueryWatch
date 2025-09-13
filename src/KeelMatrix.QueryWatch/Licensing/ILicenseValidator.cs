@@ -1,0 +1,27 @@
+namespace KeelMatrix.QueryWatch.Licensing
+{
+    /// <summary>
+    /// Represents a mechanism to validate license keys for premium features.
+    /// Implement this interface to integrate with your merchant‑of‑record (Paddle, Lemon Squeezy, etc.).
+    /// </summary>
+    public interface ILicenseValidator
+    {
+        /// <summary>
+        /// Determines whether the given license key is valid.
+        /// </summary>
+        /// <param name="licenseKey">The license key to validate.</param>
+        /// <returns><c>true</c> if the license key is valid; otherwise, <c>false</c>.</returns>
+        bool IsValid(string licenseKey);
+    }
+
+    /// <summary>
+    /// A default no‑op license validator used when no real validation is configured.
+    /// Always returns <c>true</c>. Replace with your own implementation to enforce license checks.
+    /// TODO: Hook this into your API surface where paid features should enforce license checks.
+    /// </summary>
+    public sealed class NoopLicenseValidator : ILicenseValidator
+    {
+        /// <inheritdoc />
+        public bool IsValid(string licenseKey) => true;
+    }
+}

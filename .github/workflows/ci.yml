@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Test
+        run: dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory ./artifacts/TestResults
+      - name: Pack
+        run: dotnet pack --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts/packages
+      - name: Verify formatting
+        run: dotnet format --verify-no-changes
+      - name: Check for vulnerable dependencies
+        run: dotnet list package --vulnerable
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+      - name: Build for CodeQL
+        uses: github/codeql-action/autobuild@v3
+      - name: Analyze with CodeQL
+        uses: github/codeql-action/analyze@v3
+
+# --- Optional companion gates (disabled by default) ---
+# - name: Unrecorded HTTP Call gate
+#   if: always()
+#   run: |
+#     echo "TODO: Fail if tests performed network calls without cassettes"
+#
+# - name: Snapshot PII Scan / Drift
+#   if: always()
+#   run: |
+#     echo "TODO: Scan changed fixture files for PII patterns"
+#
+# - name: Query performance budget
+#   if: always()
+#   run: |
+#     echo "TODO: Check test output for query counts / durations and enforce a threshold"
