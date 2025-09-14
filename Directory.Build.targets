@@ -1,0 +1,10 @@
+<Project>
+  <!-- Custom build targets shared by all projects -->
+  <Target Name="AttachPackageReadmeAndIcon" BeforeTargets="Pack">
+    <!-- Pack README.md and icon.png into the NuGet package root if they exist -->
+    <ItemGroup>
+      <None Include="README.md" Pack="true" PackagePath="" Condition="Exists('README.md')" />
+      <None Include="icon.png" Pack="true" PackagePath="" Condition="Exists('icon.png')" />
+    </ItemGroup>
+  </Target>
+</Project>

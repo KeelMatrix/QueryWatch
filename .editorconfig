@@ -1,0 +1,26 @@
+# Top level EditorConfig file
+# For more information, see https://aka.ms/editorconfigdocs
+
+root = true
+
+[*.cs]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+
+# Organize usings
+dotnet_sort_system_directives_first = true
+
+# Prefer simple member access
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+
+# New line options
+csharp_new_line_before_open_brace = all:suggestion
+
+[*.{csproj,props,targets}]
+indent_style = space
+indent_size = 2

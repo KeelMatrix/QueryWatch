@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- NuGet authors: default to VS username; change to your org if publishing under org -->
+    <Authors>$ext_Authors$</Authors>
+<!-- TODO: Enable Public API analyzer when ready to lock API surface.
+       1. Run: dotnet build -p:EnablePublicApiAnalyzers=true -t:GeneratePublicApi
+          This generates baselines in PublicAPI.Shipped.txt / PublicAPI.Unshipped.txt.
+       2. Set <EnablePublicApiAnalyzers>true</EnablePublicApiAnalyzers>.
+       3. Commit those baseline files. From then on, analyzer errors will warn you if you
+          add/remove public APIs without updating the baseline. -->
+    <EnablePublicApiAnalyzers>false</EnablePublicApiAnalyzers>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>KeelMatrix.QueryWatch</PackageId>
+    <Description>A short description for KeelMatrix.QueryWatch. TODO: replace with a meaningful description.</Description>
+    <PackageTags>TODO;nuget;template</PackageTags>
+    <RepositoryUrl>https://github.com/your-org/KeelMatrix.QueryWatch</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/your-org/KeelMatrix.QueryWatch#readme</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SourceLink pinned centrally in Directory.Packages.props -->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
+
+    <!-- Public API analyzer gated by property; version is pinned centrally -->
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers"
+                      PrivateAssets="all"
+                      Condition="'$(EnablePublicApiAnalyzers)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pack README and icon -->
+    <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.8" />
+  </ItemGroup>
+</Project>
