@@ -1,0 +1,136 @@
+#nullable enable
+using System.Data;
+using System.Data.Common;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+
+namespace KeelMatrix.QueryWatch.Ado
+{
+    /// <summary>
+    /// Delegating <see cref="DbCommand"/> that measures execution and records into a session.
+    /// </summary>
+    public sealed class QueryWatchCommand : DbCommand
+    {
+        private readonly DbCommand _inner;
+        private readonly QueryWatchSession _session;
+        private readonly DbConnection? _connection; // wrapper connection
+
+        public QueryWatchCommand(DbCommand inner, QueryWatchSession session, DbConnection? wrapperConnection = null)
+        {
+            _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+            _session = session ?? throw new ArgumentNullException(nameof(session));
+            _connection = wrapperConnection;
+        }
+
+        [AllowNull]
+        public override string CommandText
+        {
+            get => _inner.CommandText;
+            set => _inner.CommandText = value;
+        }
+
+        public override int CommandTimeout
+        {
+            get => _inner.CommandTimeout;
+            set => _inner.CommandTimeout = value;
+        }
+
+        public override CommandType CommandType
+        {
+            get => _inner.CommandType;
+            set => _inner.CommandType = value;
+        }
+
+        protected override DbConnection? DbConnection
+        {
+            get => _connection ?? _inner.Connection;
+            set
+            {
+                if (value is null) {
+                    _inner.Connection = null;
+                }
+                else if (value is QueryWatchConnection qwc) {
+                    _inner.Connection = qwc.Inner;
+                }
+                else {
+                    _inner.Connection = value;
+                }
+            }
+        }
+
+        protected override DbParameterCollection DbParameterCollection => _inner.Parameters;
+
+        protected override DbTransaction? DbTransaction
+        {
+            get => _inner.Transaction;
+            set => _inner.Transaction = value;
+        }
+
+        public override bool DesignTimeVisible
+        {
+            get => _inner.DesignTimeVisible;
+            set => _inner.DesignTimeVisible = value;
+        }
+
+        public override UpdateRowSource UpdatedRowSource
+        {
+            get => _inner.UpdatedRowSource;
+            set => _inner.UpdatedRowSource = value;
+        }
+
+        public override void Cancel() => _inner.Cancel();
+        public override void Prepare() => _inner.Prepare();
+
+        protected override DbParameter CreateDbParameter() => _inner.CreateParameter();
+
+        private void Record(TimeSpan elapsed) => _session.Record(_inner.CommandText ?? string.Empty, elapsed);
+
+        public override int ExecuteNonQuery()
+        {
+            var sw = Stopwatch.StartNew();
+            try { return _inner.ExecuteNonQuery(); }
+            finally { sw.Stop(); Record(sw.Elapsed); }
+        }
+
+        public override object? ExecuteScalar()
+        {
+            var sw = Stopwatch.StartNew();
+            try { return _inner.ExecuteScalar(); }
+            finally { sw.Stop(); Record(sw.Elapsed); }
+        }
+
+        protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
+        {
+            var sw = Stopwatch.StartNew();
+            try { return _inner.ExecuteReader(behavior); }
+            finally { sw.Stop(); Record(sw.Elapsed); }
+        }
+
+        public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
+        {
+            var sw = Stopwatch.StartNew();
+            try { return await _inner.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false); }
+            finally { sw.Stop(); Record(sw.Elapsed); }
+        }
+
+        public override async Task<object?> ExecuteScalarAsync(CancellationToken cancellationToken)
+        {
+            var sw = Stopwatch.StartNew();
+            try { return await _inner.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false); }
+            finally { sw.Stop(); Record(sw.Elapsed); }
+        }
+
+        protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+        {
+            var sw = Stopwatch.StartNew();
+            try { return await _inner.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false); }
+            finally { sw.Stop(); Record(sw.Elapsed); }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) _inner.Dispose();
+            base.Dispose(disposing);
+        }
+    }
+}
