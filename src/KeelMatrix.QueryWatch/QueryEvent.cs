@@ -1,7 +1,5 @@
 // Copyright (c) KeelMatrix
 #nullable enable
-using System;
-
 namespace KeelMatrix.QueryWatch
 {
     /// <summary>

@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace KeelMatrix.QueryWatch.IO
 {
     /// <summary>

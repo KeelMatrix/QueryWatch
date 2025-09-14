@@ -1,49 +1,42 @@
-# QueryWatch (skeleton)
+# QueryWatch
 
-**Status:** high-level skeleton, ready to be wired in tests. Low-level internals (providers, advanced redaction, CI, SaaS) are TODO.
+**Status:** core ready to use in tests. Adapters: EF Core and ADO/Dapper wrappers. JSON export for CI included.
 
-## Quickstart (manual)
-
-```csharp
-using KeelMatrix.QueryWatch;
-
-using var session = QueryWatcher.Start(new QueryWatchOptions { MaxQueries = 5 });
-// Manually record (for plain ADO.NET scenarios):
-session.Record("SELECT 1", TimeSpan.FromMilliseconds(2));
-
-var report = session.Stop()
-    .ShouldHaveExecutedAtMost(5)
-    .ShouldHaveMaxAverageTime(TimeSpan.FromMilliseconds(50));
-```
-
-## EF Core (net8.0)
+## Quickstart (per-test scope + JSON)
 
 ```csharp
 using KeelMatrix.QueryWatch;
-using KeelMatrix.QueryWatch.EfCore;
-using Microsoft.EntityFrameworkCore;
+using KeelMatrix.QueryWatch.Testing;
 
-using var session = QueryWatcher.Start(new QueryWatchOptions { MaxQueries = 5 });
+// Fail if more than 5 queries OR avg > 50ms; also export JSON for CI gate.
+using var q = QueryWatch.Testing.QueryWatchScope.Start(
+    maxQueries: 5,
+    maxAverage: TimeSpan.FromMilliseconds(50),
+    exportJsonPath: "artifacts/qwatch.report.json");
 
-var opts = new DbContextOptionsBuilder<MyDbContext>()
-    .UseInMemoryDatabase("test")
-    .UseQueryWatch(session) // registers interceptor
-    .Options;
+// Wire EF Core to q.Session (optional):
+// var opts = new DbContextOptionsBuilder<MyDbContext>()
+//     .UseInMemoryDatabase("test")
+//     .UseQueryWatch(q.Session)
+//     .Options;
 
-using var db = new MyDbContext(opts);
 // ... run code under test ...
-session.Stop().ThrowIfViolations();
+// disposal writes JSON and enforces the budgets
 ```
 
-## Design (phase 1)
+## JSON API
 
-- **Core** (`KeelMatrix.QueryWatch`): provider-agnostic session + report + simple fluent checks.
-- **Adapter (EF Core)** (`KeelMatrix.QueryWatch.EfCore`): `DbCommandInterceptor` that records into a session. Compiles only for `net8.0` via conditional TFMs.
-- **TODOs:**
-  - PII/secret redaction in SQL text (configurable rules).
-  - Baseline regression comparisons and per-test scopes.
-  - Dapper / ADO.NET wrappers for transparent interception.
-  - Telemetry (opt-in) + CI companion.
-  - Public API hardening (pre-1.0).
+```csharp
+using KeelMatrix.QueryWatch.Reporting;
 
-See `QueryWatchOptions` for thresholds and `QueryWatchReport` for checks.
+var report = session.Stop();
+QueryWatchJson.ExportToFile(report, "artifacts/qwatch.report.json", sampleTop: 5);
+```
+
+## CLI gate
+
+Run after tests (ci.yml already contains a guarded step):
+
+```pwsh
+dotnet run --project tools/KeelMatrix.QueryWatch.Cli -- --input artifacts/qwatch.report.json --max-queries 50
+```

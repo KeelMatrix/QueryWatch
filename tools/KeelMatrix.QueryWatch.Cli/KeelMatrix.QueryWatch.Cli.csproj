@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Optional: pack as a dotnet tool later -->
+    <PackAsTool>true</PackAsTool>
+    <PackageId>KeelMatrix.QueryWatch.Cli</PackageId>
+    <Description>Command-line gate for QueryWatch JSON reports.</Description>
+    <PackageTags>queries;performance;testing;ci;gate</PackageTags>
+    <RepositoryUrl>https://github.com/your-org/KeelMatrix.QueryWatch</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+</Project>

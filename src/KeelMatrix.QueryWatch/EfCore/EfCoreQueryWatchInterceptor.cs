@@ -1,9 +1,6 @@
 #if NET8_0
 #nullable enable
-using System;
 using System.Data.Common;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace KeelMatrix.QueryWatch.EfCore

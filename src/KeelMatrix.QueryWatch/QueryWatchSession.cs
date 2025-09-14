@@ -1,8 +1,4 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
-using System.Threading;
-
 namespace KeelMatrix.QueryWatch
 {
     /// <summary>
@@ -40,7 +36,7 @@ namespace KeelMatrix.QueryWatch
             {
                 text = commandText ?? string.Empty;
 
-                // REMOVE LATER. We apply redactors in-order to the captured SQL text.
+                // TODO: REMOVE LATER. We apply redactors in-order to the captured SQL text.
                 // This keeps the core neutral while enabling users/tests to mask PII,
                 // dynamic values, or noisy literals that would otherwise cause churn.
                 var redactors = Options.Redactors;

@@ -1,15 +1,16 @@
 #if NET8_0
 #nullable enable
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace KeelMatrix.QueryWatch.EfCore
 {
     /// <summary>
-/// EF Core integration helpers for wiring QueryWatch into a DbContext.
-/// </summary>
+    /// EF Core integration helpers for wiring QueryWatch into a DbContext.
+    /// </summary>
     public static class DbContextOptionsBuilderExtensions
     {
+        // TODO: wierd characters in XML comments
+
         /// <summary>
         /// Attach QueryWatch interceptor to a DbContextOptionsBuilder.
         /// </summary>

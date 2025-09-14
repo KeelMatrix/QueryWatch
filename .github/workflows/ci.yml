@@ -27,6 +27,14 @@ jobs:
         run: dotnet build --configuration Release --no-restore
       - name: Test
         run: dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory ./artifacts/TestResults
+      - name: QueryWatch gate (optional - JSON)
+        shell: pwsh
+        run: |
+          if (Test-Path "artifacts/qwatch.report.json") {
+            dotnet run --project tools/KeelMatrix.QueryWatch.Cli -- --input artifacts/qwatch.report.json --max-queries 50
+          } else {
+            Write-Host "No QueryWatch JSON found; skipping QueryWatch gate."
+          }
       - name: Pack
         run: dotnet pack --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
       - name: Upload packages
@@ -57,8 +65,3 @@ jobs:
 #   if: always()
 #   run: |
 #     echo "TODO: Scan changed fixture files for PII patterns"
-#
-# - name: Query performance budget
-#   if: always()
-#   run: |
-#     echo "TODO: Check test output for query counts / durations and enforce a threshold"
