@@ -1,15 +1,12 @@
 // Copyright (c) KeelMatrix
 #nullable enable
-namespace KeelMatrix.QueryWatch
-{
+namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// A single observed database command execution.
     /// High level skeleton only — the structure may evolve before 1.0.
     /// </summary>
-    public sealed class QueryEvent
-    {
-        public QueryEvent(string commandText, TimeSpan duration, DateTimeOffset at)
-        {
+    public sealed class QueryEvent {
+        public QueryEvent(string commandText, TimeSpan duration, DateTimeOffset at) {
             CommandText = commandText;
             Duration = duration;
             At = at;

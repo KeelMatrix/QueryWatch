@@ -2,18 +2,14 @@ using System;
 using FluentAssertions;
 using Xunit;
 
-namespace KeelMatrix.QueryWatch.Tests
-{
-    public class RedactionTests
-    {
-        private sealed class DigitsToAsterisks : KeelMatrix.QueryWatch.IQueryTextRedactor
-        {
+namespace KeelMatrix.QueryWatch.Tests {
+    public class RedactionTests {
+        private sealed class DigitsToAsterisks : KeelMatrix.QueryWatch.IQueryTextRedactor {
             public string Redact(string input) => System.Text.RegularExpressions.Regex.Replace(input ?? string.Empty, @"\d", "*");
         }
 
         [Fact]
-        public void Record_Applies_Redactors_To_CommandText()
-        {
+        public void Record_Applies_Redactors_To_CommandText() {
             var options = new KeelMatrix.QueryWatch.QueryWatchOptions {
                 CaptureSqlText = true
             };

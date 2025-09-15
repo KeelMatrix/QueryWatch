@@ -2,13 +2,10 @@ using System;
 using FluentAssertions;
 using Xunit;
 
-namespace KeelMatrix.QueryWatch.Tests
-{
-    public class SessionLifecycleTests
-    {
+namespace KeelMatrix.QueryWatch.Tests {
+    public class SessionLifecycleTests {
         [Fact]
-        public void Dispose_Sets_StoppedAt_Automatically()
-        {
+        public void Dispose_Sets_StoppedAt_Automatically() {
             var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
             session.Dispose();
 
@@ -17,8 +14,7 @@ namespace KeelMatrix.QueryWatch.Tests
         }
 
         [Fact]
-        public void Stop_Twice_Throws()
-        {
+        public void Stop_Twice_Throws() {
             using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
             var r1 = session.Stop();
             Action again = () => session.Stop();

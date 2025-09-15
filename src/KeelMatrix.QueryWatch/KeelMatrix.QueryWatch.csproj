@@ -9,7 +9,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <!-- NuGet authors: default to VS username; change to your org if publishing under org -->
-    <Authors>$ext_Authors$</Authors>
+    <Authors>KeelMatrix</Authors>
     <!-- TODO: Enable Public API analyzer when ready to lock API surface.
          1. Run: dotnet build -p:EnablePublicApiAnalyzers=true -t:GeneratePublicApi
             This generates baselines in PublicAPI.Shipped.txt / PublicAPI.Unshipped.txt.
@@ -42,6 +42,8 @@
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Allow missing XML doc comments without failing CI while API is still evolving -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -74,10 +76,5 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <PackageReference Include="Microsoft.EntityFrameworkCore" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.8" />
   </ItemGroup>
 </Project>

@@ -18,10 +18,8 @@ using KeelMatrix.QueryWatch.Cli;
 
 return await RunAsync(args);
 
-static async Task<int> RunAsync(string[] args)
-{
-    static int ExitWith(string message, int code)
-    {
+static async Task<int> RunAsync(string[] args) {
+    static int ExitWith(string message, int code) {
         Console.Error.WriteLine(message);
         return code;
     }
@@ -92,24 +90,20 @@ static async Task<int> RunAsync(string[] args)
     }
 
     input ??= "artifacts/qwatch.report.json";
-    if (!File.Exists(input))
-    {
+    if (!File.Exists(input)) {
         return ExitWith($"Input not found: {input}", 2);
     }
 
     Summary? s;
-    try
-    {
+    try {
         await using var stream = File.OpenRead(input);
         s = await JsonSerializer.DeserializeAsync<Summary>(stream).ConfigureAwait(false);
     }
-    catch (Exception ex)
-    {
+    catch (Exception ex) {
         return ExitWith($"Failed to parse JSON: {ex.Message}", 3);
     }
 
-    if (s is null)
-    {
+    if (s is null) {
         return ExitWith("Summary is null after parsing.", 3);
     }
 
@@ -130,8 +124,7 @@ static async Task<int> RunAsync(string[] args)
     if (maxTotalMs.HasValue && s.TotalDurationMs > maxTotalMs.Value)
         violations.Add($"MaxTotalMs={maxTotalMs.Value} but actual {s.TotalDurationMs:N2}");
 
-    if (violations.Count > 0)
-    {
+    if (violations.Count > 0) {
         await Console.Error.WriteLineAsync("Budget violations:");
         foreach (var v in violations)
             await Console.Error.WriteLineAsync(" - " + v);
@@ -139,21 +132,17 @@ static async Task<int> RunAsync(string[] args)
     }
 
     // Baseline comparison (strict: any increase fails)
-    if (!string.IsNullOrWhiteSpace(baseline) && File.Exists(baseline))
-    {
-        try
-        {
+    if (!string.IsNullOrWhiteSpace(baseline) && File.Exists(baseline)) {
+        try {
             await using var bstream = File.OpenRead(baseline);
             var b = await JsonSerializer.DeserializeAsync<Summary>(bstream).ConfigureAwait(false);
-            if (b is not null)
-            {
+            if (b is not null) {
                 var baseViolations = new List<string>();
                 if (s.TotalQueries > b.TotalQueries) baseViolations.Add($"Queries increased: {b.TotalQueries} -> {s.TotalQueries}");
                 if (s.AverageDurationMs > b.AverageDurationMs) baseViolations.Add($"AverageMs increased: {b.AverageDurationMs:N2} -> {s.AverageDurationMs:N2}");
                 if (s.TotalDurationMs > b.TotalDurationMs) baseViolations.Add($"TotalMs increased: {b.TotalDurationMs:N2} -> {s.TotalDurationMs:N2}");
 
-                if (baseViolations.Count > 0)
-                {
+                if (baseViolations.Count > 0) {
                     await Console.Error.WriteLineAsync("Baseline regressions:");
                     foreach (var v in baseViolations)
                         await Console.Error.WriteLineAsync(" - " + v);
@@ -161,16 +150,13 @@ static async Task<int> RunAsync(string[] args)
                 }
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             await Console.Error.WriteLineAsync($"Baseline parse failed (ignored): {ex.Message}");
         }
     }
 
-    if (!string.IsNullOrWhiteSpace(baseline) && writeBaseline)
-    {
-        try
-        {
+    if (!string.IsNullOrWhiteSpace(baseline) && writeBaseline) {
+        try {
             var opts = new JsonSerializerOptions { WriteIndented = true };
             var dir = Path.GetDirectoryName(baseline);
             if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
@@ -178,8 +164,7 @@ static async Task<int> RunAsync(string[] args)
             await JsonSerializer.SerializeAsync(outStream, s, opts).ConfigureAwait(false);
             Console.WriteLine($"Baseline written: {baseline}");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             await Console.Error.WriteLineAsync($"Failed to write baseline: {ex.Message}");
         }
     }
@@ -188,14 +173,12 @@ static async Task<int> RunAsync(string[] args)
 }
 
 // Keep these types inside a named namespace to satisfy analyzers (S3903) and add XML docs (CS1591).
-namespace KeelMatrix.QueryWatch.Cli
-{
+namespace KeelMatrix.QueryWatch.Cli {
     /// <summary>
     /// Compact representation of a QueryWatch report used by the CLI,
     /// matching the JSON written by <c>KeelMatrix.QueryWatch.Reporting.QueryWatchJson</c>.
     /// </summary>
-    public sealed class Summary
-    {
+    public sealed class Summary {
         /// <summary>JSON schema version string.</summary>
         [JsonPropertyName("schema")]
         public string Schema { get; set; } = "1.0.0";
@@ -232,8 +215,7 @@ namespace KeelMatrix.QueryWatch.Cli
     /// <summary>
     /// Per-event sample included in the summary JSON.
     /// </summary>
-    public sealed class EventSample
-    {
+    public sealed class EventSample {
         /// <summary>UTC timestamp when the query completed.</summary>
         [JsonPropertyName("at")]
         public DateTimeOffset At { get; set; }

@@ -1,12 +1,10 @@
 #nullable enable
-namespace KeelMatrix.QueryWatch
-{
+namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Options for a monitoring session.
     /// Keep intentionally small; extensible via future minor versions.
     /// </summary>
-    public sealed class QueryWatchOptions
-    {
+    public sealed class QueryWatchOptions {
         /// <summary>
         /// Maximum number of queries allowed before <see cref="QueryWatchReport.ThrowIfViolations"/> fails.
         /// Null means "no limit". Default: null.

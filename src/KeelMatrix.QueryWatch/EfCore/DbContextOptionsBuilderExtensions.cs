@@ -2,13 +2,11 @@
 #nullable enable
 using Microsoft.EntityFrameworkCore;
 
-namespace KeelMatrix.QueryWatch.EfCore
-{
+namespace KeelMatrix.QueryWatch.EfCore {
     /// <summary>
     /// EF Core integration helpers for wiring QueryWatch into a DbContext.
     /// </summary>
-    public static class DbContextOptionsBuilderExtensions
-    {
+    public static class DbContextOptionsBuilderExtensions {
         // TODO: wierd characters in XML comments
 
         /// <summary>
@@ -29,8 +27,7 @@ namespace KeelMatrix.QueryWatch.EfCore
         /// </example>
         public static DbContextOptionsBuilder UseQueryWatch(
             this DbContextOptionsBuilder builder,
-            QueryWatchSession session)
-        {
+            QueryWatchSession session) {
             builder.AddInterceptors(new EfCoreQueryWatchInterceptor(session));
             return builder;
         }

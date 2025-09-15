@@ -2,14 +2,12 @@
 using System;
 using KeelMatrix.QueryWatch.Reporting;
 
-namespace KeelMatrix.QueryWatch.Testing
-{
+namespace KeelMatrix.QueryWatch.Testing {
     /// <summary>
     /// Disposable scope for tests: starts a <see cref="QueryWatchSession"/>,
     /// and on dispose stops it, optionally exports JSON, and enforces thresholds.
     /// </summary>
-    public sealed class QueryWatchScope : IDisposable
-    {
+    public sealed class QueryWatchScope : IDisposable {
         private bool _disposed;
 
         public QueryWatchScope(QueryWatchSession session,
@@ -17,8 +15,7 @@ namespace KeelMatrix.QueryWatch.Testing
                                TimeSpan? maxAverage = null,
                                TimeSpan? maxTotal = null,
                                string? exportJsonPath = null,
-                               int sampleTop = 5)
-        {
+                               int sampleTop = 5) {
             Session = session ?? throw new ArgumentNullException(nameof(session));
             MaxQueries = maxQueries;
             MaxAverage = maxAverage;
@@ -54,23 +51,20 @@ namespace KeelMatrix.QueryWatch.Testing
             TimeSpan? maxTotal = null,
             QueryWatchOptions? options = null,
             string? exportJsonPath = null,
-            int sampleTop = 5)
-        {
+            int sampleTop = 5) {
             var session = QueryWatcher.Start(options);
             return new QueryWatchScope(session, maxQueries, maxAverage, maxTotal, exportJsonPath, sampleTop);
         }
 
         // TODO: REMOVE LATER. We export JSON BEFORE asserting budgets to make sure
         // we always have a file for CI analysis even if assertions throw.
-        public void Dispose()
-        {
+        public void Dispose() {
             if (_disposed) return;
             _disposed = true;
 
             var report = Session.Stop();
 
-            if (!string.IsNullOrWhiteSpace(ExportJsonPath))
-            {
+            if (!string.IsNullOrWhiteSpace(ExportJsonPath)) {
                 try { QueryWatchJson.ExportToFile(report, ExportJsonPath!, SampleTop); }
                 catch { /* swallow export errors to avoid masking the real test failure */ }
             }

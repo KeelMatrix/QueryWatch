@@ -15,14 +15,12 @@ namespace System.Runtime.CompilerServices
 }
 #endif
 
-namespace KeelMatrix.QueryWatch.Reporting
-{
+namespace KeelMatrix.QueryWatch.Reporting {
     /// <summary>
     /// JSON export helpers for <see cref="QueryWatchReport"/>.
     /// Designed for CI usage and long-term stability of the schema.
     /// </summary>
-    public static class QueryWatchJson
-    {
+    public static class QueryWatchJson {
         /// <summary>Current JSON schema version of the exported file.</summary>
         public const string SchemaVersion = "1.0.0";
 
@@ -30,8 +28,7 @@ namespace KeelMatrix.QueryWatch.Reporting
         /// A compact, CI-friendly summary of a <see cref="QueryWatchReport"/>.
         /// Keep this model stable across minor releases. Additive changes must preserve existing fields.
         /// </summary>
-        public sealed class Summary
-        {
+        public sealed class Summary {
             [JsonPropertyName("schema")]
             public string Schema { get; init; } = SchemaVersion;
 
@@ -59,8 +56,7 @@ namespace KeelMatrix.QueryWatch.Reporting
         }
 
         /// <summary>Minimal per-event sample to keep files small yet useful.</summary>
-        public sealed class EventSample
-        {
+        public sealed class EventSample {
             [JsonPropertyName("at")]
             public DateTimeOffset At { get; init; }
 
@@ -72,24 +68,21 @@ namespace KeelMatrix.QueryWatch.Reporting
         }
 
         /// <summary>Create a <see cref="Summary"/> object from a report.</summary>
-        public static Summary ToSummary(QueryWatchReport report, int sampleTop = 5)
-        {
+        public static Summary ToSummary(QueryWatchReport report, int sampleTop = 5) {
             if (report is null) throw new ArgumentNullException(nameof(report));
             if (sampleTop < 0) sampleTop = 0;
 
             var samples = report.Events
                 .OrderByDescending(e => e.Duration.TotalMilliseconds)
                 .Take(sampleTop)
-                .Select(e => new EventSample
-                {
+                .Select(e => new EventSample {
                     At = e.At,
                     DurationMs = e.Duration.TotalMilliseconds,
                     Text = e.CommandText ?? string.Empty
                 })
                 .ToArray();
 
-            return new Summary
-            {
+            return new Summary {
                 StartedAt = report.StartedAt,
                 StoppedAt = report.StoppedAt,
                 TotalQueries = report.TotalQueries,
@@ -108,20 +101,17 @@ namespace KeelMatrix.QueryWatch.Reporting
         /// <param name="report">The report to export.</param>
         /// <param name="path">Target file path (created or overwritten).</param>
         /// <param name="sampleTop">Number of top events (by duration) to include.</param>
-        public static void ExportToFile(QueryWatchReport report, string path, int sampleTop = 5)
-        {
+        public static void ExportToFile(QueryWatchReport report, string path, int sampleTop = 5) {
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Path is required.", nameof(path));
             var summary = ToSummary(report, sampleTop);
 
-            var opts = new JsonSerializerOptions
-            {
+            var opts = new JsonSerializerOptions {
                 WriteIndented = true,
                 DefaultIgnoreCondition = JsonIgnoreCondition.Never
             };
 
             var dir = Path.GetDirectoryName(path);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-            {
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) {
                 Directory.CreateDirectory(dir);
             }
 

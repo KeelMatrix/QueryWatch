@@ -1,19 +1,16 @@
 #nullable enable
-namespace KeelMatrix.QueryWatch
-{
+namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Collects query events for the lifetime of the session.
     /// Thread-safe for recording.
     /// </summary>
-    public sealed class QueryWatchSession : IDisposable
-    {
+    public sealed class QueryWatchSession : IDisposable {
         private readonly List<QueryEvent> _events = new List<QueryEvent>();
         private readonly ReaderWriterLockSlim _gate = new ReaderWriterLockSlim();
         private bool _disposed;
         private int _stopped; // 0 = running, 1 = stopped
 
-        public QueryWatchSession(QueryWatchOptions? options = null)
-        {
+        public QueryWatchSession(QueryWatchOptions? options = null) {
             Options = options ?? new QueryWatchOptions();
             StartedAt = DateTimeOffset.UtcNow;
         }
@@ -26,24 +23,20 @@ namespace KeelMatrix.QueryWatch
         public static QueryWatchSession Start(QueryWatchOptions? options = null) => new QueryWatchSession(options);
 
         /// <summary>Record a single query execution (manual or from an adapter).</summary>
-        public void Record(string commandText, TimeSpan duration)
-        {
+        public void Record(string commandText, TimeSpan duration) {
             if (_disposed) throw new ObjectDisposedException(nameof(QueryWatchSession));
             if (Volatile.Read(ref _stopped) == 1) throw new InvalidOperationException("This QueryWatch session has been stopped.");
 
             string text = string.Empty;
-            if (Options.CaptureSqlText)
-            {
+            if (Options.CaptureSqlText) {
                 text = commandText ?? string.Empty;
 
                 // TODO: REMOVE LATER. We apply redactors in-order to the captured SQL text.
                 // This keeps the core neutral while enabling users/tests to mask PII,
                 // dynamic values, or noisy literals that would otherwise cause churn.
                 var redactors = Options.Redactors;
-                if (redactors is not null)
-                {
-                    for (int i = 0; i < redactors.Count; i++)
-                    {
+                if (redactors is not null) {
+                    for (int i = 0; i < redactors.Count; i++) {
                         text = redactors[i]?.Redact(text) ?? text;
                     }
                 }
@@ -60,8 +53,7 @@ namespace KeelMatrix.QueryWatch
         }
 
         /// <summary>Stop the session and get a report snapshot.</summary>
-        public QueryWatchReport Stop()
-        {
+        public QueryWatchReport Stop() {
             if (_disposed) throw new ObjectDisposedException(nameof(QueryWatchSession));
 
             // Ensure Stop is idempotent in the "throw on second call" sense.
@@ -71,19 +63,16 @@ namespace KeelMatrix.QueryWatch
             StoppedAt = DateTimeOffset.UtcNow;
 
             _gate.EnterReadLock();
-            try
-            {
+            try {
                 // Copy defensively
                 return QueryWatchReport.CreateSnapshot(_events, Options, StartedAt, StoppedAt.Value);
             }
             finally { _gate.ExitReadLock(); }
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             // Mark stopped and set StoppedAt once if not set.
-            if (Interlocked.Exchange(ref _stopped, 1) == 0)
-            {
+            if (Interlocked.Exchange(ref _stopped, 1) == 0) {
                 StoppedAt = DateTimeOffset.UtcNow;
             }
 

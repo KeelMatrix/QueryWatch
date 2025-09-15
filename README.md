@@ -1,3 +1,5 @@
+> The project is currently under development. Keep an eye out for its release!
+
 # KeelMatrix.QueryWatch
 
 > Catch N+1 queries and slow SQL in tests. Fail builds when query budgets are exceeded.

@@ -1,18 +1,15 @@
 #nullable enable
-namespace KeelMatrix.QueryWatch
-{
+namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Immutable snapshot of a session used for assertions/inspection.
     /// </summary>
-    public sealed class QueryWatchReport
-    {
+    public sealed class QueryWatchReport {
         private readonly IReadOnlyList<QueryEvent> _events;
 
         private QueryWatchReport(IReadOnlyList<QueryEvent> events,
                                  QueryWatchOptions options,
                                  DateTimeOffset startedAt,
-                                 DateTimeOffset stoppedAt)
-        {
+                                 DateTimeOffset stoppedAt) {
             _events = events;
             Options = options;
             StartedAt = startedAt;
@@ -34,8 +31,7 @@ namespace KeelMatrix.QueryWatch
         /// <summary>
         /// Throw <see cref="QueryWatchViolationException"/> if configured limits are exceeded.
         /// </summary>
-        public void ThrowIfViolations()
-        {
+        public void ThrowIfViolations() {
             var problems = new List<string>();
 
             if (Options.MaxQueries.HasValue && TotalQueries > Options.MaxQueries.Value)
@@ -47,8 +43,7 @@ namespace KeelMatrix.QueryWatch
             if (Options.MaxTotalDuration.HasValue && TotalDuration > Options.MaxTotalDuration.Value)
                 problems.Add($"MaxTotalDuration={Options.MaxTotalDuration} but actual {TotalDuration}.");
 
-            if (problems.Count > 0)
-            {
+            if (problems.Count > 0) {
                 var header = "Summary: QueryWatch detected one or more performance/query budget violations.";
                 var details = string.Join(" ", problems);
                 var message = $"{header} {details}";
@@ -59,22 +54,19 @@ namespace KeelMatrix.QueryWatch
         /// <summary>
         /// Simple fluent-style helpers for common checks.
         /// </summary>
-        public QueryWatchReport ShouldHaveExecutedAtMost(int maxQueries)
-        {
+        public QueryWatchReport ShouldHaveExecutedAtMost(int maxQueries) {
             if (TotalQueries > maxQueries)
                 throw new QueryWatchViolationException($"Expected ≤{maxQueries} queries, but executed {TotalQueries}.");
             return this;
         }
 
-        public QueryWatchReport ShouldHaveMaxAverageTime(TimeSpan maxAverage)
-        {
+        public QueryWatchReport ShouldHaveMaxAverageTime(TimeSpan maxAverage) {
             if (AverageDuration > maxAverage)
                 throw new QueryWatchViolationException($"Expected average ≤{maxAverage}, actual {AverageDuration}.");
             return this;
         }
 
-        public QueryWatchReport ShouldHaveMaxTotalTime(TimeSpan maxTotal)
-        {
+        public QueryWatchReport ShouldHaveMaxTotalTime(TimeSpan maxTotal) {
             if (TotalDuration > maxTotal)
                 throw new QueryWatchViolationException($"Expected total ≤{maxTotal}, actual {TotalDuration}.");
             return this;
@@ -84,8 +76,7 @@ namespace KeelMatrix.QueryWatch
     /// <summary>
     /// Thrown when QueryWatch detects configured or asserted violations.
     /// </summary>
-    public sealed class QueryWatchViolationException : InvalidOperationException
-    {
+    public sealed class QueryWatchViolationException : InvalidOperationException {
         public QueryWatchViolationException(string message) : base(message) { }
     }
 }

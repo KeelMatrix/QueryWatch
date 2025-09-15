@@ -4,19 +4,16 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-namespace KeelMatrix.QueryWatch.Ado
-{
+namespace KeelMatrix.QueryWatch.Ado {
     /// <summary>
     /// Wraps a provider <see cref="DbConnection"/> and returns commands that record
     /// execution into a <see cref="QueryWatchSession"/>.
     /// </summary>
-    public sealed class QueryWatchConnection : DbConnection
-    {
+    public sealed class QueryWatchConnection : DbConnection {
         private readonly DbConnection _inner;
         private readonly QueryWatchSession _session;
 
-        public QueryWatchConnection(DbConnection inner, QueryWatchSession session)
-        {
+        public QueryWatchConnection(DbConnection inner, QueryWatchSession session) {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _session = session ?? throw new ArgumentNullException(nameof(session));
         }
@@ -25,8 +22,7 @@ namespace KeelMatrix.QueryWatch.Ado
         public DbConnection Inner => _inner;
 
         [AllowNull]
-        public override string ConnectionString
-        {
+        public override string ConnectionString {
             get => _inner.ConnectionString;
             set => _inner.ConnectionString = value;
         }
@@ -46,10 +42,8 @@ namespace KeelMatrix.QueryWatch.Ado
         protected override DbCommand CreateDbCommand()
             => new QueryWatchCommand(_inner.CreateCommand(), _session, this);
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
+        protected override void Dispose(bool disposing) {
+            if (disposing) {
                 _inner.Dispose();
             }
             base.Dispose(disposing);
@@ -59,8 +53,7 @@ namespace KeelMatrix.QueryWatch.Ado
     /// <summary>
     /// Convenience extensions to wrap existing connections.
     /// </summary>
-    public static class QueryWatchConnectionExtensions
-    {
+    public static class QueryWatchConnectionExtensions {
         /// <summary>Wrap a <see cref="DbConnection"/>.</summary>
         public static DbConnection WithQueryWatch(this DbConnection connection, QueryWatchSession session)
             => new QueryWatchConnection(connection, session);
@@ -68,8 +61,7 @@ namespace KeelMatrix.QueryWatch.Ado
         /// <summary>
         /// Wrap an <see cref="IDbConnection"/> where the underlying type is a <see cref="DbConnection"/>.
         /// </summary>
-        public static IDbConnection WithQueryWatch(this IDbConnection connection, QueryWatchSession session)
-        {
+        public static IDbConnection WithQueryWatch(this IDbConnection connection, QueryWatchSession session) {
             if (connection is DbConnection db) return new QueryWatchConnection(db, session);
             throw new NotSupportedException("This provider doesn't derive from DbConnection; wrap commands manually.");
         }
