@@ -409,7 +409,7 @@ sealed class Aggregated {
         agg.TotalDurationMs = totalDurMs;
         agg.AverageDurationMs = totalQueries == 0 ? 0.0 : (totalDurMs / totalQueries);
         // Keep the combined events in descending duration order (most helpful first)
-        agg.Events.Sort((a,b) => b.DurationMs.CompareTo(a.DurationMs));
+        agg.Events.Sort((a, b) => b.DurationMs.CompareTo(a.DurationMs));
         return agg;
     }
 
@@ -447,7 +447,8 @@ sealed class PatternBudget {
             var body = pRaw.Substring("regex:".Length);
             try { rx = new Regex(body, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled); }
             catch (Exception ex) { error = "Invalid regex: " + ex.Message; return false; }
-        } else {
+        }
+        else {
             // Treat as wildcard: escape then replace * -> .*, ? -> .
             var escaped = Regex.Escape(pRaw).Replace(@"\*", ".*").Replace(@"\?", ".");
             rx = new Regex("^" + escaped + "$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);

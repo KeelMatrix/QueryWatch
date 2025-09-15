@@ -3,13 +3,10 @@ using FluentAssertions;
 using KeelMatrix.QueryWatch;
 using Xunit;
 
-namespace KeelMatrix.QueryWatch.Tests
-{
-    public class ReportOptionViolationsTests
-    {
+namespace KeelMatrix.QueryWatch.Tests {
+    public class ReportOptionViolationsTests {
         [Fact]
-        public void ThrowIfViolations_Respects_MaxQueries()
-        {
+        public void ThrowIfViolations_Respects_MaxQueries() {
             var options = new QueryWatchOptions { MaxQueries = 1 };
             using var session = QueryWatcher.Start(options);
             session.Record("SELECT 1", TimeSpan.FromMilliseconds(1));
@@ -23,8 +20,7 @@ namespace KeelMatrix.QueryWatch.Tests
         }
 
         [Fact]
-        public void ThrowIfViolations_Respects_MaxAverageDuration()
-        {
+        public void ThrowIfViolations_Respects_MaxAverageDuration() {
             var options = new QueryWatchOptions { MaxAverageDuration = TimeSpan.FromMilliseconds(5) };
             using var session = QueryWatcher.Start(options);
             // Avg = (8 + 4) / 2 = 6 ms > 5 ms
@@ -39,8 +35,7 @@ namespace KeelMatrix.QueryWatch.Tests
         }
 
         [Fact]
-        public void ThrowIfViolations_Respects_MaxTotalDuration()
-        {
+        public void ThrowIfViolations_Respects_MaxTotalDuration() {
             var options = new QueryWatchOptions { MaxTotalDuration = TimeSpan.FromMilliseconds(5) };
             using var session = QueryWatcher.Start(options);
             session.Record("SELECT 1", TimeSpan.FromMilliseconds(4));
@@ -54,10 +49,8 @@ namespace KeelMatrix.QueryWatch.Tests
         }
 
         [Fact]
-        public void ThrowIfViolations_NoViolations_DoesNotThrow()
-        {
-            var options = new QueryWatchOptions
-            {
+        public void ThrowIfViolations_NoViolations_DoesNotThrow() {
+            var options = new QueryWatchOptions {
                 MaxQueries = 5,
                 MaxAverageDuration = TimeSpan.FromMilliseconds(10),
                 MaxTotalDuration = TimeSpan.FromMilliseconds(100)
@@ -73,8 +66,7 @@ namespace KeelMatrix.QueryWatch.Tests
         }
 
         [Fact]
-        public void Helper_Asserts_DoNotThrow_When_UnderLimits()
-        {
+        public void Helper_Asserts_DoNotThrow_When_UnderLimits() {
             using var session = QueryWatcher.Start();
             session.Record("SELECT 1", TimeSpan.FromMilliseconds(2));
             session.Record("SELECT 2", TimeSpan.FromMilliseconds(2));
@@ -86,8 +78,7 @@ namespace KeelMatrix.QueryWatch.Tests
         }
 
         [Fact]
-        public void Helper_Asserts_Throw_When_OverLimits()
-        {
+        public void Helper_Asserts_Throw_When_OverLimits() {
             using var session = QueryWatcher.Start();
             session.Record("SELECT 1", TimeSpan.FromMilliseconds(10));
             session.Record("SELECT 2", TimeSpan.FromMilliseconds(10));

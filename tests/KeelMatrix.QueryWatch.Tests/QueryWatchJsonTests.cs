@@ -7,16 +7,13 @@ using KeelMatrix.QueryWatch;
 using KeelMatrix.QueryWatch.Reporting;
 using Xunit;
 
-namespace KeelMatrix.QueryWatch.Tests
-{
-    public class QueryWatchJsonTests
-    {
+namespace KeelMatrix.QueryWatch.Tests {
+    public class QueryWatchJsonTests {
         // TODO: REMOVE LATER. These tests lock down the JSON "shape" that CI relies on.
         // We purposely avoid overfitting to timestamps and only assert stable fields and sampling behavior.
 
         [Fact]
-        public void ToSummary_Respects_SampleTop_And_Sorts_Descending()
-        {
+        public void ToSummary_Respects_SampleTop_And_Sorts_Descending() {
             using var session = QueryWatcher.Start();
             session.Record("fast", TimeSpan.FromMilliseconds(5));
             session.Record("slow", TimeSpan.FromMilliseconds(12));
@@ -33,8 +30,7 @@ namespace KeelMatrix.QueryWatch.Tests
         }
 
         [Fact]
-        public void ExportToFile_Writes_File_With_Meta_SampleTop_And_Creates_Directory()
-        {
+        public void ExportToFile_Writes_File_With_Meta_SampleTop_And_Creates_Directory() {
             using var session = QueryWatcher.Start();
             session.Record("a", TimeSpan.FromMilliseconds(3));
             session.Record("b", TimeSpan.FromMilliseconds(9));
