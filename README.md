@@ -1,4 +1,4 @@
-> The project is currently under development. Keep an eye out for its release!
+ > The project is currently under development. Keep an eye out for its release!
 
 # KeelMatrix.QueryWatch
 
@@ -23,9 +23,8 @@ using KeelMatrix.QueryWatch.Testing;
 using var q = QueryWatchScope.Start(
     maxQueries: 5,
     maxAverage: TimeSpan.FromMilliseconds(50),
-    exportJsonPath: "artifacts/qwatch.report.json");
-
-// wire EF Core or ADO to q.Session, run your code...
+    exportJsonPath: "artifacts/qwatch.report.json",
+    sampleTop: 50); // increase if you plan to use per‑pattern budgets in CLI
 ```
 
 **Gate in CI (already wired in ci.yml):**
@@ -34,26 +33,28 @@ using var q = QueryWatchScope.Start(
 dotnet run --project tools/KeelMatrix.QueryWatch.Cli -- --input artifacts/qwatch.report.json --max-queries 50
 ```
 
-**EF Core:** see `src/KeelMatrix.QueryWatch/README.md` for full example.
-
-## Why QueryWatch?
-
-- **Prevents N+1 and slow queries** before they reach production.
-- **Lightweight**: plug into EF Core or wrap ADO/Dapper connection.
-- **Redaction hooks**: mask PII or noisy literals.
-- **CI‑friendly**: export JSON and use the CLI gate to fail PRs.
-
-## JSON schema
-
-Stable, compact summary emitted by `KeelMatrix.QueryWatch.Reporting.QueryWatchJson.ExportToFile(report, path)` with fields:
-`schema, startedAt, stoppedAt, totalQueries, totalDurationMs, averageDurationMs, events[]`.
-
 ## CLI
 
-- `--input` path to JSON (default `artifacts/qwatch.report.json`)
-- `--max-queries`, `--max-average-ms`, `--max-total-ms`
-- `--baseline <file>` and `--write-baseline` to store today’s good results
+```
+--input <file>               (repeatable) JSON summary exported by QueryWatch
+--max-queries N              Fail if total queries exceed N
+--max-average-ms MS          Fail if average duration (ms) exceeds MS
+--max-total-ms MS            Fail if total duration (ms) exceeds MS
+--baseline <file>            Compare against a baseline summary file
+--baseline-allow-percent P   Allow +P% regression vs baseline before failing
+--write-baseline             Write current aggregated summary to --baseline
+--budget "<pattern>=<max>"   Per‑pattern query count budget (repeatable). Pattern
+                             supports wildcards (*, ?) or prefix with 'regex:'.
+```
 
-## License
+### Multi‑file support
 
-MIT. See `LICENSE`.  See `PRIVACY.md` for telemetry stance (off by default).
+Repeat `--input` to aggregate multiple JSONs (e.g., per‑project reports in a mono‑repo). Budgets evaluate on the aggregate.
+
+### GitHub PR summary
+
+When run inside GitHub Actions, the CLI writes a Markdown table to the **Step Summary** automatically, so reviewers see metrics and any violations at a glance.
+
+### Note on per‑pattern budgets
+
+Budgets match against the `events` captured in the JSON file(s). These are the top‑N slowest events by duration to keep files small. If you want strict coverage, export with a higher `sampleTop` in `QueryWatchJson.ExportToFile`, or pass a larger `sampleTop` to `QueryWatchScope.Start(...)`.

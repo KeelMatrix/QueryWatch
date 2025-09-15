@@ -105,6 +105,10 @@ namespace KeelMatrix.QueryWatch.Reporting {
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Path is required.", nameof(path));
             var summary = ToSummary(report, sampleTop);
 
+            // Record the effective sampling configuration in metadata for downstream tools.
+            // This is additive metadata; it does not change the schema.
+            summary.Meta["sampleTop"] = sampleTop.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
             var opts = new JsonSerializerOptions {
                 WriteIndented = true,
                 DefaultIgnoreCondition = JsonIgnoreCondition.Never
