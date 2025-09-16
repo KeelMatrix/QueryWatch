@@ -28,6 +28,7 @@ lcov*.info
 *.userosscache
 *.csproj.user
 *.userprefs
+*.zip
 
 # OS noise
 .DS_Store

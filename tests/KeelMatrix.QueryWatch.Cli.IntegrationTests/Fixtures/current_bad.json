@@ -1,0 +1,10 @@
+{
+  "schema": "1.0.0",
+  "startedAt": "2025-09-15T00:00:00Z",
+  "stoppedAt": "2025-09-15T00:01:00Z",
+  "totalQueries": 111,
+  "totalDurationMs": 1111,
+  "averageDurationMs": 11.1,
+  "events": [],
+  "meta": {}
+}

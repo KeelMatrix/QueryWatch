@@ -1,0 +1,26 @@
+{
+  "schema": "1.0.0",
+  "startedAt": "2025-09-15T00:00:00Z",
+  "stoppedAt": "2025-09-15T00:01:00Z",
+  "totalQueries": 3,
+  "totalDurationMs": 15,
+  "averageDurationMs": 5,
+  "events": [
+    {
+      "at": "2025-09-15T00:00:20Z",
+      "durationMs": 7,
+      "text": "SELECT 3"
+    },
+    {
+      "at": "2025-09-15T00:00:30Z",
+      "durationMs": 5,
+      "text": "SELECT 4"
+    },
+    {
+      "at": "2025-09-15T00:00:10Z",
+      "durationMs": 3,
+      "text": "SELECT 5"
+    }
+  ],
+  "meta": {}
+}

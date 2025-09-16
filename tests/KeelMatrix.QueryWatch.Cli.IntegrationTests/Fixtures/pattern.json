@@ -1,0 +1,28 @@
+{
+  "schema": "1.0.0",
+  "startedAt": "2025-09-15T00:00:00Z",
+  "stoppedAt": "2025-09-15T00:01:00Z",
+  "totalQueries": 3,
+  "totalDurationMs": 30,
+  "averageDurationMs": 10,
+  "events": [
+    {
+      "at": "2025-09-15T00:00:10Z",
+      "durationMs": 12,
+      "text": "SELECT * FROM Users WHERE Id=1"
+    },
+    {
+      "at": "2025-09-15T00:00:20Z",
+      "durationMs": 11,
+      "text": "SELECT * FROM Users WHERE Name LIKE '%A%'"
+    },
+    {
+      "at": "2025-09-15T00:00:30Z",
+      "durationMs": 7,
+      "text": "INSERT INTO Users(Name) VALUES('A')"
+    }
+  ],
+  "meta": {
+    "sampleTop": "3"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "1.0.0",
+  "startedAt": "2025-09-15T00:00:00Z",
+  "stoppedAt": "2025-09-15T00:01:00Z",
+  "totalQueries": 2,
+  "totalDurationMs": 10,
+  "averageDurationMs": 5,
+  "events": [
+    {
+      "at": "2025-09-15T00:00:10Z",
+      "durationMs": 6,
+      "text": "SELECT 1"
+    },
+    {
+      "at": "2025-09-15T00:00:20Z",
+      "durationMs": 4,
+      "text": "SELECT 2"
+    }
+  ],
+  "meta": {}
+}
