@@ -15,7 +15,7 @@
     <PackageReference Include="coverlet.collector" PrivateAssets="all" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
 
     <!-- Fallback explicit versions if central management is not enabled -->
-    <PackageReference Include="xunit" Version="2.7.1" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
+    <PackageReference Include="xunit" Version="2.9.3" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
     <PackageReference Include="FluentAssertions" Version="6.12.2" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
