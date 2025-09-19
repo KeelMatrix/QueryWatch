@@ -87,3 +87,20 @@ opts.Redactors.Add(new GoogleApiKeyRedactor()); // AIza... Google API keys
 
 > You can control ordering by the sequence you add them (normalize first, then PII/secrets, then noise).
 > Consider adding stronger shapes next (credit cards with Luhn, IBAN, Slack/GitHub tokens) if you see them in reports.
+
+## Dapper adapter
+
+For Dapper scenarios, wrap your connection before use:
+
+```csharp
+using KeelMatrix.QueryWatch.Dapper;
+
+// If provider derives from DbConnection, async is preserved via QueryWatchConnection;
+// otherwise we fallback to a pure IDbConnection wrapper.
+using var scope = QueryWatch.Testing.QueryWatchScope.Start(maxQueries: 50, exportJsonPath: "artifacts/qwatch.report.json");
+using var raw = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=:memory:");
+raw.Open();
+using var conn = raw.WithQueryWatch(scope.Session);
+
+var rows = conn.Query<(int Id, string Name)>("SELECT 1 AS Id, 'X' AS Name");
+```

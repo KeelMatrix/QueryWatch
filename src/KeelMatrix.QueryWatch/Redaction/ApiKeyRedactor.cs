@@ -4,7 +4,8 @@ using System.Text.RegularExpressions;
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
     /// Masks API keys in headers and URL query parameters.
-    /// Handles: "X-Api-Key: ...", "ApiKey: ...", and query params like ?api_key=...&apikey=...&apiKey=...
+    /// Handles: "X-Api-Key: ...", "ApiKey: ...", and query params like
+    /// <c>?api_key=...&amp;apikey=...&amp;apiKey=...</c>.
     /// </summary>
     public sealed class ApiKeyRedactor : IQueryTextRedactor {
         private static readonly Regex Header = new(
