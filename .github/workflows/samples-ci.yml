@@ -1,0 +1,60 @@
+name: Samples CI
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "samples/**"
+  pull_request:
+    paths:
+      - "samples/**"
+
+jobs:
+  build-run-gate:
+    if: github.actor != 'dependabot[bot]'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # 0) Restore dependencies for the repo (needed before building/packing the lib)
+      - name: Restore (solution)
+        run: dotnet restore ./KeelMatrix.QueryWatch.sln
+
+      # 1) Build the library first so pack finds the DLLs (fixes NU5026)
+      - name: Build QueryWatch (Release)
+        run: dotnet build ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --no-restore
+
+      # 2) Pack from the already built outputs to ./artifacts/packages (repo root)
+      - name: Pack QueryWatch
+        run: dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+
+      # 3) Restore samples using their NuGet.config (pins KeelMatrix.QueryWatch* to ../artifacts/packages)
+      - name: Restore samples
+        run: dotnet restore ./samples/QueryWatch.Samples.sln --configfile ./samples/NuGet.config
+
+      # 4) Build samples
+      - name: Build samples (Release)
+        run: dotnet build ./samples/QueryWatch.Samples.sln -c Release --no-restore
+
+      # 5) Run samples (they write JSON under bin/Release/net8.0/artifacts)
+      - name: Run EF sample
+        run: dotnet run --project ./samples/EFCore.Sqlite/EFCore.Sqlite.csproj -c Release
+      - name: Run ADO sample
+        run: dotnet run --project ./samples/Ado.Sqlite/Ado.Sqlite.csproj -c Release
+
+      # 6) Gate with CLI using the exact JSON paths the apps wrote
+      - name: Gate EF with CLI
+        run: dotnet run --project ./tools/KeelMatrix.QueryWatch.Cli -- --input ./samples/EFCore.Sqlite/bin/Release/net8.0/artifacts/qwatch.ef.json --max-queries 50
+      - name: Gate ADO with CLI
+        run: dotnet run --project ./tools/KeelMatrix.QueryWatch.Cli -- --input ./samples/Ado.Sqlite/bin/Release/net8.0/artifacts/qwatch.ado.json --max-queries 50
