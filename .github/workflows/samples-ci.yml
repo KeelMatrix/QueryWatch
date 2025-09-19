@@ -1,0 +1,51 @@
+New-Item -ItemType Directory -Force .\.github\workflows | Out-Null
+@'
+name: Samples CI
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "samples/**"
+
+jobs:
+  build-run-gate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # 1) Pack the library to ./artifacts/packages (repo root)
+      - name: Pack QueryWatch
+        run: dotnet pack -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+
+      # 2) Restore samples using their NuGet.config (pins KeelMatrix.QueryWatch* to ../artifacts/packages)
+      - name: Restore samples
+        run: dotnet restore ./samples/QueryWatch.Samples.sln --configfile ./samples/NuGet.config
+
+      # 3) Build samples
+      - name: Build samples (Release)
+        run: dotnet build ./samples/QueryWatch.Samples.sln -c Release --no-restore
+
+      # 4) Run samples (they write JSON under bin/Release/net8.0/artifacts)
+      - name: Run EF sample
+        run: dotnet run --project ./samples/EFCore.Sqlite/EFCore.Sqlite.csproj -c Release
+      - name: Run ADO sample
+        run: dotnet run --project ./samples/Ado.Sqlite/Ado.Sqlite.csproj -c Release
+
+      # 5) Gate with CLI using the exact JSON paths the apps printed
+      - name: Gate EF with CLI
+        run: dotnet run --project ./tools/KeelMatrix.QueryWatch.Cli -- --input "./samples/EFCore.Sqlite/bin/Release/net8.0/artifacts/qwatch.ef.json" --max-queries 50
+      - name: Gate ADO with CLI
+        run: dotnet run --project ./tools/KeelMatrix.QueryWatch.Cli -- --input "./samples/Ado.Sqlite/bin/Release/net8.0/artifacts/qwatch.ado.json" --max-queries 50
+'@ | Set-Content .\.github\workflows\samples-ci.yml
