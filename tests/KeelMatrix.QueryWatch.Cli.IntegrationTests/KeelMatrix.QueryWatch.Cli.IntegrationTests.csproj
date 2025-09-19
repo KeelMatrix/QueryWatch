@@ -19,7 +19,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
     <PackageReference Include="FluentAssertions" Version="6.12.2" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
-    <PackageReference Include="coverlet.collector" Version="6.0.2" PrivateAssets="all" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4" PrivateAssets="all" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
