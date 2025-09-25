@@ -16,8 +16,9 @@
     <!-- Generate XML documentation for all projects by default -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-
-  <!-- Optional: suppress CS1591 for Release builds of packable projects -->
+  
+  <!-- Suppress CS1591 for Release builds of packable projects -->
+  <!-- TODO: Remove before a stable release -->
   <PropertyGroup Condition="'$(IsPackable)'=='true' and '$(Configuration)'=='Release'">
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>

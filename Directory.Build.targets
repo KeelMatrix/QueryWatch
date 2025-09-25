@@ -7,4 +7,10 @@
       <None Include="icon.png" Pack="true" PackagePath="" Condition="Exists('icon.png')" />
     </ItemGroup>
   </Target>
+  
+  <PropertyGroup Condition="'$(IsTestProject)'=='true'">
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
 </Project>

@@ -1,1 +1,9 @@
 #nullable enable
+KeelMatrix.QueryWatch.EfCore.DbContextOptionsBuilderExtensions
+KeelMatrix.QueryWatch.EfCore.EfCoreQueryWatchInterceptor
+KeelMatrix.QueryWatch.EfCore.EfCoreQueryWatchInterceptor.EfCoreQueryWatchInterceptor(KeelMatrix.QueryWatch.QueryWatchSession! session) -> void
+override KeelMatrix.QueryWatch.EfCore.EfCoreQueryWatchInterceptor.NonQueryExecuted(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, int result) -> int
+override KeelMatrix.QueryWatch.EfCore.EfCoreQueryWatchInterceptor.ReaderExecuted(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, System.Data.Common.DbDataReader! result) -> System.Data.Common.DbDataReader!
+override KeelMatrix.QueryWatch.EfCore.EfCoreQueryWatchInterceptor.ReaderExecutedAsync(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, System.Data.Common.DbDataReader! result, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.Data.Common.DbDataReader!>
+override KeelMatrix.QueryWatch.EfCore.EfCoreQueryWatchInterceptor.ScalarExecuted(System.Data.Common.DbCommand! command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData! eventData, object? result) -> object?
+static KeelMatrix.QueryWatch.EfCore.DbContextOptionsBuilderExtensions.UseQueryWatch(this Microsoft.EntityFrameworkCore.DbContextOptionsBuilder! builder, KeelMatrix.QueryWatch.QueryWatchSession! session) -> Microsoft.EntityFrameworkCore.DbContextOptionsBuilder!

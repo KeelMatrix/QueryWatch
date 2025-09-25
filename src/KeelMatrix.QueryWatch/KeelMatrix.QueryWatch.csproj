@@ -8,17 +8,10 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- TODO: clear WarningsNotAsErrors in all projects in prod. -->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);RS0016;RS0017;RS0025;RS0037;S1135</WarningsNotAsErrors>
+    <!--<WarningsNotAsErrors>$(WarningsNotAsErrors);RS0016;RS0017;RS0025;RS0037;S1135</WarningsNotAsErrors>-->
 
-    <!-- NuGet authors: default to VS username; change to your org if publishing under org -->
     <Authors>KeelMatrix</Authors>
-    <!-- TODO: Enable Public API analyzer when ready to lock API surface.
-         1. Run: dotnet build -p:EnablePublicApiAnalyzers=true -t:GeneratePublicApi
-            This generates baselines in PublicAPI.Shipped.txt / PublicAPI.Unshipped.txt.
-         2. Set <EnablePublicApiAnalyzers>true</EnablePublicApiAnalyzers>.
-         3. Commit those baseline files. From then on, analyzer errors will warn you if you
-            add/remove public APIs without updating the baseline. -->
-    <EnablePublicApiAnalyzers>false</EnablePublicApiAnalyzers>
+    <EnablePublicApiAnalyzers>true</EnablePublicApiAnalyzers>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>KeelMatrix.QueryWatch</PackageId>

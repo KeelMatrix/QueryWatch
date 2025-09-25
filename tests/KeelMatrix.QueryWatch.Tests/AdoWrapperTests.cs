@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Ado;
 using Xunit;
@@ -39,7 +40,8 @@ namespace KeelMatrix.QueryWatch.Tests {
         }
 
         private sealed class FakeDbConnection : DbConnection {
-            public override string ConnectionString { get; set; } = "";
+            [AllowNull]
+            public override string ConnectionString { get; set; } = string.Empty;
             public override string Database => "FakeDb";
             public override string DataSource => "Fake";
             public override string ServerVersion => "1.0";
@@ -52,8 +54,8 @@ namespace KeelMatrix.QueryWatch.Tests {
         }
 
         private sealed class FakeDbCommand : DbCommand {
-            private string _commandText = string.Empty;
-            public override string CommandText { get => _commandText; set => _commandText = value ?? string.Empty; }
+            [AllowNull]
+            public override string CommandText { get; set; } = string.Empty;
             public override int CommandTimeout { get; set; }
             public override CommandType CommandType { get; set; } = CommandType.Text;
             public override UpdateRowSource UpdatedRowSource { get; set; } = UpdateRowSource.None;
@@ -101,8 +103,10 @@ namespace KeelMatrix.QueryWatch.Tests {
                 public override DbType DbType { get; set; }
                 public override ParameterDirection Direction { get; set; } = ParameterDirection.Input;
                 public override bool IsNullable { get; set; }
-                public override string ParameterName { get; set; } = "";
-                public override string SourceColumn { get; set; } = "";
+                [AllowNull]
+                public override string ParameterName { get; set; } = string.Empty;
+                [AllowNull]
+                public override string SourceColumn { get; set; } = string.Empty;
                 public override object? Value { get; set; }
                 public override bool SourceColumnNullMapping { get; set; }
                 public override int Size { get; set; }
