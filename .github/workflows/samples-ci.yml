@@ -27,17 +27,21 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      # 0) Restore dependencies for the repo (needed before building/packing the lib)
+      # 0) Restore dependencies for the repo (needed before building/packing the libs)
       - name: Restore (solution)
         run: dotnet restore ./KeelMatrix.QueryWatch.sln
 
-      # 1) Build the library first so pack finds the DLLs (fixes NU5026)
+      # 1) Build the libraries first so pack finds the DLLs (fixes NU5026)
       - name: Build QueryWatch (Release)
         run: dotnet build ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --no-restore
+      - name: Build QueryWatch.EfCore (Release)
+        run: dotnet build ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --no-restore
 
       # 2) Pack from the already built outputs to ./artifacts/packages (repo root)
       - name: Pack QueryWatch
         run: dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+      - name: Pack QueryWatch.EfCore
+        run: dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
 
       # 3) Restore samples using their NuGet.config (pins KeelMatrix.QueryWatch* to ../artifacts/packages)
       - name: Restore samples

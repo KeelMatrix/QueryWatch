@@ -1,4 +1,4 @@
-#if NET8_0
+// Copyright (c) KeelMatrix
 #nullable enable
 using Microsoft.EntityFrameworkCore;
 
@@ -33,4 +33,3 @@ namespace KeelMatrix.QueryWatch.EfCore {
         }
     }
 }
-#endif

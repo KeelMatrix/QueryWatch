@@ -50,4 +50,4 @@ using (var select = conn.CreateCommand()) {
 
 Console.WriteLine($"QueryWatch JSON written to: {outJson}");
 Console.WriteLine("Try the CLI gate:");
-Console.WriteLine($"  dotnet run --project ../../tools/KeelMatrix.QueryWatch.Cli -- --input {outJson} --max-queries 50");
+Console.WriteLine($"  dotnet run --project ../../tools/KeelMatrix.QueryWatch.Cli -- --input '{outJson}' --max-queries 50");

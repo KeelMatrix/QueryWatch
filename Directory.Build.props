@@ -1,7 +1,9 @@
 <Project>
   <!-- Shared build configuration for all projects -->
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(IsPackable)'=='true'">net8.0;netstandard2.0</TargetFrameworks>
+    <!-- Only provide default TFMs for packable projects when the project
+         has not explicitly set TargetFramework/TargetFrameworks. -->
+    <TargetFrameworks Condition="'$(IsPackable)'=='true' and '$(TargetFrameworks)'=='' and '$(TargetFramework)'==''">net8.0;netstandard2.0</TargetFrameworks>
 
     <!-- Enable modern C# features and nullability throughout -->
     <LangVersion>latest</LangVersion>
@@ -14,7 +16,7 @@
     <!-- Generate XML documentation for all projects by default -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-  
+
   <!-- Optional: suppress CS1591 for Release builds of packable projects -->
   <PropertyGroup Condition="'$(IsPackable)'=='true' and '$(Configuration)'=='Release'">
     <NoWarn>$(NoWarn);CS1591</NoWarn>

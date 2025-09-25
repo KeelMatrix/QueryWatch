@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	<WarningsNotAsErrors>$(WarningsNotAsErrors);RS0016;RS0017;RS0025;RS0037;S1135</WarningsNotAsErrors>
 
     <RootNamespace>KeelMatrix.QueryWatch.Cli</RootNamespace>
     <AssemblyName>KeelMatrix.QueryWatch.Cli</AssemblyName>

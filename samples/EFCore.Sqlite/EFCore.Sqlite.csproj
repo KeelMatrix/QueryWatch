@@ -9,10 +9,11 @@
   <PropertyGroup>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <!-- Version comes from Directory.Packages.props -->
     <PackageReference Include="KeelMatrix.QueryWatch" />
+    <PackageReference Include="KeelMatrix.QueryWatch.EfCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
   </ItemGroup>
 </Project>

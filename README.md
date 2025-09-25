@@ -10,6 +10,8 @@
 
 ```bash
 dotnet add package KeelMatrix.QueryWatch
+# EF Core users:
+dotnet add package KeelMatrix.QueryWatch.EfCore
 ```
 
 ## 5‑minute success (with JSON for CI)
@@ -31,6 +33,18 @@ using var q = QueryWatchScope.Start(
 
 ```pwsh
 dotnet run --project tools/KeelMatrix.QueryWatch.Cli -- --input artifacts/qwatch.report.json --max-queries 50
+```
+
+## EF Core wiring
+
+```csharp
+using KeelMatrix.QueryWatch.EfCore; // extension lives in the EfCore adapter package
+using Microsoft.EntityFrameworkCore;
+
+var options = new DbContextOptionsBuilder<MyDbContext>()
+    .UseSqlite("Data Source=:memory:")
+    .UseQueryWatch(q.Session)    // adds the interceptor
+    .Options;
 ```
 
 ## CLI

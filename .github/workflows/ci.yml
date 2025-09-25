@@ -38,8 +38,10 @@ jobs:
           } else {
             Write-Host "No QueryWatch JSON found; skipping QueryWatch gate."
           }
-      - name: Pack
-        run: dotnet pack --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+      - name: Pack (core)
+        run: dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+      - name: Pack (EF Core adapter)
+        run: dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
       - name: Upload packages
         uses: actions/upload-artifact@v4
         with:

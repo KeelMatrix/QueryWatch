@@ -1,4 +1,4 @@
-#if NET8_0
+// Copyright (c) KeelMatrix
 #nullable enable
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -48,4 +48,3 @@ namespace KeelMatrix.QueryWatch.EfCore {
         }
     }
 }
-#endif
