@@ -1,1 +1,7 @@
 #nullable enable
+KeelMatrix.QueryWatch.QueryEvent.Meta.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>?
+KeelMatrix.QueryWatch.QueryWatchOptions.CaptureAdoParameterMetadata.get -> bool
+KeelMatrix.QueryWatch.QueryWatchOptions.CaptureAdoParameterMetadata.set -> void
+KeelMatrix.QueryWatch.QueryWatchSession.Record(string! commandText, System.TimeSpan duration, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? meta) -> void
+KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.Meta.get -> System.Collections.Generic.Dictionary<string!, object?>?
+KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.Meta.init -> void

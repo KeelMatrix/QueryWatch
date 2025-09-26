@@ -1,10 +1,13 @@
 #nullable enable
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 #if NETSTANDARD2_0
-
 namespace System.Runtime.CompilerServices
 {
     // This type is required for C# 9.0 init-only setters support on .NET Standard 2.0.
@@ -17,8 +20,7 @@ namespace System.Runtime.CompilerServices
 
 namespace KeelMatrix.QueryWatch.Reporting {
     /// <summary>
-    /// JSON export helpers for <see cref="QueryWatchReport"/>.
-    /// Designed for CI usage and long-term stability of the schema.
+    /// Small, stable JSON exporter for QueryWatch reports.
     /// </summary>
     public static class QueryWatchJson {
         /// <summary>Current JSON schema version of the exported file.</summary>
@@ -65,6 +67,14 @@ namespace KeelMatrix.QueryWatch.Reporting {
 
             [JsonPropertyName("text")]
             public string Text { get; init; } = string.Empty;
+
+            /// <summary>
+            /// Optional, additive event-level metadata. When ADO parameter capture policy is enabled,
+            /// this will contain a <c>parameters</c> array with parameter names and types only.
+            /// </summary>
+            [JsonPropertyName("meta")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public Dictionary<string, object?>? Meta { get; init; }
         }
 
         /// <summary>Create a <see cref="Summary"/> object from a report.</summary>
@@ -78,7 +88,9 @@ namespace KeelMatrix.QueryWatch.Reporting {
                 .Select(e => new EventSample {
                     At = e.At,
                     DurationMs = e.Duration.TotalMilliseconds,
-                    Text = e.CommandText ?? string.Empty
+                    Text = e.CommandText ?? string.Empty,
+                    // Explicit ToDictionary to avoid the IDictionary<TK,TV> ctor resolution on netstandard2.0
+                    Meta = e.Meta is null ? null : e.Meta.ToDictionary(kv => kv.Key, kv => kv.Value)
                 })
                 .ToArray();
 

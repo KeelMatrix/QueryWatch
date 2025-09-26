@@ -1,4 +1,6 @@
 #nullable enable
+using System.Collections.Generic;
+
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Options for a monitoring session.
@@ -14,12 +16,12 @@ namespace KeelMatrix.QueryWatch {
         /// <summary>
         /// Max average duration per query. Null means "no limit". Default: null.
         /// </summary>
-        public TimeSpan? MaxAverageDuration { get; set; }
+        public System.TimeSpan? MaxAverageDuration { get; set; }
 
         /// <summary>
         /// Max total duration across all queries. Null means "no limit". Default: null.
         /// </summary>
-        public TimeSpan? MaxTotalDuration { get; set; }
+        public System.TimeSpan? MaxTotalDuration { get; set; }
 
         /// <summary>
         /// Whether to capture SQL text. Default: true.
@@ -31,5 +33,12 @@ namespace KeelMatrix.QueryWatch {
         /// Provide implementations of <see cref="IQueryTextRedactor"/> to mask PII/secrets or noisy values.
         /// </summary>
         public IList<IQueryTextRedactor> Redactors { get; } = new List<IQueryTextRedactor>();
+
+        /// <summary>
+        /// Optional policy to capture ADO.NET parameter <b>names and types only</b> (no values) as event metadata.
+        /// Default: <c>false</c>. When enabled, the event JSON will include a per-event
+        /// <c>meta.parameters</c> array with entries like <c>{{ name: "@id", dbType: "Int32", clrType: "System.Int32", direction: "Input" }}</c>.
+        /// </summary>
+        public bool CaptureAdoParameterMetadata { get; set; } = false;
     }
 }
