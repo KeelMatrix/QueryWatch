@@ -1,36 +1,55 @@
 #nullable enable
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using KeelMatrix.QueryWatch.Cli.Model;
 
 namespace KeelMatrix.QueryWatch.Cli.IO {
+    /// <summary>
+    /// Loads QueryWatch summary JSON files with friendly error handling so the CLI
+    /// can map failures to a deterministic exit code instead of crashing the process.
+    /// </summary>
     internal static class SummaryLoader {
         public static async Task<IReadOnlyList<Summary>> LoadAsync(IEnumerable<string> paths) {
-            var found = new List<Summary>();
-            var notFound = new List<string>();
-
-            foreach (var path in paths) {
-                if (!File.Exists(path)) {
-                    notFound.Add(path);
-                    continue;
-                }
-
+            if (paths is null) throw new ArgumentNullException(nameof(paths));
+            var list = new List<Summary>();
+            foreach (var p in paths) {
                 try {
-                    await using var stream = File.OpenRead(path);
-                    var s = await JsonSerializer.DeserializeAsync<Summary>(stream).ConfigureAwait(false);
-                    if (s is null) throw new InvalidOperationException($"Summary is null: {path}");
-                    found.Add(s);
+                    await using var fs = File.OpenRead(p);
+                    var s = await JsonSerializer.DeserializeAsync<Summary>(fs, new JsonSerializerOptions {
+                        PropertyNameCaseInsensitive = true
+                    }).ConfigureAwait(false);
+                    if (s is null) throw new JsonException("File did not contain a valid summary payload.");
+                    list.Add(s);
                 }
-                catch (Exception ex) {
-                    throw new JsonException($"Failed to parse JSON '{path}': {ex.Message}", ex);
+                catch (FileNotFoundException ex) {
+                    throw new InputFileNotFoundException($"No input JSON found. Missing: {p}", ex);
+                }
+                catch (DirectoryNotFoundException ex) {
+                    throw new InputFileNotFoundException($"No input JSON found. Missing: {p}", ex);
+                }
+                catch (JsonException ex) {
+                    // Make message stable for tests and CI logs.
+                    throw new JsonParseException($"Failed to parse JSON '{p}': {ex.Message}", ex);
+                }
+                catch (IOException ex) {
+                    throw new JsonParseException($"Failed to read JSON '{p}': {ex.Message}", ex);
                 }
             }
-
-            if (found.Count == 0) {
-                var msg = "No input JSON found." + (notFound.Count > 0 ? " Missing: " + string.Join(", ", notFound) : string.Empty);
-                throw new FileNotFoundException(msg);
-            }
-
-            return found;
+            return list;
         }
+    }
+
+    /// <summary>Thrown when an input file path does not exist.</summary>
+    internal sealed class InputFileNotFoundException : Exception {
+        public InputFileNotFoundException(string message, Exception? inner) : base(message, inner) { }
+    }
+
+    /// <summary>Thrown when JSON parsing fails for an input file.</summary>
+    internal sealed class JsonParseException : Exception {
+        public JsonParseException(string message, Exception? inner) : base(message, inner) { }
     }
 }
