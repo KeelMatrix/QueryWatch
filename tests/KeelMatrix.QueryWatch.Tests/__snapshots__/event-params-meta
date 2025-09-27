@@ -1,0 +1,20 @@
+{
+  "events": [
+    {
+      "parameters": [
+        {
+          "name": "@userId",
+          "dbType": "Int32",
+          "clrType": "System.Int32",
+          "direction": "Input"
+        },
+        {
+          "name": "@tenant",
+          "dbType": "String",
+          "clrType": "System.String",
+          "direction": "Input"
+        }
+      ]
+    }
+  ]
+}

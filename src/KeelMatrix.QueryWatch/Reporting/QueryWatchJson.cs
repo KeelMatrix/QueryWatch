@@ -102,8 +102,9 @@ namespace KeelMatrix.QueryWatch.Reporting {
                 AverageDurationMs = report.AverageDuration.TotalMilliseconds,
                 Events = samples,
                 Meta = new Dictionary<string, string> {
-                    { "library", "KeelMatrix.QueryWatch" }
-                }
+                        { "library", "KeelMatrix.QueryWatch" },
+                        { "sampleTop", sampleTop.ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                    }
             };
         }
 
