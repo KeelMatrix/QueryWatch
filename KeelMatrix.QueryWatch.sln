@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -17,6 +18,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{EB5C44D7-E36D-429D-A6FA-7898FF08F6F4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeelMatrix.QueryWatch.EfCore", "src\KeelMatrix.QueryWatch.EfCore\KeelMatrix.QueryWatch.EfCore.csproj", "{44444444-4444-4444-4444-444444444444}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeelMatrix.QueryWatch.EfCore.Tests", "tests\KeelMatrix.QueryWatch.EfCore.Tests\KeelMatrix.QueryWatch.EfCore.Tests.csproj", "{80B72645-E2D3-4701-8DD2-D011549685EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,6 +91,18 @@ Global
 		{44444444-4444-4444-4444-444444444444}.Release|x64.Build.0 = Release|Any CPU
 		{44444444-4444-4444-4444-444444444444}.Release|x86.ActiveCfg = Release|Any CPU
 		{44444444-4444-4444-4444-444444444444}.Release|x86.Build.0 = Release|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Debug|x64.Build.0 = Debug|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Debug|x86.Build.0 = Debug|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Release|x64.ActiveCfg = Release|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Release|x64.Build.0 = Release|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Release|x86.ActiveCfg = Release|Any CPU
+		{80B72645-E2D3-4701-8DD2-D011549685EC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,6 +113,7 @@ Global
 		{33333333-3333-3333-3333-333333333333} = {EB5C44D7-E36D-429D-A6FA-7898FF08F6F4}
 		{6C634932-3630-40A5-AA4A-68518D852177} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{44444444-4444-4444-4444-444444444444} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{80B72645-E2D3-4701-8DD2-D011549685EC} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B433EB21-BD3B-4E85-9645-38C1E8BDC563}
