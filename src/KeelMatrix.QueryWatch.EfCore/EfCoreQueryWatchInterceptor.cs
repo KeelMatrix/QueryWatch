@@ -1,11 +1,15 @@
 // Copyright (c) KeelMatrix
 #nullable enable
+using System.Collections.Generic;
 using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace KeelMatrix.QueryWatch.EfCore {
     /// <summary>
     /// EF Core DbCommand interceptor that records command durations into a <see cref="QueryWatchSession"/>.
+    /// Handles sync/async Reader/Scalar/NonQuery and failure paths.
     /// </summary>
     public sealed class EfCoreQueryWatchInterceptor : DbCommandInterceptor {
         private readonly QueryWatchSession _session;
@@ -18,6 +22,19 @@ namespace KeelMatrix.QueryWatch.EfCore {
             var duration = TimeSpan.FromTicks(elapsedTicks);
             var text = command.CommandText ?? string.Empty;
             session.Record(text, duration);
+        }
+
+        private static void RecordFailed(QueryWatchSession session, DbCommand command, long elapsedTicks, CommandErrorEventData error) {
+            var duration = TimeSpan.FromTicks(elapsedTicks);
+            var text = command.CommandText ?? string.Empty;
+
+            // Attach minimal failure context so CI budgets can flag fast-failing chatty SQL.
+            IReadOnlyDictionary<string, object?> meta = new Dictionary<string, object?> {
+                ["failed"] = true,
+                ["exception"] = error.Exception?.GetType().FullName ?? "UnknownException"
+            };
+
+            session.Record(text, duration, meta);
         }
 
         public override DbDataReader ReaderExecuted(
@@ -42,9 +59,37 @@ namespace KeelMatrix.QueryWatch.EfCore {
             return base.NonQueryExecuted(command, eventData, result);
         }
 
+        public override ValueTask<int> NonQueryExecutedAsync(
+            DbCommand command,
+            CommandExecutedEventData eventData,
+            int result,
+            CancellationToken cancellationToken = default) {
+            Record(_session, command, eventData.Duration.Ticks);
+            return base.NonQueryExecutedAsync(command, eventData, result, cancellationToken);
+        }
+
         public override object? ScalarExecuted(DbCommand command, CommandExecutedEventData eventData, object? result) {
             Record(_session, command, eventData.Duration.Ticks);
             return base.ScalarExecuted(command, eventData, result);
+        }
+
+        public override ValueTask<object?> ScalarExecutedAsync(
+            DbCommand command,
+            CommandExecutedEventData eventData,
+            object? result,
+            CancellationToken cancellationToken = default) {
+            Record(_session, command, eventData.Duration.Ticks);
+            return base.ScalarExecutedAsync(command, eventData, result, cancellationToken);
+        }
+
+        public override void CommandFailed(DbCommand command, CommandErrorEventData eventData) {
+            RecordFailed(_session, command, eventData.Duration.Ticks, eventData);
+            base.CommandFailed(command, eventData);
+        }
+
+        public override Task CommandFailedAsync(DbCommand command, CommandErrorEventData eventData, CancellationToken cancellationToken = default) {
+            RecordFailed(_session, command, eventData.Duration.Ticks, eventData);
+            return base.CommandFailedAsync(command, eventData, cancellationToken);
         }
     }
 }
