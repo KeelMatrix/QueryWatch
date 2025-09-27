@@ -21,5 +21,19 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
             var input = "Server=.;Integrated Security=true;";
             r.Redact(input).Should().Be(input);
         }
+
+        [Fact]
+        public void Masks_Quoted_Passwords_With_Semicolons_Inside() {
+            var r = new ConnectionStringPasswordRedactor();
+            var input1 = "Password=\"sec;ret;value\";User Id=sa;";
+            var red1 = r.Redact(input1);
+            red1.Should().Contain("Password=***;");
+            red1.Should().NotContain("sec;ret;value");
+
+            var input2 = "Pwd='p;a;s;s';Server=.;";
+            var red2 = r.Redact(input2);
+            red2.Should().Contain("Pwd=***;");
+            red2.Should().NotContain("p;a;s;s");
+        }
     }
 }

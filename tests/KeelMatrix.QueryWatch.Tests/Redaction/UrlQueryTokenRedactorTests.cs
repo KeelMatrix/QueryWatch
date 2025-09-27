@@ -18,5 +18,15 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
             var r = new UrlQueryTokenRedactor();
             r.Redact("https://ex.com?tok=1").Should().Be("https://ex.com?tok=1");
         }
+
+        [Fact]
+        public void Masks_Tokens_In_Fragment_Section() {
+            var r = new UrlQueryTokenRedactor();
+            var input = "https://ex.com/cb#access_token=AAA&id_token=BBB&state=123";
+            var red = r.Redact(input);
+            red.Should().Contain("access_token=***").And.Contain("id_token=***");
+            red.Should().NotContain("AAA").And.NotContain("BBB");
+            red.Should().Contain("&state=123");
+        }
     }
 }

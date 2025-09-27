@@ -1,3 +1,4 @@
+
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Redaction;
 using Xunit;
@@ -45,6 +46,13 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
             var once = r.Redact(input);
             var twice = r.Redact(once);
             twice.Should().Be(once);
+        }
+
+        [Fact]
+        public void Masks_Query_Param_With_Hyphen_Or_Underscore() {
+            var r = new ApiKeyRedactor();
+            r.Redact("https://ex.com?api-key=XYZ").Should().Be("https://ex.com?api-key=***");
+            r.Redact("https://ex.com?api_key=XYZ").Should().Be("https://ex.com?api_key=***");
         }
     }
 }

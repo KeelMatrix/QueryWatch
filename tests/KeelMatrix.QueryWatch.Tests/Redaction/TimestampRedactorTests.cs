@@ -20,5 +20,19 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
             red.Should().NotContain("1726750000");
             red.Should().NotContain("17267500001");
         }
+
+        [Fact]
+        public void Does_Not_Mask_Unix_Milliseconds_13_Digits() {
+            var r = new TimestampRedactor();
+            var input = "ts=1726750000000"; // 13 digits (ms), should not be treated as seconds
+            r.Redact(input).Should().Be(input);
+        }
+
+        [Fact]
+        public void Does_Not_Mask_Too_Short_Unix_Seconds() {
+            var r = new TimestampRedactor();
+            var input = "ts=123456789"; // 9 digits
+            r.Redact(input).Should().Be(input);
+        }
     }
 }

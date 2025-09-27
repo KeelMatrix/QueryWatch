@@ -13,5 +13,12 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
             var red = r.Redact(input);
             red.Should().NotContain(key).And.Contain("***");
         }
+
+        [Fact]
+        public void Does_Not_Mask_When_Length_Is_Wrong() {
+            var r = new GoogleApiKeyRedactor();
+            var key = "AIza" + new string('B', 34); // one char short
+            r.Redact(key).Should().Be(key);
+        }
     }
 }

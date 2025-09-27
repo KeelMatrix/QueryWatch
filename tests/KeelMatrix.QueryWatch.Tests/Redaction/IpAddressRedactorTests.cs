@@ -21,5 +21,18 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
             var r = new IpAddressRedactor();
             r.Redact("x:y").Should().Be("x:y");
         }
+
+        [Fact]
+        public void Masks_IPv6_Compressed_Forms() {
+            var r = new IpAddressRedactor();
+            r.Redact("addr=::1").Should().Be("addr=***");
+            r.Redact("addr=2001:db8::7334").Should().Be("addr=***");
+        }
+
+        [Fact]
+        public void Masks_IPv4_With_Port_Keeping_Port() {
+            var r = new IpAddressRedactor();
+            r.Redact("host=192.168.0.1:8080").Should().Be("host=***:8080");
+        }
     }
 }
