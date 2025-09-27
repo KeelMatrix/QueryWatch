@@ -14,9 +14,8 @@ namespace KeelMatrix.QueryWatch.Tests {
 
             Action act = () => report.ThrowIfViolations();
 
-            // Current skeleton message is a simple concatenation without a "Summary:" header → this should FAIL.
-            act.Should().Throw<InvalidOperationException>()
-               .WithMessage("*Summary:*");
+            act.Should().Throw<KeelMatrix.QueryWatch.QueryWatchViolationException>()
+               .Which.Message.Should().Contain("Summary:");
         }
     }
 }
