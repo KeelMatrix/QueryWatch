@@ -5,3 +5,9 @@ KeelMatrix.QueryWatch.QueryWatchOptions.CaptureAdoParameterMetadata.set -> void
 KeelMatrix.QueryWatch.QueryWatchSession.Record(string! commandText, System.TimeSpan duration, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? meta) -> void
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.Meta.get -> System.Collections.Generic.Dictionary<string!, object?>?
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.Meta.init -> void
+KeelMatrix.QueryWatch.Ado.QueryWatchTransaction
+KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.Inner.get -> System.Data.Common.DbTransaction!
+KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.QueryWatchTransaction(System.Data.Common.DbTransaction! inner, KeelMatrix.QueryWatch.Ado.QueryWatchConnection! owner) -> void
+override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.IsolationLevel.get -> System.Data.IsolationLevel
+override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.Commit() -> void
+override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.Rollback() -> void

@@ -72,3 +72,30 @@ When run inside GitHub Actions, the CLI writes a Markdown table to the **Step Su
 ### Note on per‑pattern budgets
 
 Budgets match against the `events` captured in the JSON file(s). These are the top‑N slowest events by duration to keep files small. If you want strict coverage, export with a higher `sampleTop` in `QueryWatchJson.ExportToFile`, or pass a larger `sampleTop` to `QueryWatchScope.Start(...)`.
+
+## Redactor ordering tips
+
+If you use multiple redactors, **order matters**. A safe, effective default is:
+
+1. **Whitespace normalizer** – make SQL text stable across environments/providers.
+2. **High‑entropy token masks** – long hex tokens, JWTs, API keys.
+3. **PII masks** – emails, phone numbers, IPs.
+4. **Custom rules** – your app–specific patterns (use `AddRegexRedactor(...)`).
+
+> Put *broad* rules (like whitespace) first, and *specific* rules (like PII) after. This lowers the chance one rule prevents another from matching.
+
+## Typical budgets for Dapper‑heavy solutions
+
+Dapper often issues *fewer, more targeted* commands than ORMs. Reasonable starting points (tune per project):
+
+- **End‑to‑end web test:** `--max-queries 40`, `--max-average-ms 50`, `--max-total-ms 1500`.
+- **Repository‑level test:** `--max-queries 10`, `--max-average-ms 25`, `--max-total-ms 250`.
+- **Per‑pattern budgets:** cap hot spots explicitly, e.g.:
+
+  ```
+  --budget "SELECT * FROM Users*=5" --budget "regex:^UPDATE Orders SET=3"
+  ```
+
+- Increase `sampleTop` in code (`QueryWatchScope.Start(..., sampleTop: 200)`) if you rely on many per‑pattern budgets.
+
+Treat these as **guardrails**: keep design flexible but catch accidental N+1s or slow queries early.

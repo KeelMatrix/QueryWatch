@@ -57,7 +57,10 @@ namespace KeelMatrix.QueryWatch.Ado {
 
         protected override DbTransaction? DbTransaction {
             get => _inner.Transaction;
-            set => _inner.Transaction = value;
+            set {
+                if (value is QueryWatchTransaction wrap) _inner.Transaction = wrap.Inner;
+                else _inner.Transaction = value;
+            }
         }
 
         public override bool DesignTimeVisible {
@@ -160,3 +163,4 @@ namespace KeelMatrix.QueryWatch.Ado {
         }
     }
 }
+

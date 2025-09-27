@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -6,20 +7,54 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sqlite", "EFCore.Sql
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ado.Sqlite", "Ado.Sqlite\Ado.Sqlite.csproj", "{17F5B486-A115-428F-92D3-5F57AFA585AA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dapper.Sqlite", "Dapper.Sqlite\Dapper.Sqlite.csproj", "{90202549-95A3-48CB-AEBF-58C370B16150}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Debug|x64.Build.0 = Debug|Any CPU
+		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Debug|x86.Build.0 = Debug|Any CPU
 		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Release|x64.ActiveCfg = Release|Any CPU
+		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Release|x64.Build.0 = Release|Any CPU
+		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Release|x86.ActiveCfg = Release|Any CPU
+		{32D2847B-FBCA-46A3-AC89-95BBE0081607}.Release|x86.Build.0 = Release|Any CPU
 		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Debug|x64.Build.0 = Debug|Any CPU
+		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Debug|x86.Build.0 = Debug|Any CPU
 		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Release|x64.ActiveCfg = Release|Any CPU
+		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Release|x64.Build.0 = Release|Any CPU
+		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Release|x86.ActiveCfg = Release|Any CPU
+		{17F5B486-A115-428F-92D3-5F57AFA585AA}.Release|x86.Build.0 = Release|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Debug|x64.Build.0 = Debug|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Debug|x86.Build.0 = Debug|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Release|x64.ActiveCfg = Release|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Release|x64.Build.0 = Release|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Release|x86.ActiveCfg = Release|Any CPU
+		{90202549-95A3-48CB-AEBF-58C370B16150}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

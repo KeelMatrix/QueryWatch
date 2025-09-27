@@ -37,7 +37,7 @@ namespace KeelMatrix.QueryWatch.Ado {
         public override void Open() => _inner.Open();
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
-            => _inner.BeginTransaction(isolationLevel);
+            => new QueryWatchTransaction(_inner.BeginTransaction(isolationLevel), this);
 
         protected override DbCommand CreateDbCommand()
             => new QueryWatchCommand(_inner.CreateCommand(), _session, this);
@@ -67,3 +67,4 @@ namespace KeelMatrix.QueryWatch.Ado {
         }
     }
 }
+

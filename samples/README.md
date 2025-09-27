@@ -10,6 +10,7 @@ quickly in different situations (EF Core + SQLite, and raw ADO).
 ## Layout
 - `EFCore.Sqlite/` – EF Core (SQLite provider) showing interceptor wiring and basic budgets.
 - `Ado.Sqlite/` – plain ADO.NET over `Microsoft.Data.Sqlite` wrapped by `QueryWatchConnection`.
+- `Dapper.Sqlite/` – tiny Dapper example over SQLite showing **async** and **transaction** usage with QueryWatch.
 - `cli-examples.ps1` / `cli-examples.sh` – example commands for running the QueryWatch CLI gate.
 - `NuGet.config` – forces the `KeelMatrix.QueryWatch*` packages to come from your local `../artifacts/packages`.
 - `.gitignore` – ignores local build outputs and DB files for samples only.
@@ -44,3 +45,9 @@ quickly in different situations (EF Core + SQLite, and raw ADO).
 - These samples **compile only after** you add the `KeelMatrix.QueryWatch` and (for EF) `KeelMatrix.QueryWatch.EfCore` packages (Step 2).
 - If you get restore errors, confirm that `../artifacts/packages` exists and contains your `*.nupkg` files.
 - The EF Core sample uses a file-based SQLite DB under `./EFCore.Sqlite/app.db`. You can delete it safely.
+
+### Dapper sample
+Run the Dapper sample:
+```bash
+dotnet run --project ./Dapper.Sqlite/Dapper.Sqlite.csproj
+```

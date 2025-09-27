@@ -6,5 +6,7 @@ dotnet --info >/dev/null
 dotnet add ./EFCore.Sqlite/EFCore.Sqlite.csproj package KeelMatrix.QueryWatch
 dotnet add ./EFCore.Sqlite/EFCore.Sqlite.csproj package KeelMatrix.QueryWatch.EfCore
 dotnet add ./Ado.Sqlite/Ado.Sqlite.csproj package KeelMatrix.QueryWatch
+dotnet add ./Dapper.Sqlite/Dapper.Sqlite.csproj package KeelMatrix.QueryWatch
 
 echo "Restore completed. You can now run the samples."
+
