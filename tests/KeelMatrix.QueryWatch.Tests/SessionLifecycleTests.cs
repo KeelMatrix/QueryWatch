@@ -1,4 +1,3 @@
-using System;
 using FluentAssertions;
 using Xunit;
 
@@ -16,7 +15,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         [Fact]
         public void Stop_Twice_Throws() {
             using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            var r1 = session.Stop();
+            _ = session.Stop();
             Action again = () => session.Stop();
 
             // Current skeleton allows repeated Stop calls → this should FAIL.
