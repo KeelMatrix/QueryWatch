@@ -15,10 +15,12 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
         }
 
         [Fact]
-        public void Leaves_NonMatching_Text_Unchanged() {
+        public void Does_Not_Mask_Short_Or_Invalid() {
             var r = new AwsAccessKeyRedactor();
-            var input = "SELECT 1;";
-            r.Redact(input).Should().Be(input);
+            var almost = "AKIA" + new string('A', 15); // one short
+            r.Redact(almost).Should().Be(almost);
+            var noise = "AKIB" + new string('A', 16); // wrong prefix
+            r.Redact(noise).Should().Be(noise);
         }
     }
 }

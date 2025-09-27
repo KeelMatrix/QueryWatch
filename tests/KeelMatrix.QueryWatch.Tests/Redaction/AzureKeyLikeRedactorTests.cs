@@ -7,20 +7,19 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
         [Fact]
         public void Masks_AccountKey_And_SharedAccessKey() {
             var r = new AzureKeyLikeRedactor();
-            var input = "AccountKey=abcDEF123;SharedAccessKey=XYZ;";
+            var input = "AccountKey=abcDEF123;SharedAccessKey=XYZ;Other=ok;";
             var red = r.Redact(input);
             red.Should().Contain("AccountKey=***");
             red.Should().Contain("SharedAccessKey=***");
-            red.Should().NotContain("abcDEF123");
-            red.Should().NotContain("XYZ");
+            red.Should().Contain("Other=ok");
+            red.Should().NotContain("abcDEF123").And.NotContain("XYZ");
         }
 
         [Fact]
-        public void Masks_SharedAccessSignature() {
+        public void Masks_SharedAccessSignature_Case_Insensitive() {
             var r = new AzureKeyLikeRedactor();
-            var input = "SharedAccessSignature=sv=2022-01-01&sig=abc";
-            var red = r.Redact(input);
-            red.Should().Contain("SharedAccessSignature=***");
+            var input = "sharedaccesssignature=sv=2022-01-01&sig=abc";
+            r.Redact(input).Should().Be("SharedAccessSignature=***");
         }
     }
 }

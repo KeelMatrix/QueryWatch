@@ -5,16 +5,15 @@ using Xunit;
 namespace KeelMatrix.QueryWatch.Tests.Redaction {
     public class EmailRedactorTests {
         [Fact]
-        public void Masks_Email_Addresses() {
+        public void Masks_Emails_In_Free_Text() {
             var r = new EmailRedactor();
             var input = "/* contact: admin@example.com */ SELECT 1;";
             var red = r.Redact(input);
-            red.Should().NotContain("admin@example.com");
-            red.Should().Contain("***");
+            red.Should().NotContain("admin@example.com").And.Contain("***");
         }
 
         [Fact]
-        public void Leaves_Text_Without_Emails_Unchanged() {
+        public void Leaves_Text_Without_Emails() {
             var r = new EmailRedactor();
             var input = "SELECT 1;";
             r.Redact(input).Should().Be(input);

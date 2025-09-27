@@ -5,22 +5,17 @@ using Xunit;
 namespace KeelMatrix.QueryWatch.Tests.Redaction {
     public class GuidLikeHexRedactorTests {
         [Fact]
-        public void Masks_16_To_31_Hex_With_Letters() {
+        public void Masks_16_to_31_Hex_With_Letters() {
             var r = new GuidLikeHexRedactor();
-            var token = "abcdef123456abcdef123456"; // 24 chars with letters
-            var input = $"/* {token} */";
-            var red = r.Redact(input);
-            red.Should().NotContain(token);
-            red.Should().Contain("***");
+            var token = "0123456789abcDEF"; // 16 chars with letters
+            r.Redact(token).Should().Be("***");
         }
 
         [Fact]
-        public void Does_Not_Mask_Purely_Numeric_16_Plus() {
+        public void Does_Not_Mask_Purely_Numeric_Long_Ids() {
             var r = new GuidLikeHexRedactor();
-            var token = "1234567890123456"; // 16 digits, no letters -> should NOT mask
-            var input = $"/* {token} */";
-            var red = r.Redact(input);
-            red.Should().Contain(token);
+            var token = "12345678901234567890"; // 20 digits, no letters
+            r.Redact(token).Should().Be(token);
         }
     }
 }

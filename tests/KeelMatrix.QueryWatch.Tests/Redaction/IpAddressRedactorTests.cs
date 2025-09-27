@@ -5,21 +5,21 @@ using Xunit;
 namespace KeelMatrix.QueryWatch.Tests.Redaction {
     public class IpAddressRedactorTests {
         [Fact]
-        public void Masks_Ipv4_Addresses() {
+        public void Masks_IPv4() {
             var r = new IpAddressRedactor();
-            var input = "client=192.168.1.10; SELECT 1;";
-            var red = r.Redact(input);
-            red.Should().NotContain("192.168.1.10");
-            red.Should().Contain("***");
+            r.Redact("client=192.168.1.10").Should().Be("client=***");
         }
 
         [Fact]
-        public void Masks_Ipv6_Addresses_Conservative() {
+        public void Masks_IPv6_Generic() {
             var r = new IpAddressRedactor();
-            var input = "ip=2001:0db8:85a3:0000:0000:8a2e:0370:7334";
-            var red = r.Redact(input);
-            red.Should().NotContain("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
-            red.Should().Contain("***");
+            r.Redact("addr=2001:0db8:85a3:0000:0000:8a2e:0370:7334").Should().Be("addr=***");
+        }
+
+        [Fact]
+        public void Leaves_Non_IP_Text() {
+            var r = new IpAddressRedactor();
+            r.Redact("x:y").Should().Be("x:y");
         }
     }
 }

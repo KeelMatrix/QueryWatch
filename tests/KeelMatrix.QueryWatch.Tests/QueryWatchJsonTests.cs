@@ -1,15 +1,11 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
 using FluentAssertions;
-using KeelMatrix.QueryWatch;
 using KeelMatrix.QueryWatch.Reporting;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
     public class QueryWatchJsonTests {
-        // TODO: REMOVE LATER. These tests lock down the JSON "shape" that CI relies on.
+        // Note: These tests lock down the JSON "shape" that CI relies on.
         // We purposely avoid overfitting to timestamps and only assert stable fields and sampling behavior.
 
         [Fact]

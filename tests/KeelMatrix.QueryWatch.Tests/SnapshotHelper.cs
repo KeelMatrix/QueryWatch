@@ -1,12 +1,10 @@
-using System;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using FluentAssertions;
 
 namespace KeelMatrix.QueryWatch.Tests {
     /// <summary>
-    /// Minimal snapshot testing helper. TODO: Remove if not needed.
+    /// Minimal snapshot testing helper.
     /// Writes JSON snapshots to a '__snapshots__' folder next to the test file.
     /// </summary>
     public static class SnapshotExtensions {

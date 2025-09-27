@@ -5,19 +5,17 @@ using Xunit;
 namespace KeelMatrix.QueryWatch.Tests.Redaction {
     public class JwtTokenRedactorTests {
         [Fact]
-        public void Masks_Jwt_Like_Tokens() {
+        public void Masks_Three_Segment_Base64Url_Tokens() {
             var r = new JwtTokenRedactor();
-            var input = "Authorization: Bearer aaaaaaaaaa.bbbbbbbbbbb.cccccccccccc";
-            var red = r.Redact(input);
-            red.Should().NotContain("aaaaaaaaaa.bbbbbbbbbbb.cccccccccccc");
-            red.Should().Contain("***");
+            var tok = "aaaBBBBBBBBB.cccDDDDDDDDD.eeeEEEEEEEEE"; // each segment >=10
+            r.Redact(tok).Should().Be("***");
         }
 
         [Fact]
-        public void Does_Not_Mask_Short_Dot_Separated_Tokens() {
+        public void Does_Not_Mask_Two_Segments() {
             var r = new JwtTokenRedactor();
-            var input = "token=a.b.c";
-            r.Redact(input).Should().Be(input);
+            var tok = "aaaBBBBBBBBB.cccDDDDDDDDD";
+            r.Redact(tok).Should().Be(tok);
         }
     }
 }
