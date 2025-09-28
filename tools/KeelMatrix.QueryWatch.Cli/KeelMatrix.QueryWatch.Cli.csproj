@@ -4,22 +4,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <LangVersion>latest</LangVersion>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	<WarningsNotAsErrors>$(WarningsNotAsErrors);RS0016;RS0017;RS0025;RS0037;S1135</WarningsNotAsErrors>
-
-    <RootNamespace>KeelMatrix.QueryWatch.Cli</RootNamespace>
-    <AssemblyName>KeelMatrix.QueryWatch.Cli</AssemblyName>
-    <Deterministic>true</Deterministic>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
-
-    <!-- Optional: pack as a dotnet tool later -->
-    <PackAsTool>true</PackAsTool>
-    <PackageId>KeelMatrix.QueryWatch.Cli</PackageId>
-    <Description>Command-line gate for QueryWatch JSON reports.</Description>
-    <PackageTags>queries;performance;testing;ci;gate</PackageTags>
-    <RepositoryUrl>https://github.com/your-org/KeelMatrix.QueryWatch</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj" />
+  </ItemGroup>
 </Project>

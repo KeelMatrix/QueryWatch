@@ -1,6 +1,5 @@
-#nullable enable
 namespace KeelMatrix.QueryWatch.Cli.Core {
-    internal static class ExitCodes {
+    public static class ExitCodes {
         public const int Ok = 0;
         public const int InvalidArguments = 1;
         public const int InputFileNotFound = 2;

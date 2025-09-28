@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeelMatrix.QueryWatch.EfCor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeelMatrix.QueryWatch.EfCore.Tests", "tests\KeelMatrix.QueryWatch.EfCore.Tests\KeelMatrix.QueryWatch.EfCore.Tests.csproj", "{80B72645-E2D3-4701-8DD2-D011549685EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeelMatrix.QueryWatch.Contracts", "src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj", "{D85E1811-E38E-461B-B817-D445B9F4B11F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +105,18 @@ Global
 		{80B72645-E2D3-4701-8DD2-D011549685EC}.Release|x64.Build.0 = Release|Any CPU
 		{80B72645-E2D3-4701-8DD2-D011549685EC}.Release|x86.ActiveCfg = Release|Any CPU
 		{80B72645-E2D3-4701-8DD2-D011549685EC}.Release|x86.Build.0 = Release|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Debug|x64.Build.0 = Debug|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Debug|x86.Build.0 = Debug|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Release|x64.ActiveCfg = Release|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Release|x64.Build.0 = Release|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Release|x86.ActiveCfg = Release|Any CPU
+		{D85E1811-E38E-461B-B817-D445B9F4B11F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -114,6 +128,7 @@ Global
 		{6C634932-3630-40A5-AA4A-68518D852177} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{44444444-4444-4444-4444-444444444444} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{80B72645-E2D3-4701-8DD2-D011549685EC} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{D85E1811-E38E-461B-B817-D445B9F4B11F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B433EB21-BD3B-4E85-9645-38C1E8BDC563}

@@ -2,10 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using KeelMatrix.QueryWatch.Cli.Model;
+using KeelMatrix.QueryWatch.Contracts;
 
 namespace KeelMatrix.QueryWatch.Cli.IO {
     /// <summary>
@@ -19,9 +18,8 @@ namespace KeelMatrix.QueryWatch.Cli.IO {
             foreach (var p in paths) {
                 try {
                     await using var fs = File.OpenRead(p);
-                    var s = await JsonSerializer.DeserializeAsync<Summary>(fs, new JsonSerializerOptions {
-                        PropertyNameCaseInsensitive = true
-                    }).ConfigureAwait(false);
+                    // Use the shared source-generated context from the contracts package
+                    var s = await JsonSerializer.DeserializeAsync(fs, QueryWatchJsonContext.Default.Summary).ConfigureAwait(false);
                     if (s is null) throw new JsonException("File did not contain a valid summary payload.");
                     list.Add(s);
                 }

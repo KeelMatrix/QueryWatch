@@ -1,0 +1,16 @@
+{
+  "schema": "1.0.0",
+  "startedAt": "2024-01-01T00:00:00Z",
+  "stoppedAt": "2024-01-01T00:00:01Z",
+  "totalQueries": 2,
+  "totalDurationMs": 12.34,
+  "averageDurationMs": 6.17,
+  "events": [
+    { "at": "2024-01-01T00:00:00Z", "durationMs": 9, "text": "slow" },
+    { "at": "2024-01-01T00:00:00.5000000Z", "durationMs": 3.34, "text": "fast" }
+  ],
+  "meta": {
+    "library": "KeelMatrix.QueryWatch",
+    "sampleTop": "2"
+  }
+}

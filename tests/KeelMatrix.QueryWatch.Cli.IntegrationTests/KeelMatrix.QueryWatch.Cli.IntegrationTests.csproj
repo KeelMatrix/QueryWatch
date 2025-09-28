@@ -13,20 +13,12 @@
     <PackageReference Include="xunit" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
     <PackageReference Include="xunit.runner.visualstudio" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
     <PackageReference Include="FluentAssertions" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
+    <PackageReference Include="coverlet.collector" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
-    <PackageReference Include="coverlet.collector" PrivateAssets="all" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
-
-    <!-- Fallback explicit versions if central management is not enabled -->
-    <PackageReference Include="xunit" Version="2.7.1" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
-    <PackageReference Include="FluentAssertions" Version="6.12.2" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
-    <PackageReference Include="coverlet.collector" Version="6.0.2" PrivateAssets="all" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Ensure fixtures are available at runtime -->
-    <None Include="Fixtures\**\*.json">
+    <None Update="Fixtures\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -34,8 +26,10 @@
   <ItemGroup>
     <!-- Optional: ensure CLI builds before tests run -->
     <ProjectReference Include="..\..\tools\KeelMatrix.QueryWatch.Cli\KeelMatrix.QueryWatch.Cli.csproj"
-                      Condition="Exists('..\\..\\tools\\KeelMatrix.QueryWatch.Cli\\KeelMatrix.QueryWatch.Cli.csproj')" />
+                      Condition="Exists('..\..\tools\KeelMatrix.QueryWatch.Cli\KeelMatrix.QueryWatch.Cli.csproj')" />
     <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch\KeelMatrix.QueryWatch.csproj"
-                      Condition="Exists('..\\..\\src\\KeelMatrix.QueryWatch\\KeelMatrix.QueryWatch.csproj')" />
+                      Condition="Exists('..\..\src\KeelMatrix.QueryWatch\KeelMatrix.QueryWatch.csproj')" />
+    <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj"
+                      Condition="Exists('..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj')" />
   </ItemGroup>
 </Project>
