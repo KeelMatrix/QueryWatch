@@ -1,5 +1,8 @@
+
 #nullable enable
 using System.Text.RegularExpressions;
+
+using KeelMatrix.QueryWatch.Redaction.Internal;
 
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
@@ -16,7 +19,7 @@ namespace KeelMatrix.QueryWatch.Redaction {
         //  (?:\s*\(?\d{1,4}\)?[\s\-.]*){2,} - at least two digit groups with optional separators/parentheses
         //  \d{2,}                - a trailing group with at least 2 digits
         //  (?!\w)                - don't end in the middle of a word
-        private static readonly Regex Phone = new(
+        private static readonly Regex Phone = RedactionRegex.Create(
             @"(?<!\w)\+?(?=(?:[^\d]*\d){7,})(?:\s*\(?\d{1,4}\)?[\s\-.]*){2,}\d{2,}(?!\w)",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
@@ -25,3 +28,5 @@ namespace KeelMatrix.QueryWatch.Redaction {
             => string.IsNullOrEmpty(input) ? string.Empty : Phone.Replace(input, "***");
     }
 }
+
+

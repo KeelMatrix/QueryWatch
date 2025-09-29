@@ -1,4 +1,7 @@
+
 using System.Text.RegularExpressions;
+
+using KeelMatrix.QueryWatch.Redaction.Internal;
 
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
@@ -6,7 +9,7 @@ namespace KeelMatrix.QueryWatch.Redaction {
     /// This makes pattern matching more stable across providers/platforms.
     /// </summary>
     public sealed class WhitespaceNormalizerRedactor : IQueryTextRedactor {
-        private static readonly Regex Ws = new(@"\s+", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex Ws = RedactionRegex.Create(@"\s+", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         /// <inheritdoc />
         public string Redact(string input) {
@@ -16,3 +19,5 @@ namespace KeelMatrix.QueryWatch.Redaction {
         }
     }
 }
+
+

@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Dapper;
 using Xunit;
@@ -53,6 +54,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         // ----- Minimal fakes -----
         private sealed class OnlyIdbConnection : IDbConnection {
+            [AllowNull]
             public string ConnectionString { get; set; } = string.Empty;
             public int ConnectionTimeout => 0;
             public string Database => "OnlyIdb";
@@ -78,9 +80,6 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         private sealed class OnlyIdbCommand : IDbCommand {
             private string _text = string.Empty;
-            private int _timeout;
-            private CommandType _type;
-            private UpdateRowSource _urs;
             private IDbConnection? _conn;
             private IDbTransaction? _tx;
 
@@ -88,14 +87,14 @@ namespace KeelMatrix.QueryWatch.Tests {
             public IDbTransaction? LastAssignedTransaction { get; private set; }
 
             public OnlyIdbCommand(IDbConnection conn) { _conn = conn; }
-
+            [AllowNull]
             public string CommandText { get => _text; set => _text = value ?? string.Empty; }
-            public int CommandTimeout { get => _timeout; set => _timeout = value; }
-            public CommandType CommandType { get => _type; set => _type = value; }
+            public int CommandTimeout { get; set; }
+            public CommandType CommandType { get; set; }
             public IDbConnection? Connection { get => _conn; set { _conn = value; LastAssignedConnection = value; } }
             public IDataParameterCollection Parameters { get; } = new DummyParameters();
             public IDbTransaction? Transaction { get => _tx; set { _tx = value; LastAssignedTransaction = value; } }
-            public UpdateRowSource UpdatedRowSource { get => _urs; set => _urs = value; }
+            public UpdateRowSource UpdatedRowSource { get; set; }
 
             public void Cancel() { }
             public IDbDataParameter CreateParameter() => new DummyParam();
@@ -106,7 +105,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             public object? ExecuteScalar() => 1;
             public void Dispose() { }
 
-            private sealed class DummyReader : IDataReader, IDataRecord {
+            private sealed class DummyReader : IDataReader {
                 public int Depth => 0; public bool IsClosed => false; public int RecordsAffected => 1; public int FieldCount => 0;
                 public object this[int i] => 0; public object this[string name] => 0;
                 public void Close() { }
@@ -127,12 +126,15 @@ namespace KeelMatrix.QueryWatch.Tests {
                 public int Size { get; set; }
                 public DbType DbType { get; set; }
                 public ParameterDirection Direction { get; set; }
-                public bool IsNullable => true; public string ParameterName { get; set; } = string.Empty;
+                public bool IsNullable => true;
+                [AllowNull]
+                public string ParameterName { get; set; } = string.Empty;
+                [AllowNull]
                 public string SourceColumn { get; set; } = string.Empty; public DataRowVersion SourceVersion { get; set; }
                 public object? Value { get; set; }
             }
 
-            private sealed class DummyParameters : System.Collections.IList, IDataParameterCollection {
+            private sealed class DummyParameters : IDataParameterCollection {
                 private readonly System.Collections.ArrayList _list = new System.Collections.ArrayList();
                 public object? this[string parameterName] { get => null; set { } }
                 public object? this[int index] { get => _list[index]; set => _list[index] = value; }

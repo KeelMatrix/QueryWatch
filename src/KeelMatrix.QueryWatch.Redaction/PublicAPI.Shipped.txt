@@ -1,0 +1,63 @@
+#nullable enable
+KeelMatrix.QueryWatch.IQueryTextRedactor
+KeelMatrix.QueryWatch.IQueryTextRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.ApiKeyRedactor
+KeelMatrix.QueryWatch.Redaction.ApiKeyRedactor.ApiKeyRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.ApiKeyRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.AuthorizationRedactor
+KeelMatrix.QueryWatch.Redaction.AuthorizationRedactor.AuthorizationRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.AuthorizationRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.AwsAccessKeyRedactor
+KeelMatrix.QueryWatch.Redaction.AwsAccessKeyRedactor.AwsAccessKeyRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.AwsAccessKeyRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.AzureKeyLikeRedactor
+KeelMatrix.QueryWatch.Redaction.AzureKeyLikeRedactor.AzureKeyLikeRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.AzureKeyLikeRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.ConnectionStringPasswordRedactor
+KeelMatrix.QueryWatch.Redaction.ConnectionStringPasswordRedactor.ConnectionStringPasswordRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.ConnectionStringPasswordRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.CookieRedactor
+KeelMatrix.QueryWatch.Redaction.CookieRedactor.CookieRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.CookieRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.EmailRedactor
+KeelMatrix.QueryWatch.Redaction.EmailRedactor.EmailRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.EmailRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.GoogleApiKeyRedactor
+KeelMatrix.QueryWatch.Redaction.GoogleApiKeyRedactor.GoogleApiKeyRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.GoogleApiKeyRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.GuidLikeHexRedactor
+KeelMatrix.QueryWatch.Redaction.GuidLikeHexRedactor.GuidLikeHexRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.GuidLikeHexRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.GuidRedactor
+KeelMatrix.QueryWatch.Redaction.GuidRedactor.GuidRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.GuidRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.IpAddressRedactor
+KeelMatrix.QueryWatch.Redaction.IpAddressRedactor.IpAddressRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.IpAddressRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.JwtTokenRedactor
+KeelMatrix.QueryWatch.Redaction.JwtTokenRedactor.JwtTokenRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.JwtTokenRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.LongHexTokenRedactor
+KeelMatrix.QueryWatch.Redaction.LongHexTokenRedactor.LongHexTokenRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.LongHexTokenRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.PhoneRedactor
+KeelMatrix.QueryWatch.Redaction.PhoneRedactor.PhoneRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.PhoneRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.RegexReplaceRedactor
+KeelMatrix.QueryWatch.Redaction.RegexReplaceRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.RegexReplaceRedactor.RegexReplaceRedactor(string! pattern, string! replacement) -> void
+KeelMatrix.QueryWatch.Redaction.RegexReplaceRedactor.RegexReplaceRedactor(System.Text.RegularExpressions.Regex! regex, string! replacement) -> void
+KeelMatrix.QueryWatch.Redaction.TimestampRedactor
+KeelMatrix.QueryWatch.Redaction.TimestampRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.TimestampRedactor.TimestampRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.UrlQueryTokenRedactor
+KeelMatrix.QueryWatch.Redaction.UrlQueryTokenRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.UrlQueryTokenRedactor.UrlQueryTokenRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.UuidNoDashRedactor
+KeelMatrix.QueryWatch.Redaction.UuidNoDashRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.UuidNoDashRedactor.UuidNoDashRedactor() -> void
+KeelMatrix.QueryWatch.Redaction.WhitespaceNormalizerRedactor
+KeelMatrix.QueryWatch.Redaction.WhitespaceNormalizerRedactor.Redact(string! input) -> string!
+KeelMatrix.QueryWatch.Redaction.WhitespaceNormalizerRedactor.WhitespaceNormalizerRedactor() -> void
+KeelMatrix.QueryWatch.Security.RedactionHelper
+static KeelMatrix.QueryWatch.Security.RedactionHelper.Redact(string! input) -> string!

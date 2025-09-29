@@ -1,4 +1,7 @@
+
 using System.Text.RegularExpressions;
+
+using KeelMatrix.QueryWatch.Redaction.Internal;
 
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
@@ -10,7 +13,7 @@ namespace KeelMatrix.QueryWatch.Redaction {
 
         /// <summary>Create a redactor that replaces matches of <paramref name="pattern"/>.</summary>
         public RegexReplaceRedactor(string pattern, string replacement)
-            : this(new Regex(pattern, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase), replacement) { }
+            : this(RedactionRegex.Create(pattern, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase), replacement) { }
 
         /// <summary>Create a redactor using a precompiled <see cref="Regex"/>.</summary>
         public RegexReplaceRedactor(Regex regex, string replacement) {
@@ -22,3 +25,5 @@ namespace KeelMatrix.QueryWatch.Redaction {
         public string Redact(string input) => string.IsNullOrEmpty(input) ? string.Empty : _regex.Replace(input, _replacement);
     }
 }
+
+

@@ -1,5 +1,6 @@
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Ado;
 using Xunit;
@@ -62,7 +63,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         private sealed class TxFakeDbConnection : DbConnection {
             public bool Opened { get; private set; } = true;
-
+            [AllowNull]
             public override string ConnectionString { get; set; } = string.Empty;
             public override string Database => "TxFake";
             public override string DataSource => "TxFake";

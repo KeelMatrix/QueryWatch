@@ -1,5 +1,8 @@
+
 #nullable enable
 using System.Text.RegularExpressions;
+
+using KeelMatrix.QueryWatch.Redaction.Internal;
 
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
@@ -10,7 +13,7 @@ namespace KeelMatrix.QueryWatch.Redaction {
     /// Output is canonicalized to 'AccountKey=***', 'SharedAccessKey=***', 'SharedAccessSignature=***'.
     /// </summary>
     public sealed class AzureKeyLikeRedactor : IQueryTextRedactor {
-        private static readonly Regex AzureKey = new(
+        private static readonly Regex AzureKey = RedactionRegex.Create(
             // key (group 1), then '=', then a value up to a common delimiter or whitespace
             @"\b(AccountKey|SharedAccessKey|SharedAccessSignature)\s*=\s*[^;,\s]+",
             RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
@@ -32,3 +35,5 @@ namespace KeelMatrix.QueryWatch.Redaction {
         }
     }
 }
+
+

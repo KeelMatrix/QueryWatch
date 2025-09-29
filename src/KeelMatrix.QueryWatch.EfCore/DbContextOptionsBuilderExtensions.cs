@@ -7,8 +7,6 @@ namespace KeelMatrix.QueryWatch.EfCore {
     /// EF Core integration helpers for wiring QueryWatch into a DbContext.
     /// </summary>
     public static class DbContextOptionsBuilderExtensions {
-        // TODO: wierd characters in XML comments
-
         /// <summary>
         /// Attach QueryWatch interceptor to a DbContextOptionsBuilder.
         /// </summary>

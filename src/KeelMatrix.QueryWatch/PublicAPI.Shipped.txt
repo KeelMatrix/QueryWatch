@@ -6,6 +6,9 @@ KeelMatrix.QueryWatch.Ado.QueryWatchConnection
 KeelMatrix.QueryWatch.Ado.QueryWatchConnection.Inner.get -> System.Data.Common.DbConnection!
 KeelMatrix.QueryWatch.Ado.QueryWatchConnection.QueryWatchConnection(System.Data.Common.DbConnection! inner, KeelMatrix.QueryWatch.QueryWatchSession! session) -> void
 KeelMatrix.QueryWatch.Ado.QueryWatchConnectionExtensions
+KeelMatrix.QueryWatch.Ado.QueryWatchTransaction
+KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.Inner.get -> System.Data.Common.DbTransaction!
+KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.QueryWatchTransaction(System.Data.Common.DbTransaction! inner, KeelMatrix.QueryWatch.Ado.QueryWatchConnection! owner) -> void
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchCommand
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchCommand.Cancel() -> void
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchCommand.CommandText.get -> string!
@@ -54,8 +57,6 @@ KeelMatrix.QueryWatch.Dapper.DapperQueryWatchTransaction.Inner.get -> System.Dat
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchTransaction.IsolationLevel.get -> System.Data.IsolationLevel
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchTransaction.Rollback() -> void
 KeelMatrix.QueryWatch.IO.PathUtils
-KeelMatrix.QueryWatch.IQueryTextRedactor
-KeelMatrix.QueryWatch.IQueryTextRedactor.Redact(string! input) -> string!
 KeelMatrix.QueryWatch.Licensing.ILicenseValidator
 KeelMatrix.QueryWatch.Licensing.ILicenseValidator.IsValid(string! licenseKey) -> bool
 KeelMatrix.QueryWatch.Licensing.NoopLicenseValidator
@@ -65,9 +66,12 @@ KeelMatrix.QueryWatch.QueryEvent
 KeelMatrix.QueryWatch.QueryEvent.At.get -> System.DateTimeOffset
 KeelMatrix.QueryWatch.QueryEvent.CommandText.get -> string!
 KeelMatrix.QueryWatch.QueryEvent.Duration.get -> System.TimeSpan
+KeelMatrix.QueryWatch.QueryEvent.Meta.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>?
 KeelMatrix.QueryWatch.QueryEvent.QueryEvent(string! commandText, System.TimeSpan duration, System.DateTimeOffset at) -> void
 KeelMatrix.QueryWatch.QueryWatcher
 KeelMatrix.QueryWatch.QueryWatchOptions
+KeelMatrix.QueryWatch.QueryWatchOptions.CaptureAdoParameterMetadata.get -> bool
+KeelMatrix.QueryWatch.QueryWatchOptions.CaptureAdoParameterMetadata.set -> void
 KeelMatrix.QueryWatch.QueryWatchOptions.CaptureSqlText.get -> bool
 KeelMatrix.QueryWatch.QueryWatchOptions.CaptureSqlText.set -> void
 KeelMatrix.QueryWatch.QueryWatchOptions.MaxAverageDuration.get -> System.TimeSpan?
@@ -95,70 +99,13 @@ KeelMatrix.QueryWatch.QueryWatchSession.Dispose() -> void
 KeelMatrix.QueryWatch.QueryWatchSession.Options.get -> KeelMatrix.QueryWatch.QueryWatchOptions!
 KeelMatrix.QueryWatch.QueryWatchSession.QueryWatchSession(KeelMatrix.QueryWatch.QueryWatchOptions? options = null) -> void
 KeelMatrix.QueryWatch.QueryWatchSession.Record(string! commandText, System.TimeSpan duration) -> void
+KeelMatrix.QueryWatch.QueryWatchSession.Record(string! commandText, System.TimeSpan duration, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? meta) -> void
 KeelMatrix.QueryWatch.QueryWatchSession.StartedAt.get -> System.DateTimeOffset
 KeelMatrix.QueryWatch.QueryWatchSession.Stop() -> KeelMatrix.QueryWatch.QueryWatchReport!
 KeelMatrix.QueryWatch.QueryWatchSession.StoppedAt.get -> System.DateTimeOffset?
 KeelMatrix.QueryWatch.QueryWatchViolationException
 KeelMatrix.QueryWatch.QueryWatchViolationException.QueryWatchViolationException(string! message) -> void
-KeelMatrix.QueryWatch.Redaction.ApiKeyRedactor
-KeelMatrix.QueryWatch.Redaction.ApiKeyRedactor.ApiKeyRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.ApiKeyRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.AuthorizationRedactor
-KeelMatrix.QueryWatch.Redaction.AuthorizationRedactor.AuthorizationRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.AuthorizationRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.AwsAccessKeyRedactor
-KeelMatrix.QueryWatch.Redaction.AwsAccessKeyRedactor.AwsAccessKeyRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.AwsAccessKeyRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.AzureKeyLikeRedactor
-KeelMatrix.QueryWatch.Redaction.AzureKeyLikeRedactor.AzureKeyLikeRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.AzureKeyLikeRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.ConnectionStringPasswordRedactor
-KeelMatrix.QueryWatch.Redaction.ConnectionStringPasswordRedactor.ConnectionStringPasswordRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.ConnectionStringPasswordRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.CookieRedactor
-KeelMatrix.QueryWatch.Redaction.CookieRedactor.CookieRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.CookieRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.EmailRedactor
-KeelMatrix.QueryWatch.Redaction.EmailRedactor.EmailRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.EmailRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.GoogleApiKeyRedactor
-KeelMatrix.QueryWatch.Redaction.GoogleApiKeyRedactor.GoogleApiKeyRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.GoogleApiKeyRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.GuidLikeHexRedactor
-KeelMatrix.QueryWatch.Redaction.GuidLikeHexRedactor.GuidLikeHexRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.GuidLikeHexRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.GuidRedactor
-KeelMatrix.QueryWatch.Redaction.GuidRedactor.GuidRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.GuidRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.IpAddressRedactor
-KeelMatrix.QueryWatch.Redaction.IpAddressRedactor.IpAddressRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.IpAddressRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.JwtTokenRedactor
-KeelMatrix.QueryWatch.Redaction.JwtTokenRedactor.JwtTokenRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.JwtTokenRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.LongHexTokenRedactor
-KeelMatrix.QueryWatch.Redaction.LongHexTokenRedactor.LongHexTokenRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.LongHexTokenRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.PhoneRedactor
-KeelMatrix.QueryWatch.Redaction.PhoneRedactor.PhoneRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.PhoneRedactor.Redact(string! input) -> string!
 KeelMatrix.QueryWatch.Redaction.QueryWatchOptionsExtensions
-KeelMatrix.QueryWatch.Redaction.RegexReplaceRedactor
-KeelMatrix.QueryWatch.Redaction.RegexReplaceRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.RegexReplaceRedactor.RegexReplaceRedactor(string! pattern, string! replacement) -> void
-KeelMatrix.QueryWatch.Redaction.RegexReplaceRedactor.RegexReplaceRedactor(System.Text.RegularExpressions.Regex! regex, string! replacement) -> void
-KeelMatrix.QueryWatch.Redaction.TimestampRedactor
-KeelMatrix.QueryWatch.Redaction.TimestampRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.TimestampRedactor.TimestampRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.UrlQueryTokenRedactor
-KeelMatrix.QueryWatch.Redaction.UrlQueryTokenRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.UrlQueryTokenRedactor.UrlQueryTokenRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.UuidNoDashRedactor
-KeelMatrix.QueryWatch.Redaction.UuidNoDashRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.UuidNoDashRedactor.UuidNoDashRedactor() -> void
-KeelMatrix.QueryWatch.Redaction.WhitespaceNormalizerRedactor
-KeelMatrix.QueryWatch.Redaction.WhitespaceNormalizerRedactor.Redact(string! input) -> string!
-KeelMatrix.QueryWatch.Redaction.WhitespaceNormalizerRedactor.WhitespaceNormalizerRedactor() -> void
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.At.get -> System.DateTimeOffset
@@ -166,6 +113,8 @@ KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.At.init -> void
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.DurationMs.get -> double
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.DurationMs.init -> void
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.EventSample() -> void
+KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.Meta.get -> System.Collections.Generic.Dictionary<string!, object?>?
+KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.Meta.init -> void
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.Text.get -> string!
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.EventSample.Text.init -> void
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary
@@ -186,7 +135,6 @@ KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalDurationMs.get -> do
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalDurationMs.init -> void
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalQueries.get -> int
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalQueries.init -> void
-KeelMatrix.QueryWatch.Security.RedactionHelper
 KeelMatrix.QueryWatch.Telemetry.ITelemetryClient
 KeelMatrix.QueryWatch.Telemetry.ITelemetryClient.TrackActivation() -> void
 KeelMatrix.QueryWatch.Telemetry.ITelemetryClient.TrackHeartbeat() -> void
@@ -228,6 +176,9 @@ override KeelMatrix.QueryWatch.Ado.QueryWatchConnection.DataSource.get -> string
 override KeelMatrix.QueryWatch.Ado.QueryWatchConnection.Open() -> void
 override KeelMatrix.QueryWatch.Ado.QueryWatchConnection.ServerVersion.get -> string!
 override KeelMatrix.QueryWatch.Ado.QueryWatchConnection.State.get -> System.Data.ConnectionState
+override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.Commit() -> void
+override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.IsolationLevel.get -> System.Data.IsolationLevel
+override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.Rollback() -> void
 static KeelMatrix.QueryWatch.Ado.QueryWatchConnectionExtensions.WithQueryWatch(this System.Data.Common.DbConnection! connection, KeelMatrix.QueryWatch.QueryWatchSession! session) -> System.Data.Common.DbConnection!
 static KeelMatrix.QueryWatch.Ado.QueryWatchConnectionExtensions.WithQueryWatch(this System.Data.IDbConnection! connection, KeelMatrix.QueryWatch.QueryWatchSession! session) -> System.Data.IDbConnection!
 static KeelMatrix.QueryWatch.Dapper.DapperQueryWatchExtensions.WithQueryWatch(this System.Data.IDbConnection! connection, KeelMatrix.QueryWatch.QueryWatchSession! session) -> System.Data.IDbConnection!
@@ -239,5 +190,4 @@ static KeelMatrix.QueryWatch.Redaction.QueryWatchOptionsExtensions.AddRegexRedac
 static KeelMatrix.QueryWatch.Redaction.QueryWatchOptionsExtensions.UseRecommendedRedactors(this KeelMatrix.QueryWatch.QueryWatchOptions! options, bool includeWhitespaceNormalizer = true, bool includeEmails = true, bool includeLongHex = true, bool includeJwt = true, bool includeAuthorization = true, bool includeConnStringPwd = true, bool includeGuid = true, bool includeUrlTokens = true, bool includeAwsAccessKey = true, bool includeAzureKeys = true, bool includeGuidLikeHex = true, bool includeTimestamps = false, bool includeIpAddresses = false, bool includePhone = false) -> KeelMatrix.QueryWatch.QueryWatchOptions!
 static KeelMatrix.QueryWatch.Reporting.QueryWatchJson.ExportToFile(KeelMatrix.QueryWatch.QueryWatchReport! report, string! path, int sampleTop = 5) -> void
 static KeelMatrix.QueryWatch.Reporting.QueryWatchJson.ToSummary(KeelMatrix.QueryWatch.QueryWatchReport! report, int sampleTop = 5) -> KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary!
-static KeelMatrix.QueryWatch.Security.RedactionHelper.Redact(string! input) -> string!
 static KeelMatrix.QueryWatch.Testing.QueryWatchScope.Start(int? maxQueries = null, System.TimeSpan? maxAverage = null, System.TimeSpan? maxTotal = null, KeelMatrix.QueryWatch.QueryWatchOptions? options = null, string? exportJsonPath = null, int sampleTop = 5) -> KeelMatrix.QueryWatch.Testing.QueryWatchScope!

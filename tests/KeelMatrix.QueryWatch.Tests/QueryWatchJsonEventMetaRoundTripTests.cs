@@ -42,7 +42,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             ev.Meta.Should().NotBeNull();
             ev.Meta!.Should().ContainKey("parameters");
 
-            var parameters = (JsonElement)ev.Meta["parameters"]!;
+            var parameters = (JsonElement)ev.Meta!["parameters"]!;
             parameters.ValueKind.Should().Be(JsonValueKind.Array);
             parameters.GetArrayLength().Should().Be(2);
 

@@ -1,5 +1,8 @@
+
 #nullable enable
 using System.Text.RegularExpressions;
+
+using KeelMatrix.QueryWatch.Redaction.Internal;
 
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
@@ -8,7 +11,7 @@ namespace KeelMatrix.QueryWatch.Redaction {
     /// </summary>
     public sealed class GuidLikeHexRedactor : IQueryTextRedactor {
         // At least one letter [A-Fa-f] to avoid matching purely numeric strings.
-        private static readonly Regex Hexish = new(
+        private static readonly Regex Hexish = RedactionRegex.Create(
             @"\b(?=[0-9A-Fa-f]{16,31}\b)(?=.*[A-Fa-f])[0-9A-Fa-f]{16,31}\b",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
@@ -16,3 +19,5 @@ namespace KeelMatrix.QueryWatch.Redaction {
         public string Redact(string input) => string.IsNullOrEmpty(input) ? string.Empty : Hexish.Replace(input, "***");
     }
 }
+
+

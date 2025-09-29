@@ -1,3 +1,4 @@
+
 # QueryWatch
 
 **Status:** core ready to use in tests. Adapters: EF Core and ADO/Dapper wrappers. JSON export for CI included.
@@ -104,3 +105,6 @@ using var conn = raw.WithQueryWatch(scope.Session);
 
 var rows = conn.Query<(int Id, string Name)>("SELECT 1 AS Id, 'X' AS Name");
 ```
+
+
+

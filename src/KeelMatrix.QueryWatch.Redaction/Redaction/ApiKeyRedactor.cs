@@ -1,5 +1,8 @@
+
 #nullable enable
 using System.Text.RegularExpressions;
+
+using KeelMatrix.QueryWatch.Redaction.Internal;
 
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
@@ -8,18 +11,14 @@ namespace KeelMatrix.QueryWatch.Redaction {
     /// <c>?api_key=...&amp;apikey=...&amp;apiKey=...</c>.
     /// </summary>
     public sealed class ApiKeyRedactor : IQueryTextRedactor {
-        private static readonly Regex Header = new(
+        private static readonly Regex Header = RedactionRegex.Create(
             @"(?im)\b(X-?Api-?Key|ApiKey)\s*:\s*[^\r\n]+",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        private static readonly Regex Param = new(
+        private static readonly Regex Param = RedactionRegex.Create(
             @"(?i)(?<=[\?&])(api[_-]?key|apikey|apiKey)=([^&#\s]+)",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         /// <inheritdoc />
-        /// <remarks>
-        /// TODO: When we add Luhn-validated credit cards / IBAN / Slack/GitHub tokens, consider ordering:
-        /// normalization → PII/secrets (incl. API keys) → noise (timestamps/IP/phone) to keep budgets stable.
-        /// </remarks>
         public string Redact(string input) {
             if (string.IsNullOrEmpty(input)) return string.Empty;
             var r = Header.Replace(input, m => m.Groups[1].Value + ": ***");
@@ -28,3 +27,5 @@ namespace KeelMatrix.QueryWatch.Redaction {
         }
     }
 }
+
+

@@ -1,5 +1,8 @@
+
 #nullable enable
 using System.Text.RegularExpressions;
+
+using KeelMatrix.QueryWatch.Redaction.Internal;
 
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
@@ -7,7 +10,7 @@ namespace KeelMatrix.QueryWatch.Redaction {
     /// Examples: "Authorization: Bearer eyJ..." or "Authorization: Basic dXNlcjo...".
     /// </summary>
     public sealed class AuthorizationRedactor : IQueryTextRedactor {
-        private static readonly Regex Auth = new(
+        private static readonly Regex Auth = RedactionRegex.Create(
             @"(?im)\bAuthorization\s*:\s*(?:Bearer|Basic)\s+[A-Za-z0-9._~+\-/=]+",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
@@ -15,3 +18,5 @@ namespace KeelMatrix.QueryWatch.Redaction {
         public string Redact(string input) => string.IsNullOrEmpty(input) ? string.Empty : Auth.Replace(input, "Authorization: ***");
     }
 }
+
+

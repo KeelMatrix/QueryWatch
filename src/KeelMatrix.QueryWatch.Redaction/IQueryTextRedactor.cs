@@ -2,7 +2,7 @@
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Redacts sensitive or noisy content from SQL text before it is recorded.
-    /// Redactors are applied by <see cref="QueryWatchSession.Record(string, System.TimeSpan)"/> in the order they appear in <see cref="QueryWatchOptions.Redactors"/>.
+    /// Redactors are applied by QueryWatchSession.Record(...) in the order they appear in QueryWatchOptions.Redactors.
     /// </summary>
     public interface IQueryTextRedactor {
         /// <summary>
@@ -11,3 +11,6 @@ namespace KeelMatrix.QueryWatch {
         string Redact(string input);
     }
 }
+
+
+

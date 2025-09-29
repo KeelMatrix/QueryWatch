@@ -1,4 +1,7 @@
+
 using System.Text.RegularExpressions;
+
+using KeelMatrix.QueryWatch.Redaction.Internal;
 
 namespace KeelMatrix.QueryWatch.Security {
     /// <summary>
@@ -9,10 +12,10 @@ namespace KeelMatrix.QueryWatch.Security {
     /// </summary>
     public static class RedactionHelper {
         // Matches common email addresses.
-        private static readonly Regex EmailRegex = new(@"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", RegexOptions.Compiled);
+        private static readonly Regex EmailRegex = RedactionRegex.Create(@"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", RegexOptions.Compiled);
 
         // Matches tokens consisting of 20 or more URL‑safe characters.
-        private static readonly Regex TokenRegex = new(@"(\b[A-Za-z0-9-_]{20,}\b)", RegexOptions.Compiled);
+        private static readonly Regex TokenRegex = RedactionRegex.Create(@"(\b[A-Za-z0-9-_]{20,}\b)", RegexOptions.Compiled);
 
         /// <summary>
         /// Redacts email addresses and tokens from the specified input.
@@ -27,3 +30,5 @@ namespace KeelMatrix.QueryWatch.Security {
         }
     }
 }
+
+

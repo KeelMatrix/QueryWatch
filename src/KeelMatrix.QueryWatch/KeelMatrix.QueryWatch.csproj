@@ -1,3 +1,4 @@
+
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
@@ -82,4 +83,26 @@
     <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Exclude moved redaction implementations and helpers -->
+    <Compile Remove="Redaction\**\*.cs" />
+    <Compile Remove="Redaction\*.cs" />
+    <Compile Remove="Security\RedactionHelper.cs" />
+    <Compile Remove="IQueryTextRedactor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Keep the extension methods in core -->
+    <Compile Include="Redaction\QueryWatchOptionsExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reference the new Redaction implementations assembly for type forwarders and extension usage -->
+    <ProjectReference Include="..\KeelMatrix.QueryWatch.Redaction\KeelMatrix.QueryWatch.Redaction.csproj" />
+  </ItemGroup>
+
 </Project>
+
+
+

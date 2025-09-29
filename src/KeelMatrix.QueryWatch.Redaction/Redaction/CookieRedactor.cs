@@ -1,5 +1,8 @@
+
 #nullable enable
 using System.Text.RegularExpressions;
+
+using KeelMatrix.QueryWatch.Redaction.Internal;
 
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
@@ -8,10 +11,10 @@ namespace KeelMatrix.QueryWatch.Redaction {
     /// - "Set-Cookie: name=value; Attr..." → "Set-Cookie: name=***; Attr..."
     /// </summary>
     public sealed class CookieRedactor : IQueryTextRedactor {
-        private static readonly Regex CookieHeader = new(
+        private static readonly Regex CookieHeader = RedactionRegex.Create(
             @"(?im)^\s*Cookie\s*:\s*[^\r\n]+",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        private static readonly Regex SetCookie = new(
+        private static readonly Regex SetCookie = RedactionRegex.Create(
             @"(?im)^\s*Set-Cookie\s*:\s*([^\s=;]+)\s*=\s*[^;\r\n]+",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
@@ -26,3 +29,5 @@ namespace KeelMatrix.QueryWatch.Redaction {
         }
     }
 }
+
+
