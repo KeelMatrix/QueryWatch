@@ -61,6 +61,41 @@ jobs:
         uses: github/codeql-action/autobuild@v3
       - name: Analyze with CodeQL
         uses: github/codeql-action/analyze@v3
+  perf-bench:
+    if: github.actor != 'dependabot[bot]'
+    needs: build
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # 🔎 Short, filtered, noise-gated run with a compact CI summary
+      - name: Run perf benchmarks (short)
+        shell: pwsh
+        run: >
+          pwsh -NoProfile -File bench/Run-Benchmarks.ps1
+          -Job Short
+          -Filter *Redaction*            # narrow to the benches you care about on PRs
+          -MaxStdevPct 12                # fail if StdDev/Mean > 12% for any benchmark
+          -Ci
+
+      - name: Upload benchmark artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-benchmarks
+          path: artifacts/benchmarks
+          if-no-files-found: error
+
+      - name: Publish benchmark summary to PR
+        shell: pwsh
+        run: |
+          $f = Get-ChildItem "artifacts/benchmarks/*/SUMMARY.md" -ErrorAction SilentlyContinue |
+               Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if ($f) { Get-Content $f.FullName | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8 }
 
 # --- Optional companion gates (disabled by default) ---
 # - name: Unrecorded HTTP Call gate
