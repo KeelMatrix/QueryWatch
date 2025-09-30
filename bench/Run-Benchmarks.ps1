@@ -54,6 +54,7 @@ param(
   [string]$ArtifactsRoot = 'artifacts/benchmarks',
   [double]$MaxStdevPct = 0,
   [switch]$Ci,
+  [int]$CoolDownSec = 480,
   [switch]$DryRun
 )
 
@@ -114,13 +115,19 @@ foreach($proj in $benchProjects){
 
   # BenchmarkDotNet common CLI args (supported by BenchmarkSwitcher):
   #   --list, --filter, --runtimes, --artifacts, --exporters, --join, --job
-  # Multiple exporters: pass them as separate values to a **single** --exporters option.
+  # Exporters: on CI we need JSON for machines + GitHub for PRs + CSV for gates.
+  # Locally, CiAwareConfig already adds JsonExporter.FullCompressed, so we skip 'json'
+  # to avoid the "already present" warning and ask for the human-friendly extras.
+  $exporters = $Ci ? @('json','github','csv') : @('github','markdown','html','csv')
   $bdnArgs = @(
     '--filter', "$Filter",
-    '--exporters', 'json', 'markdown',
     '--artifacts', "$projOut",
     '--join'
   )
+  
+  # append exporters as separate tokens to avoid nested arrays or a single invalid value
+  $bdnArgs = $bdnArgs + @('--exporters') + $exporters
+  
   if($Job -ne 'Default'){ $bdnArgs += @('--job', $Job) }
 
   # dotnet run to bench project
@@ -132,9 +139,10 @@ foreach($proj in $benchProjects){
   ) + $bdnArgs
 
   Write-Host ("dotnet " + ($cmd -join ' '))
-  $proc = Start-Process -FilePath 'dotnet' -ArgumentList $cmd -PassThru -Wait -NoNewWindow
-  if($proc.ExitCode -ne 0){
-    Write-Error "Benchmark run failed for $projName with exit code $($proc.ExitCode)."
+  & dotnet @cmd
+  $exitCode = $LASTEXITCODE
+  if ($exitCode -ne 0) {
+    Write-Error "dotnet run failed ($exitCode) for $projName"
     $failed++
     Pop-Location
     continue
@@ -228,6 +236,15 @@ if($Ci){
   $md.ToString() | Set-Content -Encoding UTF8 $summaryPath
   Write-Host ""
   Write-Host "CI Summary written to $summaryPath"
+}
+
+# ---- Cooldown: CI-aware (skip in CI or when set to 0) ----
+# Note: "Cooling down" is just an intentional pause after a benchmark run on our local machine to let the CPU/fans/OS settle so the next local run isn’t biased by turbo/thermal effects and hot caches. It helps reduce noise between back-to-back local runs and gives us a few minutes to glance at artifacts. In CI we skip it (-Ci -CoolDownSec 0) because there’s only one short run and wall-clock is precious.
+if ($CoolDownSec -gt 0 -and -not $Ci) {
+  Write-Host "Cooling down for $CoolDownSec seconds (local run). The job is complete. You can glance at artifacts while you wait..."
+  Start-Sleep -Seconds $CoolDownSec
+} else {
+  Write-Host "Skipping cooldown (CI or CoolDownSec=0)."
 }
 
 # Exit code logic

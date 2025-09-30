@@ -29,6 +29,16 @@ This will:
   pwsh -NoProfile -File bench/Run-Benchmarks.ps1
   ```
 
+- **Run everything from the RedactionBench class:**
+
+  ```powershell
+  pwsh -NoProfile -File bench/Run-Benchmarks.ps1 `
+  -Filter "*RedactionBench.*" `
+  -Job Default `
+  -Framework net8.0 `
+  -CoolDownSec 0
+  ```
+
 - **Run only PhoneRedactor benchmarks:**
 
   ```powershell

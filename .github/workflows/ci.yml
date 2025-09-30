@@ -61,6 +61,49 @@ jobs:
         uses: github/codeql-action/autobuild@v3
       - name: Analyze with CodeQL
         uses: github/codeql-action/analyze@v3
+  perf-bench:
+    if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main') && github.actor != 'dependabot[bot]'
+    needs: build
+    runs-on: windows-latest
+    timeout-minutes: 9
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          # original pieces, but 1 per shard
+          - { name: jwt-core,      filter: "*Jwt*ciOi*" }
+          - { name: phone-long,    filter: "*Phone*0958*" }
+          - { name: email-simple,  filter: "*Email*(Sample:*user@example.com*)" }
+          - { name: email-long,    filter: "*Email*(Sample:*@domain.co.uk*)" }
+  
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+  
+      - name: Run perf benchmarks (${{ matrix.shard.name }})
+        shell: pwsh
+        run: >
+          pwsh -NoProfile -File bench/Run-Benchmarks.ps1
+          -Job Short
+          -Filter "${{ matrix.shard.filter }}"
+          -MaxStdevPct 12
+          -Ci
+          -CoolDownSec 0
+  
+      - name: Upload benchmark artifacts (${{ matrix.shard.name }})
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-benchmarks-${{ matrix.shard.name }}
+          path: artifacts/benchmarks
+          if-no-files-found: error
+  
+      - name: Publish benchmark summary to PR (${{ matrix.shard.name }})
+        shell: pwsh
+        run: |
+          $f = Get-ChildItem "artifacts/benchmarks/*/SUMMARY.md" -ErrorAction SilentlyContinue |
+               Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if ($f) { Get-Content $f.FullName | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8 }
 
 # --- Optional companion gates (disabled by default) ---
 # - name: Unrecorded HTTP Call gate
