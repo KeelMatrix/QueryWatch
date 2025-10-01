@@ -1,10 +1,8 @@
 #nullable enable
-using System.Collections.Generic;
-
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Options for a monitoring session.
-    /// Keep intentionally small; extensible via future minor versions.
+    /// Kept intentionally small; extensible via future minor versions.
     /// </summary>
     public sealed class QueryWatchOptions {
         /// <summary>
@@ -35,10 +33,30 @@ namespace KeelMatrix.QueryWatch {
         public IList<IQueryTextRedactor> Redactors { get; } = new List<IQueryTextRedactor>();
 
         /// <summary>
-        /// Optional policy to capture ADO.NET parameter <b>names and types only</b> (no values) as event metadata.
-        /// Default: <c>false</c>. When enabled, the event JSON will include a per-event
-        /// <c>meta.parameters</c> array with entries like <c>{{ name: "@id", dbType: "Int32", clrType: "System.Int32", direction: "Input" }}</c>.
+        /// Promote "parameter shape capture" to a top-level flag: when <c>true</c>, adapters MAY attach
+        /// parameter <b>names/types/directions</b> as event metadata (never values).
+        /// When enabled, the event JSON will include <c>meta.parameters</c> entries such as
+        /// <c>{ name: "@id", dbType: "Int32", clrType: "System.Int32", direction: "Input" }</c>.
+        /// Default: <c>false</c>.
         /// </summary>
-        public bool CaptureAdoParameterMetadata { get; set; } = false;
+        public bool CaptureParameterShape { get; set; } = false;
+
+        /// <summary>
+        /// Fast path to fully disable SQL text capture for the ADO.NET adapter (even when <see cref="CaptureSqlText"/> is true).
+        /// Default: <c>false</c> (text capture enabled).
+        /// </summary>
+        public bool DisableAdoTextCapture { get; set; } = false;
+
+        /// <summary>
+        /// Fast path to fully disable SQL text capture for the Dapper adapter (even when <see cref="CaptureSqlText"/> is true).
+        /// Default: <c>false</c> (text capture enabled).
+        /// </summary>
+        public bool DisableDapperTextCapture { get; set; } = false;
+
+        /// <summary>
+        /// Fast path to fully disable SQL text capture for the EF Core adapter (even when <see cref="CaptureSqlText"/> is true).
+        /// Default: <c>false</c> (text capture enabled).
+        /// </summary>
+        public bool DisableEfCoreTextCapture { get; set; } = false;
     }
 }

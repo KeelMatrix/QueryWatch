@@ -62,7 +62,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             public override CommandType CommandType { get; set; } = CommandType.Text;
             public override UpdateRowSource UpdatedRowSource { get; set; } = UpdateRowSource.None;
             protected override DbConnection? DbConnection { get; set; }
-            protected override DbParameterCollection DbParameterCollection { get; } = new FakeParams();
+            protected override DbParameterCollection DbParameterCollection { get; } = new FakeParameters();
             protected override DbTransaction? DbTransaction { get; set; }
             public override bool DesignTimeVisible { get; set; }
             public override void Cancel() { }
@@ -72,10 +72,10 @@ namespace KeelMatrix.QueryWatch.Tests {
             protected override DbParameter CreateDbParameter() => new FakeParam();
             protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => throw new NotSupportedException();
 
-            private sealed class FakeParams : DbParameterCollection {
-                private readonly System.Collections.ArrayList _list = new();
+            private sealed class FakeParameters : DbParameterCollection {
+                private readonly System.Collections.ArrayList _list = [];
                 public override int Add(object value) { _list.Add(value); return _list.Count - 1; }
-                public override void AddRange(Array values) { foreach (var v in values) _list.Add(v); }
+                public override void AddRange(Array values) { _list.AddRange(values); }
                 public override void Clear() => _list.Clear();
                 public override bool Contains(object value) => _list.Contains(value);
                 public override bool Contains(string value) => IndexOf(value) >= 0;
@@ -114,6 +114,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         }
 
         private sealed class OnlyIdbConnection : IDbConnection {
+            [AllowNull]
             public string ConnectionString { get; set; } = string.Empty;
             public int ConnectionTimeout => 15;
             public string Database => "Fake";
@@ -139,10 +140,11 @@ namespace KeelMatrix.QueryWatch.Tests {
         private sealed class OnlyIdbCommand : IDbCommand {
             private readonly IDbConnection _conn;
             public OnlyIdbCommand(IDbConnection conn) { _conn = conn; }
+            [AllowNull]
             public string CommandText { get; set; } = string.Empty;
             public int CommandTimeout { get; set; }
             public CommandType CommandType { get; set; } = CommandType.Text;
-            public IDbConnection? Connection { get => _conn; set { } }
+            public IDbConnection? Connection { get => _conn; set { _ = value; } }
             public IDataParameterCollection Parameters { get; } = new FakeParams();
             public IDbTransaction? Transaction { get; set; }
             public UpdateRowSource UpdatedRowSource { get; set; } = UpdateRowSource.None;
@@ -163,14 +165,17 @@ namespace KeelMatrix.QueryWatch.Tests {
             public DbType DbType { get; set; }
             public ParameterDirection Direction { get; set; } = ParameterDirection.Input;
             public bool IsNullable => true;
+            [AllowNull]
             public string ParameterName { get; set; } = string.Empty;
+            [AllowNull]
             public string SourceColumn { get; set; } = string.Empty;
             public DataRowVersion SourceVersion { get; set; } = DataRowVersion.Current;
             public object? Value { get; set; }
         }
 
         private sealed class FakeParams : System.Collections.ArrayList, IDataParameterCollection {
-            public object? this[string parameterName] { get => null; set { } }
+            [AllowNull]
+            public object this[string parameterName] { get => null!; set { _ = value; } }
             public bool Contains(string parameterName) => false;
             public int IndexOf(string parameterName) => -1;
             public void RemoveAt(string parameterName) { }

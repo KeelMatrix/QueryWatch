@@ -11,7 +11,7 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class AdoParameterMetadataCaptureTests {
         [Fact]
         public void QueryWatchCommand_Captures_Ado_Parameter_Shapes_When_Enabled() {
-            var opts = new QueryWatchOptions { CaptureAdoParameterMetadata = true };
+            var opts = new QueryWatchOptions { CaptureParameterShape = true };
             using var session = QueryWatcher.Start(opts);
 
             var inner = new FakeDbCommand { CommandText = "SELECT 1" };
@@ -61,7 +61,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void QueryWatchCommand_Does_Not_Capture_Parameter_Metadata_When_Disabled() {
-            using var session = QueryWatcher.Start(); // default CaptureAdoParameterMetadata=false
+            using var session = QueryWatcher.Start(); // default CaptureParameterShape=false
 
             var inner = new FakeDbCommand { CommandText = "SELECT 1" };
             var p = inner.CreateParameter();
@@ -79,7 +79,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void Exported_Json_Includes_Event_Meta_Parameters() {
-            var opts = new QueryWatchOptions { CaptureAdoParameterMetadata = true };
+            var opts = new QueryWatchOptions { CaptureParameterShape = true };
             using var session = QueryWatcher.Start(opts);
 
             var inner = new FakeDbCommand { CommandText = "SELECT 1" };

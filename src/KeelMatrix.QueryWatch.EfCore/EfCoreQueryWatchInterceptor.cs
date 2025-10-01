@@ -1,9 +1,7 @@
 // Copyright (c) KeelMatrix
 #nullable enable
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Threading;
-using System.Threading.Tasks;
+using KeelMatrix.QueryWatch.Ado;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace KeelMatrix.QueryWatch.EfCore {
@@ -18,38 +16,47 @@ namespace KeelMatrix.QueryWatch.EfCore {
             _session = session ?? throw new ArgumentNullException(nameof(session));
         }
 
-        private static void Record(QueryWatchSession session, DbCommand command, long elapsedTicks) {
-            var duration = TimeSpan.FromTicks(elapsedTicks);
-            var text = command.CommandText ?? string.Empty;
-            session.Record(text, duration);
+        private string ResolveTextForRecording(DbCommand command) {
+            if (_session.Options.DisableEfCoreTextCapture) return string.Empty;
+            return command.CommandText ?? string.Empty;
         }
 
-        private static void RecordFailed(QueryWatchSession session, DbCommand command, long elapsedTicks, CommandErrorEventData error) {
-            var duration = TimeSpan.FromTicks(elapsedTicks);
-            var text = command.CommandText ?? string.Empty;
+        private IReadOnlyDictionary<string, object?>? CaptureParameterShapeIfEnabled(DbCommand command) {
+            if (!_session.Options.CaptureParameterShape) return null;
+            return AdoParameterMetadata.TryCapture(command);
+        }
 
-            // Attach minimal failure context so CI budgets can flag fast-failing chatty SQL.
-            IReadOnlyDictionary<string, object?> meta = new Dictionary<string, object?> {
+        private void Record(QueryWatchSession session, DbCommand command, long elapsedTicks) {
+            var duration = TimeSpan.FromTicks(elapsedTicks);
+            var text = ResolveTextForRecording(command);
+            var meta = CaptureParameterShapeIfEnabled(command);
+            session.Record(text, duration, meta);
+        }
+
+        private void RecordFailed(QueryWatchSession session, DbCommand command, long elapsedTicks, CommandErrorEventData error) {
+            var duration = TimeSpan.FromTicks(elapsedTicks);
+            var text = ResolveTextForRecording(command);
+
+            var meta = new Dictionary<string, object?>(StringComparer.Ordinal) {
                 ["failed"] = true,
-                ["exception"] = error.Exception?.GetType().FullName ?? "UnknownException"
+                ["exception"] = error.Exception?.GetType().FullName ?? "UnknownException",
+                ["provider"] = "efcore"
             };
+
+            var shapes = CaptureParameterShapeIfEnabled(command);
+            if (shapes is not null) {
+                foreach (var kv in shapes) meta[kv.Key] = kv.Value;
+            }
 
             session.Record(text, duration, meta);
         }
 
-        public override DbDataReader ReaderExecuted(
-            DbCommand command,
-            CommandExecutedEventData eventData,
-            DbDataReader result) {
+        public override DbDataReader ReaderExecuted(DbCommand command, CommandExecutedEventData eventData, DbDataReader result) {
             Record(_session, command, eventData.Duration.Ticks);
             return base.ReaderExecuted(command, eventData, result);
         }
 
-        public override ValueTask<DbDataReader> ReaderExecutedAsync(
-            DbCommand command,
-            CommandExecutedEventData eventData,
-            DbDataReader result,
-            CancellationToken cancellationToken = default) {
+        public override ValueTask<DbDataReader> ReaderExecutedAsync(DbCommand command, CommandExecutedEventData eventData, DbDataReader result, CancellationToken cancellationToken = default) {
             Record(_session, command, eventData.Duration.Ticks);
             return base.ReaderExecutedAsync(command, eventData, result, cancellationToken);
         }
@@ -59,11 +66,7 @@ namespace KeelMatrix.QueryWatch.EfCore {
             return base.NonQueryExecuted(command, eventData, result);
         }
 
-        public override ValueTask<int> NonQueryExecutedAsync(
-            DbCommand command,
-            CommandExecutedEventData eventData,
-            int result,
-            CancellationToken cancellationToken = default) {
+        public override ValueTask<int> NonQueryExecutedAsync(DbCommand command, CommandExecutedEventData eventData, int result, CancellationToken cancellationToken = default) {
             Record(_session, command, eventData.Duration.Ticks);
             return base.NonQueryExecutedAsync(command, eventData, result, cancellationToken);
         }
@@ -73,11 +76,7 @@ namespace KeelMatrix.QueryWatch.EfCore {
             return base.ScalarExecuted(command, eventData, result);
         }
 
-        public override ValueTask<object?> ScalarExecutedAsync(
-            DbCommand command,
-            CommandExecutedEventData eventData,
-            object? result,
-            CancellationToken cancellationToken = default) {
+        public override ValueTask<object?> ScalarExecutedAsync(DbCommand command, CommandExecutedEventData eventData, object? result, CancellationToken cancellationToken = default) {
             Record(_session, command, eventData.Duration.Ticks);
             return base.ScalarExecutedAsync(command, eventData, result, cancellationToken);
         }

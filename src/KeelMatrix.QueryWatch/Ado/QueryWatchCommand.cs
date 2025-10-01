@@ -1,6 +1,4 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
@@ -13,18 +11,22 @@ namespace KeelMatrix.QueryWatch.Ado {
     public sealed class QueryWatchCommand : DbCommand {
         private readonly DbCommand _inner;
         private readonly QueryWatchSession _session;
-        private DbConnection? _wrapperConnection; // wrapper connection, if any
+
+        // Keep track of the wrapper connection (so getters surface the wrapper instance).
+        private QueryWatchConnection? _wrapperConnection;
 
         public QueryWatchCommand(DbCommand inner, QueryWatchSession session, DbConnection? wrapperConnection = null) {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _session = session ?? throw new ArgumentNullException(nameof(session));
-            _wrapperConnection = wrapperConnection;
+            _wrapperConnection = wrapperConnection as QueryWatchConnection;
         }
+
+        #region Property delegation
 
         [AllowNull]
         public override string CommandText {
-            get => _inner.CommandText;
-            set => _inner.CommandText = value ?? string.Empty;
+            get => _inner.CommandText ?? string.Empty;
+            set => _inner.CommandText = value;
         }
 
         public override int CommandTimeout {
@@ -37,14 +39,12 @@ namespace KeelMatrix.QueryWatch.Ado {
             set => _inner.CommandType = value;
         }
 
-        [AllowNull]
-        protected override DbConnection DbConnection {
-            get => _wrapperConnection ?? _inner.Connection!;
+        protected override DbConnection? DbConnection {
+            get => _wrapperConnection ?? _inner.Connection;
             set {
-                // If the user assigns a wrapped connection, unwrap before passing to inner.
                 if (value is QueryWatchConnection wrapped) {
                     _inner.Connection = wrapped.Inner;
-                    _wrapperConnection = value;
+                    _wrapperConnection = wrapped;
                 }
                 else {
                     _inner.Connection = value;
@@ -58,8 +58,12 @@ namespace KeelMatrix.QueryWatch.Ado {
         protected override DbTransaction? DbTransaction {
             get => _inner.Transaction;
             set {
-                if (value is QueryWatchTransaction wrap) _inner.Transaction = wrap.Inner;
-                else _inner.Transaction = value;
+                if (value is QueryWatchTransaction wrapped) {
+                    _inner.Transaction = wrapped.Inner;
+                }
+                else {
+                    _inner.Transaction = value;
+                }
             }
         }
 
@@ -73,34 +77,63 @@ namespace KeelMatrix.QueryWatch.Ado {
             set => _inner.UpdatedRowSource = value;
         }
 
-        public override void Cancel() => _inner.Cancel();
+        #endregion
 
-        public override void Prepare() => _inner.Prepare();
+        #region Core helpers
 
-        protected override DbParameter CreateDbParameter() => _inner.CreateParameter();
+        private string ResolveTextForRecording() {
+            // Adapter-specific fast disable gate.
+            if (_session.Options.DisableAdoTextCapture) return string.Empty;
+            return _inner.CommandText ?? string.Empty;
+        }
 
-        /// <summary>
-        /// Record an executed command into the session.
-        /// </summary>
-        private void Record(TimeSpan elapsed) {
-            string text = _inner.CommandText ?? string.Empty;
+        private IReadOnlyDictionary<string, object?>? CaptureParameterShapeIfEnabled() {
+            if (!_session.Options.CaptureParameterShape) return null;
+            // Reuse internal helper; value object + array lives under "parameters" meta key.
+            return AdoParameterMetadata.TryCapture(_inner);
+        }
 
-            IReadOnlyDictionary<string, object?>? meta = null;
-            if (_session.Options.CaptureAdoParameterMetadata) {
-                meta = AdoParameterMetadata.TryCapture(_inner);
+        private void RecordSuccess(TimeSpan elapsed) {
+            var text = ResolveTextForRecording();
+            var meta = CaptureParameterShapeIfEnabled();
+            _session.Record(text, elapsed, meta);
+        }
+
+        private void RecordFailure(TimeSpan elapsed, Exception ex) {
+            var text = ResolveTextForRecording();
+
+            // Always include normalized failure envelope.
+            var meta = new Dictionary<string, object?>(StringComparer.Ordinal) {
+                ["failed"] = true,
+                ["exception"] = ex?.GetType().FullName ?? "UnknownException",
+                ["provider"] = "ado",
+            };
+
+            // Optionally append parameter shapes.
+            var shapes = CaptureParameterShapeIfEnabled();
+            if (shapes is not null) {
+                foreach (var kv in shapes) meta[kv.Key] = kv.Value;
             }
 
             _session.Record(text, elapsed, meta);
         }
+
+        #endregion
+
+        #region Execute overrides (sync)
 
         public override int ExecuteNonQuery() {
             var sw = Stopwatch.StartNew();
             try {
                 return _inner.ExecuteNonQuery();
             }
-            finally {
+            catch (Exception ex) {
                 sw.Stop();
-                Record(sw.Elapsed);
+                RecordFailure(sw.Elapsed, ex);
+                throw;
+            }
+            finally {
+                if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); }
             }
         }
 
@@ -109,9 +142,13 @@ namespace KeelMatrix.QueryWatch.Ado {
             try {
                 return _inner.ExecuteScalar();
             }
-            finally {
+            catch (Exception ex) {
                 sw.Stop();
-                Record(sw.Elapsed);
+                RecordFailure(sw.Elapsed, ex);
+                throw;
+            }
+            finally {
+                if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); }
             }
         }
 
@@ -120,47 +157,90 @@ namespace KeelMatrix.QueryWatch.Ado {
             try {
                 return _inner.ExecuteReader(behavior);
             }
-            finally {
+            catch (Exception ex) {
                 sw.Stop();
-                Record(sw.Elapsed);
+                RecordFailure(sw.Elapsed, ex);
+                throw;
+            }
+            finally {
+                if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); }
             }
         }
 
+        #endregion
+
+        #region Execute overrides (async)
+
         public override System.Threading.Tasks.Task<int> ExecuteNonQueryAsync(System.Threading.CancellationToken cancellationToken) {
+            return ExecuteNonQueryAsyncCore(cancellationToken);
+        }
+
+        private async System.Threading.Tasks.Task<int> ExecuteNonQueryAsyncCore(System.Threading.CancellationToken token) {
             var sw = Stopwatch.StartNew();
-            return ExecuteAsyncCore(_inner.ExecuteNonQueryAsync, sw, cancellationToken);
+            try {
+                return await _inner.ExecuteNonQueryAsync(token).ConfigureAwait(false);
+            }
+            catch (Exception ex) {
+                sw.Stop();
+                RecordFailure(sw.Elapsed, ex);
+                throw;
+            }
+            finally {
+                if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); }
+            }
         }
 
         public override System.Threading.Tasks.Task<object?> ExecuteScalarAsync(System.Threading.CancellationToken cancellationToken) {
-            var sw = Stopwatch.StartNew();
-            return ExecuteAsyncCore(_inner.ExecuteScalarAsync, sw, cancellationToken);
+            return ExecuteScalarAsyncCore(cancellationToken);
         }
 
-        protected override async System.Threading.Tasks.Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, System.Threading.CancellationToken cancellationToken) {
+        private async System.Threading.Tasks.Task<object?> ExecuteScalarAsyncCore(System.Threading.CancellationToken token) {
             var sw = Stopwatch.StartNew();
             try {
-                return await _inner.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
+                return await _inner.ExecuteScalarAsync(token).ConfigureAwait(false);
+            }
+            catch (Exception ex) {
+                sw.Stop();
+                RecordFailure(sw.Elapsed, ex);
+                throw;
             }
             finally {
-                sw.Stop();
-                Record(sw.Elapsed);
+                if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); }
             }
         }
 
-        private async System.Threading.Tasks.Task<T> ExecuteAsyncCore<T>(Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<T>> func, Stopwatch sw, System.Threading.CancellationToken token) {
+        protected override System.Threading.Tasks.Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, System.Threading.CancellationToken cancellationToken) {
+            return ExecuteDbDataReaderAsyncCore(behavior, cancellationToken);
+        }
+
+        private async System.Threading.Tasks.Task<DbDataReader> ExecuteDbDataReaderAsyncCore(CommandBehavior behavior, System.Threading.CancellationToken token) {
+            var sw = Stopwatch.StartNew();
             try {
-                return await func(token).ConfigureAwait(false);
+                return await _inner.ExecuteReaderAsync(behavior, token).ConfigureAwait(false);
+            }
+            catch (Exception ex) {
+                sw.Stop();
+                RecordFailure(sw.Elapsed, ex);
+                throw;
             }
             finally {
-                sw.Stop();
-                Record(sw.Elapsed);
+                if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); }
             }
         }
+
+        #endregion
+
+        #region Boilerplate
+
+        public override void Cancel() => _inner.Cancel();
+        public override void Prepare() => _inner.Prepare();
+        protected override DbParameter CreateDbParameter() => _inner.CreateParameter();
 
         protected override void Dispose(bool disposing) {
             if (disposing) _inner.Dispose();
             base.Dispose(disposing);
         }
+
+        #endregion
     }
 }
-

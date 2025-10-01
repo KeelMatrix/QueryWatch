@@ -69,9 +69,8 @@ namespace KeelMatrix.QueryWatch.Tests {
         }
 
         private sealed class OnlyIdbTransaction : IDbTransaction {
-            private readonly IDbConnection _conn;
-            public OnlyIdbTransaction(IDbConnection conn) { _conn = conn; }
-            public IDbConnection Connection => _conn;
+            public OnlyIdbTransaction(IDbConnection conn) { Connection = conn; }
+            public IDbConnection Connection { get; }
             public IsolationLevel IsolationLevel => IsolationLevel.Unspecified;
             public void Commit() { }
             public void Rollback() { }
@@ -115,7 +114,7 @@ namespace KeelMatrix.QueryWatch.Tests {
                 public IDataReader GetData(int i) => this; public string GetDataTypeName(int i) => string.Empty; public DateTime GetDateTime(int i) => DateTime.MinValue;
                 public decimal GetDecimal(int i) => 0; public double GetDouble(int i) => 0; public Type GetFieldType(int i) => typeof(object);
                 public float GetFloat(int i) => 0; public Guid GetGuid(int i) => Guid.Empty; public short GetInt16(int i) => 0; public int GetInt32(int i) => 0; public long GetInt64(int i) => 0;
-                public string GetName(int i) => string.Empty; public int GetOrdinal(string name) => -1; public DataTable GetSchemaTable() => new DataTable();
+                public string GetName(int i) => string.Empty; public int GetOrdinal(string name) => -1; public DataTable GetSchemaTable() => new();
                 public string GetString(int i) => string.Empty; public object GetValue(int i) => 0; public int GetValues(object[] values) => 0; public bool IsDBNull(int i) => false;
                 public bool NextResult() => false; public bool Read() => false;
             }
@@ -135,8 +134,8 @@ namespace KeelMatrix.QueryWatch.Tests {
             }
 
             private sealed class DummyParameters : IDataParameterCollection {
-                private readonly System.Collections.ArrayList _list = new System.Collections.ArrayList();
-                public object? this[string parameterName] { get => null; set { } }
+                private readonly System.Collections.ArrayList _list = [];
+                public object this[string parameterName] { get => null!; set { _ = value; } }
                 public object? this[int index] { get => _list[index]; set => _list[index] = value; }
                 public bool IsFixedSize => false; public bool IsReadOnly => false; public int Count => _list.Count;
                 public bool IsSynchronized => false; public object SyncRoot => this;

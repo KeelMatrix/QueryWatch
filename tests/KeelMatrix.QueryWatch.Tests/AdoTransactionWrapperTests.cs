@@ -78,7 +78,6 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         private sealed class TxFakeDbTransaction : DbTransaction, IDbTransaction {
             private readonly TxFakeDbConnection _conn;
-            private readonly IsolationLevel _iso;
 
             public bool Committed { get; private set; }
             public bool RolledBack { get; private set; }
@@ -86,31 +85,34 @@ namespace KeelMatrix.QueryWatch.Tests {
 
             public TxFakeDbTransaction(TxFakeDbConnection conn, IsolationLevel iso) {
                 _conn = conn;
-                _iso = iso;
+                IsolationLevel = iso;
             }
 
             protected override DbConnection DbConnection => _conn;
-            public override IsolationLevel IsolationLevel => _iso;
+            public override IsolationLevel IsolationLevel { get; }
 
             public override void Commit() => Committed = true;
             public override void Rollback() => RolledBack = true;
-            protected override void Dispose(bool disposing) { if (disposing) Disposed = true; base.Dispose(disposing); }
+            protected override void Dispose(bool disposing) {
+                if (disposing)
+                    Disposed = true;
+                base.Dispose(disposing);
+            }
         }
 
         private sealed class CapturingDbCommand : DbCommand {
             private string _commandText = string.Empty;
-            private int _timeout;
-            private CommandType _type;
-            private UpdateRowSource _updateRowSource;
-            private readonly FakeDbParameterCollection _parameters = new FakeDbParameterCollection();
+            private readonly FakeDbParameterCollection _parameters = new();
 
             public DbTransaction? LastAssignedTransaction { get; private set; }
 
+            [AllowNull]
             public override string CommandText { get => _commandText; set => _commandText = value ?? string.Empty; }
-            public override int CommandTimeout { get => _timeout; set => _timeout = value; }
-            public override CommandType CommandType { get => _type; set => _type = value; }
-            public override UpdateRowSource UpdatedRowSource { get => _updateRowSource; set => _updateRowSource = value; }
+            public override int CommandTimeout { get; set; }
+            public override CommandType CommandType { get; set; }
+            public override UpdateRowSource UpdatedRowSource { get; set; }
 
+            [AllowNull]
             protected override DbConnection DbConnection { get; set; } = null!;
             protected override DbTransaction? DbTransaction { get => LastAssignedTransaction; set => LastAssignedTransaction = value; }
             protected override DbParameterCollection DbParameterCollection => _parameters;
@@ -124,9 +126,9 @@ namespace KeelMatrix.QueryWatch.Tests {
             protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => throw new NotSupportedException();
 
             private sealed class FakeDbParameterCollection : DbParameterCollection {
-                private readonly System.Collections.ArrayList _list = new();
+                private readonly System.Collections.ArrayList _list = [];
                 public override int Add(object value) { _list.Add(value); return _list.Count - 1; }
-                public override void AddRange(Array values) { foreach (var v in values) _list.Add(v); }
+                public override void AddRange(Array values) { _list.AddRange(values); }
                 public override void Clear() => _list.Clear();
                 public override bool Contains(object value) => _list.Contains(value);
                 public override bool Contains(string value) => IndexOf(value) >= 0;
@@ -153,7 +155,9 @@ namespace KeelMatrix.QueryWatch.Tests {
                 public override DbType DbType { get; set; }
                 public override ParameterDirection Direction { get; set; } = ParameterDirection.Input;
                 public override bool IsNullable { get; set; }
+                [AllowNull]
                 public override string ParameterName { get; set; } = string.Empty;
+                [AllowNull]
                 public override string SourceColumn { get; set; } = string.Empty;
                 public override object? Value { get; set; }
                 public override bool SourceColumnNullMapping { get; set; }

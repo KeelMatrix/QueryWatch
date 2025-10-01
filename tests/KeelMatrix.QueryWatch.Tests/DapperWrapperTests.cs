@@ -95,6 +95,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         /// <summary>Provider that only implements IDbConnection (not DbConnection).</summary>
         private sealed class OnlyIdbConnection : IDbConnection {
+            [AllowNull]
             public string ConnectionString { get; set; } = string.Empty;
             public int ConnectionTimeout => 15;
             public string Database => "Fake";
@@ -120,6 +121,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         private sealed class OnlyIdbCommand : IDbCommand {
             private readonly IDbConnection _conn;
             public OnlyIdbCommand(IDbConnection conn) { _conn = conn; }
+            [AllowNull]
             public string CommandText { get; set; } = string.Empty;
             public int CommandTimeout { get; set; }
             public CommandType CommandType { get; set; } = CommandType.Text;
@@ -142,8 +144,9 @@ namespace KeelMatrix.QueryWatch.Tests {
             public object? ExecuteScalar() => 42;
             public void Prepare() { }
 
-            // allow DapperQueryWatchCommand to access inner in tests
+#pragma warning disable S1144 // allow DapperQueryWatchCommand to access inner in tests
             public IDbCommand GetInnerForTest() => this;
+#pragma warning restore S1144
         }
 
         private sealed class FakeParameter : IDbDataParameter {
@@ -153,14 +156,17 @@ namespace KeelMatrix.QueryWatch.Tests {
             public DbType DbType { get; set; }
             public ParameterDirection Direction { get; set; } = ParameterDirection.Input;
             public bool IsNullable => true;
+            [AllowNull]
             public string ParameterName { get; set; } = string.Empty;
+            [AllowNull]
             public string SourceColumn { get; set; } = string.Empty;
             public DataRowVersion SourceVersion { get; set; } = DataRowVersion.Current;
             public object? Value { get; set; }
         }
 
         private sealed class FakeParams : System.Collections.ArrayList, IDataParameterCollection {
-            public object? this[string parameterName] { get => null; set { } }
+            [AllowNull]
+            public object this[string parameterName] { get => null!; set { _ = value; } }
             public bool Contains(string parameterName) => false;
             public int IndexOf(string parameterName) => -1;
             public void RemoveAt(string parameterName) { }
@@ -239,9 +245,9 @@ namespace KeelMatrix.QueryWatch.Tests {
             protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => throw new NotSupportedException();
 
             private sealed class FakeParamCollection : DbParameterCollection {
-                private readonly System.Collections.ArrayList _list = new();
+                private readonly System.Collections.ArrayList _list = [];
                 public override int Add(object value) { _list.Add(value); return _list.Count - 1; }
-                public override void AddRange(Array values) { foreach (var v in values) _list.Add(v); }
+                public override void AddRange(Array values) { _list.AddRange(values); }
                 public override void Clear() => _list.Clear();
                 public override bool Contains(object value) => _list.Contains(value);
                 public override bool Contains(string value) => IndexOf(value) >= 0;

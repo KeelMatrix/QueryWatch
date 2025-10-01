@@ -70,8 +70,6 @@ KeelMatrix.QueryWatch.QueryEvent.Meta.get -> System.Collections.Generic.IReadOnl
 KeelMatrix.QueryWatch.QueryEvent.QueryEvent(string! commandText, System.TimeSpan duration, System.DateTimeOffset at) -> void
 KeelMatrix.QueryWatch.QueryWatcher
 KeelMatrix.QueryWatch.QueryWatchOptions
-KeelMatrix.QueryWatch.QueryWatchOptions.CaptureAdoParameterMetadata.get -> bool
-KeelMatrix.QueryWatch.QueryWatchOptions.CaptureAdoParameterMetadata.set -> void
 KeelMatrix.QueryWatch.QueryWatchOptions.CaptureSqlText.get -> bool
 KeelMatrix.QueryWatch.QueryWatchOptions.CaptureSqlText.set -> void
 KeelMatrix.QueryWatch.QueryWatchOptions.MaxAverageDuration.get -> System.TimeSpan?
