@@ -23,10 +23,6 @@ namespace KeelMatrix.QueryWatch.Redaction {
         /// <param name="includeTimestamps">Mask ISO/Unix timestamps (can increase false positives). Default: false.</param>
         /// <param name="includeIpAddresses">Mask IP addresses (IPv4/IPv6) (can increase false positives). Default: false.</param>
         /// <param name="includePhone">Mask phone numbers (can increase false positives). Default: false.</param>
-        /// <remarks>
-        /// TODO: REMOVE LATER. We apply normalization before masking so CLI pattern budgets are more stable across providers/OS.
-        /// Enable the *noise* redactors (timestamps/IP/phone) only if you see churn in snapshots/reports.
-        /// </remarks>
         public static QueryWatchOptions UseRecommendedRedactors(
             this QueryWatchOptions options,
             bool includeWhitespaceNormalizer = true,

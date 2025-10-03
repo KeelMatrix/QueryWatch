@@ -4,7 +4,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>true</IsPackable>
     <Deterministic>true</Deterministic>
     <Description>Contracts for the KeelMatrix.QueryWatch JSON wire format (Summary/EventSample) with System.Text.Json source generation.</Description>
@@ -12,15 +11,17 @@
     <Authors>KeelMatrix</Authors>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
-  
-  <PropertyGroup>
-    <!-- TODO: unmute XML-doc warnings before release -->
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;1591</NoWarn>
-    <!-- Ensure CS1591 is never escalated to error even if TreatWarningsAsErrors=true -->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591;1591</WarningsNotAsErrors>
-  </PropertyGroup>
 
+  <!-- Release promotes warnings to errors -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  
   <!-- We reference System.Text.Json so the source generator runs on all TFMs -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="System.Text.Json" />

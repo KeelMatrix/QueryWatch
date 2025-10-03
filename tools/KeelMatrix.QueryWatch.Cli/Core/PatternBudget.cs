@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using KeelMatrix.QueryWatch.Contracts;
 
@@ -55,6 +52,7 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
             return count;
         }
 
+        // TODO: why is this unused?
         public static List<(PatternBudget budget, int count, bool over)> EvaluateBudgets(
             IEnumerable<EventSample> events,
             IEnumerable<PatternBudget> budgets) {

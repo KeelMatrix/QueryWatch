@@ -122,18 +122,18 @@ namespace KeelMatrix.QueryWatch.Reporting {
             // This is additive metadata; it does not change the schema.
             summary.Meta["sampleTop"] = sampleTop.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
-            var opts = new JsonSerializerOptions {
-                WriteIndented = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.Never
-            };
-
             var dir = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) {
                 Directory.CreateDirectory(dir);
             }
 
-            var json = JsonSerializer.Serialize(summary, opts);
+            var json = JsonSerializer.Serialize(summary, _jsonOptions);
             File.WriteAllText(path, json, Encoding.UTF8);
         }
+
+        private static readonly JsonSerializerOptions _jsonOptions = new() {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.Never
+        };
     }
 }

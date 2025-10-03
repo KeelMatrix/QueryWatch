@@ -1,3 +1,4 @@
+
 # Contributing
 
 Thank you for considering contributing to this project! We welcome contributions in the form of bug reports, feature requests, documentation improvements and pull requests.
@@ -25,3 +26,24 @@ Thank you for considering contributing to this project! We welcome contributions
 5. Once approved, your changes will be merged and included in the next release.
 
 We appreciate your time and effort to improve this project! If you're unsure how to get started or have questions, feel free to open an issue to discuss your idea.
+
+
+
+
+## Public API surface
+
+This repository uses **Roslyn Public API Analyzers** to lock down the surface area.
+When you add or change a public member in a packable project:
+
+1. Make your code changes.
+2. Run the bump script to update the `PublicAPI.Unshipped.txt` files:
+
+   - Windows/PowerShell: `./build/bump-api.ps1`
+   - macOS/Linux: `./build/bump-api.sh`
+
+3. Review the diff and commit. When we cut a release, items from *Unshipped* will be moved to *Shipped*.
+
+> Tips
+> - We keep a single `PublicAPI.Shipped.txt`/`PublicAPI.Unshipped.txt` pair per project across TFMs.
+> - If a member is TFM-specific, append a trailing comment to its line: `// TFM: net8.0` or `// TFM: netstandard2.0`.
+

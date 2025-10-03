@@ -15,7 +15,6 @@ namespace KeelMatrix.QueryWatch.Licensing {
     /// <summary>
     /// A default no‑op license validator used when no real validation is configured.
     /// Always returns <c>true</c>. Replace with your own implementation to enforce license checks.
-    /// TODO: Hook this into your API surface where paid features should enforce license checks.
     /// </summary>
     public sealed class NoopLicenseValidator : ILicenseValidator {
         /// <inheritdoc />

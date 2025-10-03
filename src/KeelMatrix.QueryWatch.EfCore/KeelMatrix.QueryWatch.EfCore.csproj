@@ -1,3 +1,4 @@
+
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -6,10 +7,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <AnalysisLevel>latest</AnalysisLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!--<WarningsNotAsErrors>$(WarningsNotAsErrors);RS0016;RS0017;RS0025;RS0037;S1135</WarningsNotAsErrors>-->
-
     <Authors>KeelMatrix</Authors>
     <EnablePublicApiAnalyzers>true</EnablePublicApiAnalyzers>
     <PackageId>KeelMatrix.QueryWatch.EfCore</PackageId>
@@ -29,13 +26,16 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <!-- Release promotes warnings to errors -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -62,3 +62,6 @@
     <None Include="icon.png" Pack="true" PackagePath="" Condition="Exists('icon.png')" />
   </ItemGroup>
 </Project>
+
+
+

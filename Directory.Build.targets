@@ -13,4 +13,14 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
+
+<!--
+  Public API maintenance
+  ######################
+  - Run ./build/bump-api.ps1 (Windows/PowerShell) or ./build/bump-api.sh (macOS/Linux)
+    after adding public members to automatically update *PublicAPI.Unshipped.txt* files.
+  - Keep only a single shipped/unshipped pair per project. If an API is TFM-specific,
+    append a comment to the API line:  // TFM: net8.0  or  // TFM: netstandard2.0
+-->
+
 </Project>

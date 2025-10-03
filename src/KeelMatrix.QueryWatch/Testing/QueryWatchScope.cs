@@ -56,7 +56,7 @@ namespace KeelMatrix.QueryWatch.Testing {
             return new QueryWatchScope(session, maxQueries, maxAverage, maxTotal, exportJsonPath, sampleTop);
         }
 
-        // TODO: REMOVE LATER. We export JSON BEFORE asserting budgets to make sure
+        // note: REMOVE LATER. We export JSON BEFORE asserting budgets to make sure
         // we always have a file for CI analysis even if assertions throw.
         public void Dispose() {
             if (_disposed) return;

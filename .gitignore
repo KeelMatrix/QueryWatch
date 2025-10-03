@@ -2,6 +2,7 @@
 # Build artifacts (solution-wide)
 # ------------------------------------------------------------------------------
 /artifacts/
+/BenchmarkDotNet.Artifacts/
 **/bin/
 /**/obj/
 

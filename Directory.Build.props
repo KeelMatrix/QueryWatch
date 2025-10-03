@@ -1,25 +1,50 @@
 <Project>
   <!-- Shared build configuration for all projects -->
-  <PropertyGroup>
-    <!-- Only provide default TFMs for packable projects when the project
-         has not explicitly set TargetFramework/TargetFrameworks. -->
-    <TargetFrameworks Condition="'$(IsPackable)'=='true' and '$(TargetFrameworks)'=='' and '$(TargetFramework)'==''">net8.0;netstandard2.0</TargetFrameworks>
 
-    <!-- Enable modern C# features and nullability throughout -->
+  <!--
+    Analyzer & Public API policy
+    ############################
+    - We pin AnalysisLevel to a specific version to avoid CI drift when SDKs update.
+    - We enable .NET analyzers and enforce code style in build.
+    - Severities live in .editorconfig.
+    - Public API governance is enforced by Microsoft.CodeAnalysis.PublicApiAnalyzers.
+      * Keep exactly ONE pair of PublicAPI.Shipped.txt / PublicAPI.Unshipped.txt per project.
+      * If an API is TFM-specific, annotate the line with a trailing comment, e.g.:
+            // TFM: net8.0
+            // TFM: netstandard2.0
+      * To add new public members: run the bump script (build/bump-api.ps1 or .sh), then review the diff.
+  -->
+  <PropertyGroup>
+    <!-- Only provide default TFMs for packable projects when the project has not set TargetFramework/TargetFrameworks. -->
+    <TargetFrameworks Condition="'$(IsPackable)'=='true' and '$(TargetFramework)'=='' and '$(TargetFrameworks)'==''">net8.0;netstandard2.0</TargetFrameworks>
+
+    <!-- Language & build basics -->
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AnalysisLevel>latest</AnalysisLevel>
 
-    <!-- Produce deterministic builds for reproducibility -->
+    <!-- Analyzer policy (pinned for stability) -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>8.0-recommended</AnalysisLevel>
+
+    <!-- Deterministic builds + docs -->
     <Deterministic>true</Deterministic>
-    <!-- Generate XML documentation for all projects by default -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-  
-  <!-- Suppress CS1591 for Release builds of packable projects -->
-  <!-- TODO: Remove before a stable release -->
-  <PropertyGroup Condition="'$(IsPackable)'=='true' and '$(Configuration)'=='Release'">
+
+  <!-- Pack README.md and icon.png into the NuGet package root if they exist -->
+  <Target Name="AttachPackageReadmeAndIcon" BeforeTargets="Pack">
+    <ItemGroup>
+      <None Include="README.md" Pack="true" PackagePath="" Condition="Exists('README.md')" />
+      <None Include="icon.png"  Pack="true" PackagePath="" Condition="Exists('icon.png')" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Tests: keep warnings as warnings unless a test project opts in -->
+  <PropertyGroup Condition="'$(IsTestProject)'=='true'">
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 </Project>

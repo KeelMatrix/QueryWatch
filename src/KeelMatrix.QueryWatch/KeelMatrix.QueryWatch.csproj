@@ -1,4 +1,5 @@
 
+
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
@@ -6,11 +7,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <AnalysisLevel>latest</AnalysisLevel>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- TODO: clear WarningsNotAsErrors in all projects in prod. -->
-    <!--<WarningsNotAsErrors>$(WarningsNotAsErrors);RS0016;RS0017;RS0025;RS0037;S1135</WarningsNotAsErrors>-->
-
     <Authors>KeelMatrix</Authors>
     <EnablePublicApiAnalyzers>true</EnablePublicApiAnalyzers>
 
@@ -32,14 +28,16 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <!-- Release promotes warnings to errors -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Allow missing XML doc comments without failing CI while API is still evolving -->
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <!-- Remove EF Core adapter sources from the core assembly (moved to KeelMatrix.QueryWatch.EfCore project) -->
@@ -59,12 +57,6 @@
     <!-- Common across all TFMs -->
     <AdditionalFiles Include="PublicAPI.Shipped.txt" />
     <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='net8.0'">
-    <!-- Keep net8-specific baseline files even if empty for now -->
-    <AdditionalFiles Include="PublicAPI.Shipped.net8.0.txt" />
-    <AdditionalFiles Include="PublicAPI.Unshipped.net8.0.txt" />
   </ItemGroup>
 
   <!-- Scope System.Text.Json to netstandard2.0 only (CPM supplies the version).
@@ -103,6 +95,9 @@
   </ItemGroup>
 
 </Project>
+
+
+
 
 
 

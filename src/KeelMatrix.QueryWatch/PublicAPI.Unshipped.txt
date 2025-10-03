@@ -7,3 +7,6 @@ KeelMatrix.QueryWatch.QueryWatchOptions.DisableDapperTextCapture.get -> bool
 KeelMatrix.QueryWatch.QueryWatchOptions.DisableDapperTextCapture.set -> void
 KeelMatrix.QueryWatch.QueryWatchOptions.DisableEfCoreTextCapture.get -> bool
 KeelMatrix.QueryWatch.QueryWatchOptions.DisableEfCoreTextCapture.set -> void
+
+
+

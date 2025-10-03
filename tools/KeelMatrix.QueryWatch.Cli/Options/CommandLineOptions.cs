@@ -1,6 +1,5 @@
 #nullable enable
 using System.Globalization;
-using System.Text;
 
 namespace KeelMatrix.QueryWatch.Cli.Options {
     internal sealed class CommandLineOptions {
@@ -33,7 +32,7 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
                         return ParseResult.Error("Missing value for --input");
                     }
                     opts.Inputs.Add(args[i + 1]);
-                    i += 2; continue;
+                    i += 2;
                 }
                 else if (string.Equals(a, "--max-queries", StringComparison.OrdinalIgnoreCase)) {
                     if (i + 1 >= args.Length || args[i + 1].StartsWith("--", StringComparison.Ordinal)) {
@@ -43,7 +42,7 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
                         return ParseResult.Error($"Invalid value for --max-queries: '{args[i + 1]}'");
                     }
                     opts.MaxQueries = mq;
-                    i += 2; continue;
+                    i += 2;
                 }
                 else if (string.Equals(a, "--max-average-ms", StringComparison.OrdinalIgnoreCase)) {
                     if (i + 1 >= args.Length || args[i + 1].StartsWith("--", StringComparison.Ordinal)) {
@@ -53,7 +52,7 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
                         return ParseResult.Error($"Invalid value for --max-average-ms: '{args[i + 1]}'");
                     }
                     opts.MaxAverageMs = mav;
-                    i += 2; continue;
+                    i += 2;
                 }
                 else if (string.Equals(a, "--max-total-ms", StringComparison.OrdinalIgnoreCase)) {
                     if (i + 1 >= args.Length || args[i + 1].StartsWith("--", StringComparison.Ordinal)) {
@@ -63,14 +62,14 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
                         return ParseResult.Error($"Invalid value for --max-total-ms: '{args[i + 1]}'");
                     }
                     opts.MaxTotalMs = mt;
-                    i += 2; continue;
+                    i += 2;
                 }
                 else if (string.Equals(a, "--baseline", StringComparison.OrdinalIgnoreCase)) {
                     if (i + 1 >= args.Length || args[i + 1].StartsWith("--", StringComparison.Ordinal)) {
                         return ParseResult.Error("Missing value for --baseline");
                     }
                     opts.BaselinePath = args[i + 1];
-                    i += 2; continue;
+                    i += 2;
                 }
                 else if (string.Equals(a, "--baseline-allow-percent", StringComparison.OrdinalIgnoreCase)) {
                     if (i + 1 >= args.Length || args[i + 1].StartsWith("--", StringComparison.Ordinal)) {
@@ -80,22 +79,22 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
                         return ParseResult.Error($"Invalid value for --baseline-allow-percent: '{args[i + 1]}'");
                     }
                     opts.BaselineAllowPercent = p;
-                    i += 2; continue;
+                    i += 2;
                 }
                 else if (string.Equals(a, "--write-baseline", StringComparison.OrdinalIgnoreCase)) {
                     opts.WriteBaseline = true;
-                    i += 1; continue;
+                    i += 1;
                 }
                 else if (string.Equals(a, "--budget", StringComparison.OrdinalIgnoreCase)) {
                     if (i + 1 >= args.Length || args[i + 1].StartsWith("--", StringComparison.Ordinal)) {
                         return ParseResult.Error("Missing value for --budget");
                     }
                     opts.PatternBudgetSpecs.Add(args[i + 1]);
-                    i += 2; continue;
+                    i += 2;
                 }
                 else if (string.Equals(a, "--require-full-events", StringComparison.OrdinalIgnoreCase)) {
                     opts.RequireFullEvents = true;
-                    i += 1; continue;
+                    i += 1;
                 }
                 else {
                     return ParseResult.Error($"Unknown argument: {a}");

@@ -19,10 +19,10 @@ namespace KeelMatrix.QueryWatch.Redaction.Benchmarks {
 
         // Baseline keeps historical comparability against existing runs.
         [Benchmark(Baseline = true)]
-        public string Baseline_Email() => _email.Redact(Sample);
+        public string BaselineEmail() => _email.Redact(Sample);
 
         [Benchmark]
-        public string Hardened_Email() => _email.Redact(Sample);
+        public string HardenedEmail() => _email.Redact(Sample);
 
         [Benchmark]
         public string Phone() => _phone.Redact(Sample);

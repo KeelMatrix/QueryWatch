@@ -34,20 +34,20 @@ namespace KeelMatrix.QueryWatch.Redaction.Internal {
         // Keep this simple and conservative: if we see *any* look-around or back-refs, don't use NonBacktracking.
         private static bool IsSafeForNonBacktracking(string pattern) {
             // Look-ahead / look-behind
-            if (pattern.IndexOf("(?=", StringComparison.Ordinal) >= 0) return false;
-            if (pattern.IndexOf("(?!", StringComparison.Ordinal) >= 0) return false;
-            if (pattern.IndexOf("(?<=", StringComparison.Ordinal) >= 0) return false;
-            if (pattern.IndexOf("(?<!", StringComparison.Ordinal) >= 0) return false;
+            if (pattern.Contains("(?=")) return false;
+            if (pattern.Contains("(?!")) return false;
+            if (pattern.Contains("(?<=")) return false;
+            if (pattern.Contains("(?<!")) return false;
 
             // Back-references (named or numeric)
-            if (pattern.IndexOf(@"\k<", StringComparison.Ordinal) >= 0) return false;
+            if (pattern.Contains(@"\k<")) return false;
             for (int i = 1; i <= 9; i++) {
-                if (pattern.IndexOf("\\" + i.ToString(), StringComparison.Ordinal) >= 0) return false;
+                if (pattern.Contains("\\" + i.ToString(System.Globalization.CultureInfo.InvariantCulture))) return false;
             }
 
             // Balancing groups / conditionals (rare in our codebase, but be safe)
-            if (pattern.IndexOf("(?<-", StringComparison.Ordinal) >= 0) return false;
-            if (pattern.IndexOf("(?>", StringComparison.Ordinal) >= 0) return false;
+            if (pattern.Contains("(?<-")) return false;
+            if (pattern.Contains("(?>")) return false;
 
             return true;
         }

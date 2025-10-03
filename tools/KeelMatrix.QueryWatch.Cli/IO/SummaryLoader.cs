@@ -13,7 +13,7 @@ namespace KeelMatrix.QueryWatch.Cli.IO {
     /// </summary>
     internal static class SummaryLoader {
         public static async Task<IReadOnlyList<Summary>> LoadAsync(IEnumerable<string> paths) {
-            if (paths is null) throw new ArgumentNullException(nameof(paths));
+            ArgumentNullException.ThrowIfNull(paths);
             var list = new List<Summary>();
             foreach (var p in paths) {
                 try {

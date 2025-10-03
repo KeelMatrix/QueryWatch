@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
     <AnalysisLevel>latest</AnalysisLevel>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 

@@ -24,3 +24,59 @@ csharp_new_line_before_open_brace = all:suggestion
 [*.{csproj,props,targets}]
 indent_style = space
 indent_size = 2
+
+# ---------------------------
+# Analyzer severities
+# Public API analyzers
+dotnet_diagnostic.RS0016.severity = error   # Add new APIs to Unshipped
+dotnet_diagnostic.RS0017.severity = error   # Mark APIs as obsolete/removed
+dotnet_diagnostic.RS0025.severity = error   # Duplicate member in the public API file
+dotnet_diagnostic.RS0037.severity = error   # The generated public API file is not up to date
+
+# (we continue to rely on: EnableNETAnalyzers=true, AnalysisLevel=8.0-recommended)
+
+# ---------------------------
+# Per-project severity settings:
+
+# test projects under /tests
+[tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none   # disable “no underscores in identifiers” for test names
+dotnet_diagnostic.CS1591.severity = none   # disable “missing XML documentation” for test code
+
+# sample apps under /samples
+[samples/**.cs]
+dotnet_diagnostic.CS1591.severity = none   # disable “missing XML documentation” for sample code
+
+# tools/KeelMatrix.QueryWatch.Cli
+[tools/KeelMatrix.QueryWatch.Cli/**.cs]
+dotnet_diagnostic.RCS1194.severity = none  # disable Roslynator rule RCS1194 (style/constructor guideline)
+dotnet_diagnostic.S3871.severity = none    # disable Sonar rule S3871 (exception/immutability guideline)
+dotnet_diagnostic.CS1591.severity = none   # disable “missing XML documentation” for CLI code
+
+# Core library — src/KeelMatrix.QueryWatch
+[src/KeelMatrix.QueryWatch/**.cs]
+dotnet_diagnostic.CA1510.severity = none   # disable “prefer ArgumentNullException.ThrowIfNull” requirement
+dotnet_diagnostic.CA1513.severity = none   # disable “prefer nameof(...) in exceptions” requirement
+
+# Project: Contracts — src/KeelMatrix.QueryWatch.Contracts
+[src/KeelMatrix.QueryWatch.Contracts/**.cs]
+dotnet_diagnostic.CS1591.severity = none   # disable “missing XML documentation” for public contracts
+
+# ---------------------------
+# Debug-Release specific severity settings:
+
+# In Debug: suppress CS1591 across the board (keep the build clean)
+[*.cs]
+build_property.Configuration = Debug
+dotnet_diagnostic.CS1591.severity = none
+
+# When XML docs are not being generated, CS1591 is irrelevant: suppress it
+[*.cs]
+build_property.GenerateDocumentationFile = false
+dotnet_diagnostic.CS1591.severity = none
+
+# In Release + docs on: surface CS1591 as a Warning (Release will promote it to Error)
+[*.cs]
+build_property.Configuration = Release
+build_property.GenerateDocumentationFile = true
+dotnet_diagnostic.CS1591.severity = warning

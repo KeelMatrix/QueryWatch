@@ -189,3 +189,6 @@ static KeelMatrix.QueryWatch.Redaction.QueryWatchOptionsExtensions.UseRecommende
 static KeelMatrix.QueryWatch.Reporting.QueryWatchJson.ExportToFile(KeelMatrix.QueryWatch.QueryWatchReport! report, string! path, int sampleTop = 5) -> void
 static KeelMatrix.QueryWatch.Reporting.QueryWatchJson.ToSummary(KeelMatrix.QueryWatch.QueryWatchReport! report, int sampleTop = 5) -> KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary!
 static KeelMatrix.QueryWatch.Testing.QueryWatchScope.Start(int? maxQueries = null, System.TimeSpan? maxAverage = null, System.TimeSpan? maxTotal = null, KeelMatrix.QueryWatch.QueryWatchOptions? options = null, string? exportJsonPath = null, int sampleTop = 5) -> KeelMatrix.QueryWatch.Testing.QueryWatchScope!
+
+
+

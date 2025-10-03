@@ -39,24 +39,24 @@ namespace KeelMatrix.QueryWatch {
         /// <c>{ name: "@id", dbType: "Int32", clrType: "System.Int32", direction: "Input" }</c>.
         /// Default: <c>false</c>.
         /// </summary>
-        public bool CaptureParameterShape { get; set; } = false;
+        public bool CaptureParameterShape { get; set; }
 
         /// <summary>
         /// Fast path to fully disable SQL text capture for the ADO.NET adapter (even when <see cref="CaptureSqlText"/> is true).
         /// Default: <c>false</c> (text capture enabled).
         /// </summary>
-        public bool DisableAdoTextCapture { get; set; } = false;
+        public bool DisableAdoTextCapture { get; set; }
 
         /// <summary>
         /// Fast path to fully disable SQL text capture for the Dapper adapter (even when <see cref="CaptureSqlText"/> is true).
         /// Default: <c>false</c> (text capture enabled).
         /// </summary>
-        public bool DisableDapperTextCapture { get; set; } = false;
+        public bool DisableDapperTextCapture { get; set; }
 
         /// <summary>
         /// Fast path to fully disable SQL text capture for the EF Core adapter (even when <see cref="CaptureSqlText"/> is true).
         /// Default: <c>false</c> (text capture enabled).
         /// </summary>
-        public bool DisableEfCoreTextCapture { get; set; } = false;
+        public bool DisableEfCoreTextCapture { get; set; }
     }
 }
