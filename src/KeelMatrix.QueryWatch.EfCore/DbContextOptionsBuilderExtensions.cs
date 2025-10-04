@@ -4,25 +4,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeelMatrix.QueryWatch.EfCore {
     /// <summary>
-    /// EF Core integration helpers for wiring QueryWatch into a DbContext.
+    /// EF Core integration helpers for wiring QueryWatch into a <see cref="DbContext"/>.
     /// </summary>
     public static class DbContextOptionsBuilderExtensions {
         /// <summary>
-        /// Attach QueryWatch interceptor to a DbContextOptionsBuilder.
+        /// Attaches the QueryWatch command interceptor to the supplied EF Core options builder
+        /// so that all executed database commands are recorded into the given session.
         /// </summary>
-        /// <example>
-        /// Typical usage in tests:
-        /// <code>
-        /// using var session = QueryWatcher.Start(new QueryWatchOptions { MaxQueries = 5 });
-        /// var opts = new DbContextOptionsBuilder&lt;MyDbContext&gt;()
-        ///     .UseInMemoryDatabase("test")
-        ///     .AddInterceptors(new EfCoreQueryWatchInterceptor(session))
-        ///     .Options;
-        /// using var db = new MyDbContext(opts);
-        /// // run code under test...
-        /// var report = session.Stop().ShouldHaveExecutedAtMost(5);
-        /// </code>
-        /// </example>
+        /// <param name="builder">The <see cref="DbContextOptionsBuilder"/> to augment.</param>
+        /// <param name="session">The active <see cref="QueryWatchSession"/> to record into.</param>
+        /// <returns>The same <paramref name="builder"/> instance for chaining.</returns>
         public static DbContextOptionsBuilder UseQueryWatch(
             this DbContextOptionsBuilder builder,
             QueryWatchSession session) {

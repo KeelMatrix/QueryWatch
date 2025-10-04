@@ -1,28 +1,49 @@
 #nullable enable
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
-    /// Extensions for <see cref="QueryWatchOptions"/> to add built-in redactors.
+    /// Extensions for <see cref="QueryWatchOptions"/> to add built‑in redactors.
     /// </summary>
     public static class QueryWatchOptionsExtensions {
+        ///// <summary>
+        ///// Adds a recommended set of redactors in a safe order (normalize → PII/secrets → noise).
+        ///// Flags allow fine tuning; defaults aim for privacy and stability with low false-positive risk.
+        ///// </summary>
+        ///// <param name="options">Options to modify.</param>
+        ///// <param name="includeWhitespaceNormalizer">Normalize whitespace before masking. Default: true.</param>
+        ///// <param name="includeEmails">Mask emails. Default: true.</param>
+        ///// <param name="includeLongHex">Mask long hex tokens (32+). Default: true.</param>
+        ///// <param name="includeJwt">Mask JWT-like tokens. Default: true.</param>
+        ///// <param name="includeAuthorization">Mask Authorization headers. Default: true.</param>
+        ///// <param name="includeConnStringPwd">Mask connection string Password/Pwd. Default: true.</param>
+        ///// <param name="includeGuid">Mask GUIDs. Default: true.</param>
+        ///// <param name="includeUrlTokens">Mask URL query tokens (token/access_token/code/id_token/auth). Default: true.</param>
+        ///// <param name="includeAwsAccessKey">Mask AWS Access Key IDs. Default: true.</param>
+        ///// <param name="includeAzureKeys">Mask Azure AccountKey/SharedAccess*. Default: true.</param>
+        ///// <param name="includeGuidLikeHex">Mask shorter hex identifiers (16–31 chars, at least one letter). Default: true.</param>
+        ///// <param name="includeTimestamps">Mask ISO/Unix timestamps (can increase false positives). Default: false.</param>
+        ///// <param name="includeIpAddresses">Mask IP addresses (IPv4/IPv6) (can increase false positives). Default: false.</param>
+        ///// <param name="includePhone">Mask phone numbers (can increase false positives). Default: false.</param>
+        ///// 
+
         /// <summary>
         /// Adds a recommended set of redactors in a safe order (normalize → PII/secrets → noise).
-        /// Flags allow fine tuning; defaults aim for privacy and stability with low false-positive risk.
         /// </summary>
         /// <param name="options">Options to modify.</param>
-        /// <param name="includeWhitespaceNormalizer">Normalize whitespace before masking. Default: true.</param>
-        /// <param name="includeEmails">Mask emails. Default: true.</param>
-        /// <param name="includeLongHex">Mask long hex tokens (32+). Default: true.</param>
-        /// <param name="includeJwt">Mask JWT-like tokens. Default: true.</param>
-        /// <param name="includeAuthorization">Mask Authorization headers. Default: true.</param>
-        /// <param name="includeConnStringPwd">Mask connection string Password/Pwd. Default: true.</param>
-        /// <param name="includeGuid">Mask GUIDs. Default: true.</param>
-        /// <param name="includeUrlTokens">Mask URL query tokens (token/access_token/code/id_token/auth). Default: true.</param>
-        /// <param name="includeAwsAccessKey">Mask AWS Access Key IDs. Default: true.</param>
-        /// <param name="includeAzureKeys">Mask Azure AccountKey/SharedAccess*. Default: true.</param>
-        /// <param name="includeGuidLikeHex">Mask shorter hex identifiers (16–31 chars, at least one letter). Default: true.</param>
-        /// <param name="includeTimestamps">Mask ISO/Unix timestamps (can increase false positives). Default: false.</param>
-        /// <param name="includeIpAddresses">Mask IP addresses (IPv4/IPv6) (can increase false positives). Default: false.</param>
-        /// <param name="includePhone">Mask phone numbers (can increase false positives). Default: false.</param>
+        /// <param name="includeWhitespaceNormalizer">Normalize whitespace before masking. Default: <c>true</c>.</param>
+        /// <param name="includeEmails">Mask emails. Default: <c>true</c>.</param>
+        /// <param name="includeLongHex">Mask long hex tokens (32+). Default: <c>true</c>.</param>
+        /// <param name="includeJwt">Mask JWT‑like tokens. Default: <c>true</c>.</param>
+        /// <param name="includeAuthorization">Mask Authorization headers. Default: <c>true</c>.</param>
+        /// <param name="includeConnStringPwd">Mask password in connection strings. Default: <c>true</c>.</param>
+        /// <param name="includeGuidLikeHex">Mask shorter hex identifiers (16–31 chars, at least one letter). Default: <c>true</c>.</param>
+        /// <param name="includeGuid">Mask GUIDs. Default: <c>true</c>.</param>
+        /// <param name="includeUrlTokens">Mask URL query tokens (token/access_token/code/id_token/auth). Default: <c>true</c>.</param>
+        /// <param name="includeAwsAccessKey">Mask AWS Access Key IDs. Default: <c>true</c>.</param>
+        /// <param name="includeAzureKeys">Mask Azure AccountKey/SharedAccess*. Default: <c>true</c>.</param>
+        /// <param name="includeTimestamps">Mask ISO/Unix timestamps (can increase false positives). Default: <c>false</c>.</param>
+        /// <param name="includeIpAddresses">Mask IPv4/IPv6 addresses. Default: <c>false</c>.</param>
+        /// <param name="includePhone">Mask common phone numbers. Default: <c>false</c>.</param>
+        /// <returns>The same <paramref name="options"/> instance for chaining.</returns>
         public static QueryWatchOptions UseRecommendedRedactors(
             this QueryWatchOptions options,
             bool includeWhitespaceNormalizer = true,
@@ -64,7 +85,14 @@ namespace KeelMatrix.QueryWatch.Redaction {
             return options;
         }
 
-        /// <summary>Add a single regex-based redactor to <paramref name="options"/>.</summary>
+        /// <summary>
+        /// Adds a single regex‑based redactor to <paramref name="options"/>.
+        /// </summary>
+        /// <param name="options">Options to modify.</param>
+        /// <param name="pattern">Regex pattern to replace.</param>
+        /// <param name="replacement">Replacement text. Default: <c>***</c>.</param>
+        /// <returns>The same <paramref name="options"/> instance for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
         public static QueryWatchOptions AddRegexRedactor(this QueryWatchOptions options, string pattern, string replacement = "***") {
             if (options is null) throw new ArgumentNullException(nameof(options));
             options.Redactors.Add(new RegexReplaceRedactor(pattern, replacement));

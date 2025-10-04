@@ -6,7 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <IsPackable>true</IsPackable>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>KeelMatrix</Authors>
     <EnablePublicApiAnalyzers>true</EnablePublicApiAnalyzers>
     <Description>Redaction primitives for KeelMatrix.QueryWatch: fast, safe, centralized masking of PII/secrets/noise.</Description>
@@ -19,12 +18,10 @@
   <!-- Release promotes warnings to errors -->
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
@@ -35,11 +32,6 @@
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="icon.png" Pack="true" PackagePath="" Condition="Exists('icon.png')" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="PublicAPI.Shipped.txt" />
-    <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
   </ItemGroup>
 </Project>
 

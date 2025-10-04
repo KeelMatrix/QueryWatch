@@ -51,23 +51,5 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
             }
             return count;
         }
-
-        // TODO: why is this unused?
-        public static List<(PatternBudget budget, int count, bool over)> EvaluateBudgets(
-            IEnumerable<EventSample> events,
-            IEnumerable<PatternBudget> budgets) {
-            var findings = new List<(PatternBudget, int, bool)>();
-            var corpus = (events ?? Enumerable.Empty<EventSample>())
-                .Select(e => e?.Text ?? string.Empty)
-                .ToList();
-
-            foreach (var b in budgets ?? Enumerable.Empty<PatternBudget>()) {
-                int count = b.CountMatches(corpus);
-                bool over = count > b.Max;
-                findings.Add((b, count, over));
-            }
-
-            return findings;
-        }
     }
 }

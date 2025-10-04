@@ -1,12 +1,7 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
-using System.Threading;
-
 namespace KeelMatrix.QueryWatch {
     /// <summary>
-    /// Collects query events for the lifetime of the session.
-    /// Thread-safe for recording.
+    /// Collects query events for the lifetime of a session. Thread‑safe for recording.
     /// </summary>
     public sealed class QueryWatchSession : IDisposable {
         private readonly List<QueryEvent> _events = new List<QueryEvent>();
@@ -14,35 +9,52 @@ namespace KeelMatrix.QueryWatch {
         private bool _disposed;
         private int _stopped; // 0 = running, 1 = stopped
 
+        /// <summary>
+        /// Initializes a new session.
+        /// </summary>
+        /// <param name="options">Optional session options.</param>
         public QueryWatchSession(QueryWatchOptions? options = null) {
             Options = options ?? new QueryWatchOptions();
             StartedAt = DateTimeOffset.UtcNow;
         }
 
-        /// <summary>Effective options for this session.</summary>
+        /// <summary>
+        /// Options for this session.
+        /// </summary>
         public QueryWatchOptions Options { get; }
 
-        /// <summary>Session start time (UTC).</summary>
+        /// <summary>
+        /// UTC timestamp when the session started.
+        /// </summary>
         public DateTimeOffset StartedAt { get; }
 
-        /// <summary>Session stop time when <see cref="Stop"/> was first called; otherwise null.</summary>
+        /// <summary>
+        /// UTC timestamp when the session stopped, or <c>null</c> if still running.
+        /// </summary>
         public DateTimeOffset? StoppedAt { get; private set; }
 
-        /// <summary>Start a new session with options.</summary>
+        /// <summary>
+        /// Starts a new session.
+        /// </summary>
+        /// <param name="options">Optional session options.</param>
+        /// <returns>The started session.</returns>
         public static QueryWatchSession Start(QueryWatchOptions? options = null) => new QueryWatchSession(options);
 
         /// <summary>
-        /// Record a single query execution (manual or from an adapter).
+        /// Records a query execution event.
         /// </summary>
+        /// <param name="commandText">Executed SQL or provider command text.</param>
+        /// <param name="duration">Execution duration.</param>
         public void Record(string commandText, TimeSpan duration) {
             Record(commandText, duration, meta: null);
         }
 
         /// <summary>
-        /// Record a single query execution with optional metadata.
-        /// This overload is used by adapters (ADO wrapper) to attach non-PII details,
-        /// such as parameter names and types.
+        /// Records a query execution event with optional metadata.
         /// </summary>
+        /// <param name="commandText">Executed SQL or provider command text.</param>
+        /// <param name="duration">Execution duration.</param>
+        /// <param name="meta">Optional metadata bag for provider‑specific details.</param>
         public void Record(string commandText, TimeSpan duration, IReadOnlyDictionary<string, object?>? meta) {
             if (_disposed) throw new ObjectDisposedException(nameof(QueryWatchSession));
 
@@ -73,9 +85,9 @@ namespace KeelMatrix.QueryWatch {
         }
 
         /// <summary>
-        /// Stop the session and return an immutable snapshot report.
-        /// Further calls must throw to honor lifecycle contracts in tests.
+        /// Stops the session and returns a snapshot report.
         /// </summary>
+        /// <returns>A report representing the recorded data.</returns>
         public QueryWatchReport Stop() {
             if (_disposed) throw new ObjectDisposedException(nameof(QueryWatchSession));
 
@@ -98,6 +110,9 @@ namespace KeelMatrix.QueryWatch {
             }
         }
 
+        /// <summary>
+        /// Disposes session resources and marks it as stopped.
+        /// </summary>
         public void Dispose() {
             // Mark stopped and set StoppedAt once if not set.
             if (Interlocked.Exchange(ref _stopped, 1) == 0) {

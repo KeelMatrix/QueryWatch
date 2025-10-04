@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace KeelMatrix.QueryWatch.Ado {
     /// <summary>
-    /// Delegating <see cref="DbCommand"/> that measures execution and records into a session.
+    /// Delegating <see cref="System.Data.Common.DbCommand"/> that measures execution and records into a session.
     /// </summary>
     public sealed class QueryWatchCommand : DbCommand {
         private readonly DbCommand _inner;
@@ -15,6 +15,13 @@ namespace KeelMatrix.QueryWatch.Ado {
         // Keep track of the wrapper connection (so getters surface the wrapper instance).
         private QueryWatchConnection? _wrapperConnection;
 
+        /// <summary>
+        /// Initializes a new wrapper over an inner <see cref="DbCommand"/>.
+        /// </summary>
+        /// <param name="inner">Inner provider command to delegate to.</param>
+        /// <param name="session">Session to record into.</param>
+        /// <param name="wrapperConnection">Optional wrapper connection to surface via <see cref="DbCommand.Connection"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="inner"/> or <paramref name="session"/> is null.</exception>
         public QueryWatchCommand(DbCommand inner, QueryWatchSession session, DbConnection? wrapperConnection = null) {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -23,22 +30,26 @@ namespace KeelMatrix.QueryWatch.Ado {
 
         #region Property delegation
 
+        /// <inheritdoc />
         [AllowNull]
         public override string CommandText {
             get => _inner.CommandText ?? string.Empty;
             set => _inner.CommandText = value;
         }
 
+        /// <inheritdoc />
         public override int CommandTimeout {
             get => _inner.CommandTimeout;
             set => _inner.CommandTimeout = value;
         }
 
+        /// <inheritdoc />
         public override CommandType CommandType {
             get => _inner.CommandType;
             set => _inner.CommandType = value;
         }
 
+        /// <inheritdoc />
         protected override DbConnection? DbConnection {
             get => _wrapperConnection ?? _inner.Connection;
             set {
@@ -53,8 +64,10 @@ namespace KeelMatrix.QueryWatch.Ado {
             }
         }
 
+        /// <inheritdoc />
         protected override DbParameterCollection DbParameterCollection => _inner.Parameters;
 
+        /// <inheritdoc />
         protected override DbTransaction? DbTransaction {
             get => _inner.Transaction;
             set {
@@ -67,11 +80,13 @@ namespace KeelMatrix.QueryWatch.Ado {
             }
         }
 
+        /// <inheritdoc />
         public override bool DesignTimeVisible {
             get => _inner.DesignTimeVisible;
             set => _inner.DesignTimeVisible = value;
         }
 
+        /// <inheritdoc />
         public override UpdateRowSource UpdatedRowSource {
             get => _inner.UpdatedRowSource;
             set => _inner.UpdatedRowSource = value;
@@ -122,6 +137,7 @@ namespace KeelMatrix.QueryWatch.Ado {
 
         #region Execute overrides (sync)
 
+        /// <inheritdoc />
         public override int ExecuteNonQuery() {
             var sw = Stopwatch.StartNew();
             try {
@@ -137,6 +153,7 @@ namespace KeelMatrix.QueryWatch.Ado {
             }
         }
 
+        /// <inheritdoc />
         public override object? ExecuteScalar() {
             var sw = Stopwatch.StartNew();
             try {
@@ -152,6 +169,7 @@ namespace KeelMatrix.QueryWatch.Ado {
             }
         }
 
+        /// <inheritdoc />
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) {
             var sw = Stopwatch.StartNew();
             try {
@@ -171,6 +189,7 @@ namespace KeelMatrix.QueryWatch.Ado {
 
         #region Execute overrides (async)
 
+        /// <inheritdoc />
         public override System.Threading.Tasks.Task<int> ExecuteNonQueryAsync(System.Threading.CancellationToken cancellationToken) {
             return ExecuteNonQueryAsyncCore(cancellationToken);
         }
@@ -190,6 +209,7 @@ namespace KeelMatrix.QueryWatch.Ado {
             }
         }
 
+        /// <inheritdoc />
         public override System.Threading.Tasks.Task<object?> ExecuteScalarAsync(System.Threading.CancellationToken cancellationToken) {
             return ExecuteScalarAsyncCore(cancellationToken);
         }
@@ -209,6 +229,7 @@ namespace KeelMatrix.QueryWatch.Ado {
             }
         }
 
+        /// <inheritdoc />
         protected override System.Threading.Tasks.Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, System.Threading.CancellationToken cancellationToken) {
             return ExecuteDbDataReaderAsyncCore(behavior, cancellationToken);
         }
@@ -232,10 +253,16 @@ namespace KeelMatrix.QueryWatch.Ado {
 
         #region Boilerplate
 
+        /// <inheritdoc />
         public override void Cancel() => _inner.Cancel();
+
+        /// <inheritdoc />
         public override void Prepare() => _inner.Prepare();
+
+        /// <inheritdoc />
         protected override DbParameter CreateDbParameter() => _inner.CreateParameter();
 
+        /// <inheritdoc />
         protected override void Dispose(bool disposing) {
             if (disposing) _inner.Dispose();
             base.Dispose(disposing);

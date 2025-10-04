@@ -1,16 +1,16 @@
 // Copyright (c) KeelMatrix
 #nullable enable
-using System.Collections.Generic;
-
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// A single observed database command execution.
-    /// High level skeleton only — the structure may evolve before 1.0.
     /// </summary>
     public sealed class QueryEvent {
         /// <summary>
-        /// Create an event with no extra metadata.
+        /// Initializes a new <see cref="QueryEvent"/>.
         /// </summary>
+        /// <param name="commandText">Executed SQL or provider command text. Can be empty when text capture is disabled.</param>
+        /// <param name="duration">Execution duration.</param>
+        /// <param name="at">UTC timestamp when the command finished.</param>
         public QueryEvent(string commandText, System.TimeSpan duration, System.DateTimeOffset at) {
             CommandText = commandText;
             Duration = duration;
@@ -20,6 +20,10 @@ namespace KeelMatrix.QueryWatch {
         /// <summary>
         /// Internal constructor that allows attaching optional metadata (e.g., ADO parameter shapes).
         /// </summary>
+        /// <param name="commandText">Executed SQL or provider command text. Can be empty when text capture is disabled.</param>
+        /// <param name="duration">Execution duration.</param>
+        /// <param name="at">UTC timestamp when the command finished.</param>
+        /// <param name="meta">Metadata.</param>
         internal QueryEvent(string commandText, System.TimeSpan duration, System.DateTimeOffset at, IReadOnlyDictionary<string, object?>? meta) {
             CommandText = commandText;
             Duration = duration;
@@ -27,19 +31,23 @@ namespace KeelMatrix.QueryWatch {
             Meta = meta;
         }
 
-        /// <summary>SQL or provider-specific textual representation (trimmed / may be redacted).</summary>
+        /// <summary>
+        /// SQL or provider command text (may be empty when text capture is disabled).
+        /// </summary>
         public string CommandText { get; }
 
-        /// <summary>Total time spent executing the command.</summary>
+        /// <summary>
+        /// Execution duration.
+        /// </summary>
         public System.TimeSpan Duration { get; }
 
-        /// <summary>Timestamp when the command finished.</summary>
+        /// <summary>
+        /// UTC timestamp when the command finished.
+        /// </summary>
         public System.DateTimeOffset At { get; }
 
         /// <summary>
-        /// Optional metadata bag with additive, non-breaking details about the event.
-        /// For ADO capture policy this may include a <c>parameters</c> array with items
-        /// containing <c>name</c>, <c>dbType</c>, <c>clrType</c> and <c>direction</c>.
+        /// Optional metadata with additive, non‑breaking details about the event (e.g., parameter shapes).
         /// </summary>
         public IReadOnlyDictionary<string, object?>? Meta { get; }
     }

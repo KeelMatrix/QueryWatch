@@ -1,4 +1,5 @@
 #nullable enable
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using KeelMatrix.QueryWatch.Cli.IO;
@@ -24,11 +25,12 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
 
             if (summaries.Count == 0) {
                 await Console.Error.WriteLineAsync("No input JSON found.").ConfigureAwait(false);
-                foreach (var p in opts.Inputs) {
-                    if (!File.Exists(p)) {
-                        await Console.Error.WriteLineAsync("Missing: " + p).ConfigureAwait(false);
-                    }
+                foreach (var p in from p in opts.Inputs
+                                  where !File.Exists(p)
+                                  select p) {
+                    await Console.Error.WriteLineAsync("Missing: " + p).ConfigureAwait(false);
                 }
+
                 return ExitCodes.InputFileNotFound;
             }
 
@@ -61,8 +63,8 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
 
                 var current = new Summary {
                     Schema = "1.0.0",
-                    StartedAt = summaries.First().StartedAt,
-                    StoppedAt = summaries.Last().StoppedAt,
+                    StartedAt = summaries[0].StartedAt,
+                    StoppedAt = summaries[^1].StoppedAt,
                     TotalQueries = agg.TotalQueries,
                     TotalDurationMs = agg.TotalDurationMs,
                     AverageDurationMs = agg.AverageDurationMs,

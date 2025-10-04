@@ -1,7 +1,7 @@
 #nullable enable
 namespace KeelMatrix.QueryWatch {
     /// <summary>
-    /// Immutable snapshot of a session used for assertions/inspection.
+    /// Immutable snapshot of a session used for assertions and inspection.
     /// </summary>
     public sealed class QueryWatchReport {
         private readonly IReadOnlyList<QueryEvent> _events;
@@ -16,21 +16,58 @@ namespace KeelMatrix.QueryWatch {
             StoppedAt = stoppedAt;
         }
 
+        /// <summary>
+        /// Options used by the originating session.
+        /// </summary>
         public QueryWatchOptions Options { get; }
-        public DateTimeOffset StartedAt { get; }
-        public DateTimeOffset StoppedAt { get; }
-        public IReadOnlyList<QueryEvent> Events => _events;
-
-        public int TotalQueries => _events.Count;
-        public TimeSpan TotalDuration => TimeSpan.FromMilliseconds(_events.Sum(e => e.Duration.TotalMilliseconds));
-        public TimeSpan AverageDuration => TotalQueries == 0 ? TimeSpan.Zero : TimeSpan.FromMilliseconds(_events.Average(e => e.Duration.TotalMilliseconds));
-
-        public static QueryWatchReport CreateSnapshot(IReadOnlyList<QueryEvent> events, QueryWatchOptions options, DateTimeOffset startedAt, DateTimeOffset stoppedAt)
-            => new QueryWatchReport(events.ToArray(), options, startedAt, stoppedAt);
 
         /// <summary>
-        /// Throw <see cref="QueryWatchViolationException"/> if configured limits are exceeded.
+        /// UTC timestamp when the session started.
         /// </summary>
+        public DateTimeOffset StartedAt { get; }
+
+        /// <summary>
+        /// UTC timestamp when the session stopped.
+        /// </summary>
+        public DateTimeOffset StoppedAt { get; }
+
+        /// <summary>
+        /// Recorded query events in chronological order.
+        /// </summary>
+        public IReadOnlyList<QueryEvent> Events => _events;
+
+        /// <summary>
+        /// Number of recorded queries.
+        /// </summary>
+        public int TotalQueries => _events.Count;
+
+        /// <summary>
+        /// Total duration across all recorded queries.
+        /// </summary>
+        public TimeSpan TotalDuration => TimeSpan.FromMilliseconds(_events.Sum(e => e.Duration.TotalMilliseconds));
+
+        /// <summary>
+        /// Average duration per query across all recorded queries.
+        /// </summary>
+        public TimeSpan AverageDuration => TotalQueries == 0 ? TimeSpan.Zero : TimeSpan.FromMilliseconds(_events.Average(e => e.Duration.TotalMilliseconds));
+
+        /// <summary>
+        /// Creates a snapshot report from raw events and timing.
+        /// </summary>
+        /// <param name="events">Events to include.</param>
+        /// <param name="options">Options in effect during capture.</param>
+        /// <param name="startedAt">Session start (UTC).</param>
+        /// <param name="stoppedAt">Session stop (UTC).</param>
+        /// <returns>A new report.</returns>
+        public static QueryWatchReport CreateSnapshot(IReadOnlyList<QueryEvent> events, QueryWatchOptions options, DateTimeOffset startedAt, DateTimeOffset stoppedAt)
+            => new(events.ToArray(), options, startedAt, stoppedAt);
+
+        /// <summary>
+        /// Validates configured thresholds and throws on violations.
+        /// </summary>
+        /// <exception cref="QueryWatchViolationException">
+        /// Thrown when <see cref="TotalQueries"/>, <see cref="AverageDuration"/>, or <see cref="TotalDuration"/> exceed configured limits.
+        /// </exception>
         public void ThrowIfViolations() {
             var problems = new List<string>();
 
@@ -52,20 +89,35 @@ namespace KeelMatrix.QueryWatch {
         }
 
         /// <summary>
-        /// Simple fluent-style helpers for common checks.
+        /// Asserts that at most <paramref name="maxQueries"/> were executed.
         /// </summary>
+        /// <param name="maxQueries">Maximum allowed queries.</param>
+        /// <returns>The same report for chaining.</returns>
+        /// <exception cref="QueryWatchViolationException">Thrown when the assertion fails.</exception>
         public QueryWatchReport ShouldHaveExecutedAtMost(int maxQueries) {
             if (TotalQueries > maxQueries)
                 throw new QueryWatchViolationException($"Expected ≤{maxQueries} queries, but executed {TotalQueries}.");
             return this;
         }
 
+        /// <summary>
+        /// Asserts that the average query time does not exceed <paramref name="maxAverage"/>.
+        /// </summary>
+        /// <param name="maxAverage">Maximum allowed average time.</param>
+        /// <returns>The same report for chaining.</returns>
+        /// <exception cref="QueryWatchViolationException">Thrown when the assertion fails.</exception>
         public QueryWatchReport ShouldHaveMaxAverageTime(TimeSpan maxAverage) {
             if (AverageDuration > maxAverage)
                 throw new QueryWatchViolationException($"Expected average ≤{maxAverage}, actual {AverageDuration}.");
             return this;
         }
 
+        /// <summary>
+        /// Asserts that the total query time does not exceed <paramref name="maxTotal"/>.
+        /// </summary>
+        /// <param name="maxTotal">Maximum allowed total time.</param>
+        /// <returns>The same report for chaining.</returns>
+        /// <exception cref="QueryWatchViolationException">Thrown when the assertion fails.</exception>
         public QueryWatchReport ShouldHaveMaxTotalTime(TimeSpan maxTotal) {
             if (TotalDuration > maxTotal)
                 throw new QueryWatchViolationException($"Expected total ≤{maxTotal}, actual {TotalDuration}.");
@@ -77,6 +129,22 @@ namespace KeelMatrix.QueryWatch {
     /// Thrown when QueryWatch detects configured or asserted violations.
     /// </summary>
     public sealed class QueryWatchViolationException : InvalidOperationException {
+        /// <summary>
+        /// Initializes a new <see cref="QueryWatchViolationException"/>.
+        /// </summary>
+        public QueryWatchViolationException() : base() { }
+
+        /// <summary>
+        /// Initializes a new <see cref="QueryWatchViolationException"/>.
+        /// </summary>
+        /// <param name="message">The violation message.</param>
         public QueryWatchViolationException(string message) : base(message) { }
+
+        /// <summary>
+        /// Initializes a new <see cref="QueryWatchViolationException"/>.
+        /// </summary>
+        /// <param name="message">The violation message.</param>
+        /// <param name="innerException">The inner exception.</param>
+        public QueryWatchViolationException(string? message, Exception? innerException) : base(message, innerException) { }
     }
 }

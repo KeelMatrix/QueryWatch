@@ -53,12 +53,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Common across all TFMs -->
-    <AdditionalFiles Include="PublicAPI.Shipped.txt" />
-    <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
-  </ItemGroup>
-
   <!-- Scope System.Text.Json to netstandard2.0 only (CPM supplies the version).
        net8.0 uses the in-box STJ; do not restore the package there. -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">

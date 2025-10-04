@@ -32,6 +32,17 @@
     <Deterministic>true</Deterministic>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+  
+  <!-- Include Public API baseline files if they exist next to a project. -->
+  <ItemGroup>
+    <AdditionalFiles Remove="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt;$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt')">
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
+  </ItemGroup>
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt')">
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
+  </ItemGroup>
 
   <!-- Pack README.md and icon.png into the NuGet package root if they exist -->
   <Target Name="AttachPackageReadmeAndIcon" BeforeTargets="Pack">

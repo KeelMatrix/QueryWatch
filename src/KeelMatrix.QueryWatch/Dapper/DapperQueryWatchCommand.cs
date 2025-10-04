@@ -12,6 +12,13 @@ namespace KeelMatrix.QueryWatch.Dapper {
         private readonly QueryWatchSession _session;
         private readonly DapperQueryWatchConnection? _ownerConnection;
 
+        /// <summary>
+        /// Initializes a new wrapper over an inner <see cref="IDbCommand"/>.
+        /// </summary>
+        /// <param name="inner">Inner provider command.</param>
+        /// <param name="session">Session to record into.</param>
+        /// <param name="ownerConnection">Optional wrapper connection to surface via <see cref="IDbCommand.Connection"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="inner"/> or <paramref name="session"/> is null.</exception>
         public DapperQueryWatchCommand(IDbCommand inner, QueryWatchSession session, DapperQueryWatchConnection? ownerConnection = null) {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _session = session ?? throw new ArgumentNullException(nameof(session));
@@ -44,22 +51,26 @@ namespace KeelMatrix.QueryWatch.Dapper {
 
         #region IDbCommand
 
+        /// <inheritdoc />
         [AllowNull]
         public string CommandText {
             get => _inner.CommandText;
             set => _inner.CommandText = value;
         }
 
+        /// <inheritdoc />
         public int CommandTimeout {
             get => _inner.CommandTimeout;
             set => _inner.CommandTimeout = value;
         }
 
+        /// <inheritdoc />
         public CommandType CommandType {
             get => _inner.CommandType;
             set => _inner.CommandType = value;
         }
 
+        /// <inheritdoc />
         public IDbConnection? Connection {
             get => (IDbConnection?)_ownerConnection ?? _inner.Connection;
             set {
@@ -72,8 +83,10 @@ namespace KeelMatrix.QueryWatch.Dapper {
             }
         }
 
+        /// <inheritdoc />
         public IDataParameterCollection Parameters => _inner.Parameters;
 
+        /// <inheritdoc />
         public IDbTransaction? Transaction {
             get => _inner.Transaction;
             set {
@@ -86,15 +99,22 @@ namespace KeelMatrix.QueryWatch.Dapper {
             }
         }
 
+        /// <inheritdoc />
         public UpdateRowSource UpdatedRowSource {
             get => _inner.UpdatedRowSource;
             set => _inner.UpdatedRowSource = value;
         }
 
+        /// <inheritdoc />
         public void Cancel() => _inner.Cancel();
+
+        /// <inheritdoc />
         public IDbDataParameter CreateParameter() => _inner.CreateParameter();
+
+        /// <inheritdoc />
         public void Prepare() => _inner.Prepare();
 
+        /// <inheritdoc />
         public int ExecuteNonQuery() {
             var sw = Stopwatch.StartNew();
             try { return _inner.ExecuteNonQuery(); }
@@ -102,6 +122,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
             finally { if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); } }
         }
 
+        /// <inheritdoc />
         public object? ExecuteScalar() {
             var sw = Stopwatch.StartNew();
             try { return _inner.ExecuteScalar(); }
@@ -109,6 +130,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
             finally { if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); } }
         }
 
+        /// <inheritdoc />
         public IDataReader ExecuteReader() {
             var sw = Stopwatch.StartNew();
             try { return _inner.ExecuteReader(); }
@@ -116,6 +138,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
             finally { if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); } }
         }
 
+        /// <inheritdoc />
         public IDataReader ExecuteReader(CommandBehavior behavior) {
             var sw = Stopwatch.StartNew();
             try { return _inner.ExecuteReader(behavior); }
@@ -123,6 +146,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
             finally { if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); } }
         }
 
+        /// <inheritdoc />
         public void Dispose() => _inner.Dispose();
 
         #endregion

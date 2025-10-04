@@ -1,6 +1,4 @@
-
 using System.Text.RegularExpressions;
-
 using KeelMatrix.QueryWatch.Redaction.Internal;
 
 namespace KeelMatrix.QueryWatch.Security {
@@ -17,11 +15,13 @@ namespace KeelMatrix.QueryWatch.Security {
         // Matches tokens consisting of 20 or more URL‑safe characters.
         private static readonly Regex TokenRegex = RedactionRegex.Create(@"(\b[A-Za-z0-9-_]{20,}\b)", RegexOptions.Compiled);
 
-        /// <summary>
-        /// Redacts email addresses and tokens from the specified input.
-        /// </summary>
-        /// <param name="input">The input string that may contain sensitive data.</param>
-        /// <returns>The redacted string.</returns>
+        /// <summary>Redacts email addresses and high‑entropy tokens from <paramref name="input"/>.</summary>
+        /// <param name="input">Text that may contain sensitive data. If <c>null</c> or empty, the original value is returned.</param>
+        /// <returns>The redacted text.</returns>
+        /// <remarks>
+        /// This helper is not wired into QueryWatch automatically; integrate it explicitly into your logging pipeline if needed.
+        /// Patterns are intentionally conservative to minimize false positives.
+        /// </remarks>
         public static string Redact(string input) {
             if (string.IsNullOrEmpty(input)) return input;
             var redacted = EmailRegex.Replace(input, "&lt;REDACTED_EMAIL&gt;");
