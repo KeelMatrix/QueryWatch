@@ -1,53 +1,22 @@
 # QueryWatch Samples
 
-This folder contains small **sample projects** that consume the `KeelMatrix.QueryWatch` NuGet package
-from your local build. They are intentionally minimal so you can understand and test the core behaviors
-quickly in different situations (EF Core + SQLite, and raw ADO).
-
-> **Important:** These samples expect you to build the package(s) locally first and then add them to each sample.
-> See the "Quick Start" below.
+Tiny apps that consume the local `KeelMatrix.QueryWatch*` packages so you can see EF Core, ADO.NET, and Dapper wiring in action.
 
 ## Layout
-- `EFCore.Sqlite/` – EF Core (SQLite provider) showing interceptor wiring and basic budgets.
-- `Ado.Sqlite/` – plain ADO.NET over `Microsoft.Data.Sqlite` wrapped by `QueryWatchConnection`.
-- `Dapper.Sqlite/` – tiny Dapper example over SQLite showing **async** and **transaction** usage with QueryWatch.
-- `cli-examples.ps1` / `cli-examples.sh` – example commands for running the QueryWatch CLI gate.
-- `NuGet.config` – forces the `KeelMatrix.QueryWatch*` packages to come from your local `../artifacts/packages`.
-- `.gitignore` – ignores local build outputs and DB files for samples only.
+- `EFCore.Sqlite/` – EF Core (SQLite) with interceptor wiring and basic budgets.
+- `Ado.Sqlite/` – plain ADO.NET over `Microsoft.Data.Sqlite` via `QueryWatchConnection`.
+- `Dapper.Sqlite/` – Dapper (async + transactions) via `WithQueryWatch(...)`.
+- `cli-examples.ps1` / `cli-examples.sh` – quick commands to run the CLI gate.
+- `NuGet.config` – pins `KeelMatrix.QueryWatch*` to `../artifacts/packages` (local build).
 
-## Quick Start (local, step-by-step)
-1. **Pack the libraries** at the repository root (one level *above* this folder):
-   ```bash
-   dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
-   dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
-   ```
-2. **Install the packages into each sample** (runs the add+restore for you):
-   - Windows (PowerShell): `./init.ps1`
-   - Linux/macOS (bash): `./init.sh`
-   These scripts run:
-   ```bash
-   dotnet add ./EFCore.Sqlite/EFCore.Sqlite.csproj package KeelMatrix.QueryWatch
-   dotnet add ./EFCore.Sqlite/EFCore.Sqlite.csproj package KeelMatrix.QueryWatch.EfCore
-   dotnet add ./Ado.Sqlite/Ado.Sqlite.csproj package KeelMatrix.QueryWatch
-   ```
-   The included `NuGet.config` pins `KeelMatrix.QueryWatch*` to the local `../artifacts/packages` folder.
-3. **Run a sample** (EF Core example shown):
-   ```bash
-   dotnet run --project ./EFCore.Sqlite/EFCore.Sqlite.csproj
-   ```
-   You should see console output and a file at `./EFCore.Sqlite/bin/Debug/net8.0/artifacts/qwatch.ef.json`.
-4. **Gate with the CLI** (from repo root or here):
-   ```bash
-   dotnet run --project ../tools/KeelMatrix.QueryWatch.Cli -- --input ./EFCore.Sqlite/bin/Debug/net8.0/artifacts/qwatch.ef.json --max-queries 50
-   ```
+## Start here
+Follow the **[Quick Start — Samples (local)](../README.md#quick-start--samples-local)** in the root README.
 
-### Notes
-- These samples **compile only after** you add the `KeelMatrix.QueryWatch` and (for EF) `KeelMatrix.QueryWatch.EfCore` packages (Step 2).
-- If you get restore errors, confirm that `../artifacts/packages` exists and contains your `*.nupkg` files.
-- The EF Core sample uses a file-based SQLite DB under `./EFCore.Sqlite/app.db`. You can delete it safely.
+> After you run `dotnet pack ...` at the repo root, use `./init.ps1` (or `./init.sh`) once to add local packages. No other tweaks are needed.
 
-### Dapper sample
-Run the Dapper sample:
+### Run a sample
 ```bash
-dotnet run --project ./Dapper.Sqlite/Dapper.Sqlite.csproj
+dotnet run --project ./EFCore.Sqlite/EFCore.Sqlite.csproj -c Release
 ```
+
+For CLI usage examples, see `cli-examples.ps1` / `cli-examples.sh`.

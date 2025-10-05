@@ -1,51 +1,133 @@
- > The project is currently under development. Keep an eye out for its release!
+# QueryWatch
 
-# KeelMatrix.QueryWatch
+Guardrail your **database queries** in tests & CI. Capture executed SQL, enforce **budgets** (counts & timings), and fail builds on regressions. Works with **ADO.NET**, **Dapper**, and **EF Core**.
 
-> Catch N+1 queries and slow SQL in tests. Fail builds when query budgets are exceeded.
+**Quick links:**  
+- 👉 [Quick Start — Samples (local)](#quick-start--samples-local)  
+- 👉 [EF Core wiring](#ef-core-wiring) · [Dapper wiring](#dapper-wiring) · [ADO.NET wiring](#adonet-wiring)  
+- 👉 [CLI flags](#cli) · [Troubleshooting](#troubleshooting)  
 
-[![Build](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml) [![NuGet](https://img.shields.io/nuget/v/KeelMatrix.QueryWatch.svg)](https://www.nuget.org/packages/KeelMatrix.QueryWatch/)
+---
 
-## Install
+## 5‑minute success (tests)
 
-```bash
-dotnet add package KeelMatrix.QueryWatch
-# EF Core users:
-dotnet add package KeelMatrix.QueryWatch.EfCore
-```
-
-## 5‑minute success (with JSON for CI)
-
-**Per‑test scope → export JSON:**
+Use the disposable scope to **export JSON** and enforce **budgets** in your test or smoke app.
 
 ```csharp
 using KeelMatrix.QueryWatch.Testing;
 
-// JSON is written even if assertions fail (helps CI).
-using var q = QueryWatchScope.Start(
-    maxQueries: 5,
-    maxAverage: TimeSpan.FromMilliseconds(50),
+using var scope = QueryWatchScope.Start(
+    maxQueries: 50,
+    maxAverage: TimeSpan.FromMilliseconds(25),
     exportJsonPath: "artifacts/qwatch.report.json",
-    sampleTop: 50); // increase if you plan to use per‑pattern budgets in CLI
+    sampleTop: 200);
+
+// ... run your code that hits the DB ...
 ```
 
-**Gate in CI (already wired in ci.yml):**
+The file `artifacts/qwatch.report.json` is now ready for the CLI gate.
 
-```pwsh
-dotnet run --project tools/KeelMatrix.QueryWatch.Cli -- --input artifacts/qwatch.report.json --max-queries 50
-```
+---
+
+## Quick Start — Samples (local)
+
+This repo ships three tiny sample apps (EF Core, ADO.NET, Dapper) that **consume local packages** you build from source.
+
+1. **Pack the libraries** (run **at repo root**):
+   ```bash
+   dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+   dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+   ```
+2. **Install local packages to samples** (pins to `./artifacts/packages` via `samples/NuGet.config`):
+   - Windows (PowerShell): `./samples/init.ps1`  
+   - Linux/macOS (bash): `./samples/init.sh`
+3. **Run a sample** (EF example shown):
+   ```bash
+   dotnet run --project ./samples/EFCore.Sqlite/EFCore.Sqlite.csproj -c Release
+   ```
+4. **Gate with the CLI**:
+   ```bash
+   dotnet run --project ./tools/KeelMatrix.QueryWatch.Cli -- --input ./samples/EFCore.Sqlite/bin/Release/net8.0/artifacts/qwatch.ef.json --max-queries 50
+   ```
+
+> CI uses the same flow and restores using `samples/NuGet.config` so **samples build after `dotnet pack` with no tweaks**.
+
+---
 
 ## EF Core wiring
 
 ```csharp
-using KeelMatrix.QueryWatch.EfCore; // extension lives in the EfCore adapter package
 using Microsoft.EntityFrameworkCore;
+using KeelMatrix.QueryWatch.EfCore;
+using KeelMatrix.QueryWatch.Testing;
+
+using var q = QueryWatchScope.Start(exportJsonPath: "artifacts/ef.json", sampleTop: 200);
 
 var options = new DbContextOptionsBuilder<MyDbContext>()
     .UseSqlite("Data Source=:memory:")
     .UseQueryWatch(q.Session)    // adds the interceptor
     .Options;
 ```
+> Interceptor only records **executed** commands. Use `QueryWatchOptions` on the session to tune capture (text, parameter shapes, etc.).
+
+---
+
+## Dapper wiring
+
+```csharp
+using Dapper;
+using Microsoft.Data.Sqlite;
+using KeelMatrix.QueryWatch.Dapper;
+using KeelMatrix.QueryWatch.Testing;
+
+using var q = QueryWatchScope.Start(exportJsonPath: "artifacts/dapper.json", sampleTop: 200);
+
+await using var raw = new SqliteConnection("Data Source=:memory:");
+await raw.OpenAsync();
+
+// Wrap the provider connection so Dapper commands are recorded
+using var conn = raw.WithQueryWatch(q.Session);
+
+var rows = await conn.QueryAsync("SELECT 1");
+```
+
+> The extension returns the **ADO wrapper** when possible for high‑fidelity recording; otherwise it falls back to a Dapper‑specific wrapper.
+
+---
+
+## ADO.NET wiring
+
+```csharp
+using Microsoft.Data.Sqlite;
+using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Testing;
+
+using var q = QueryWatchScope.Start(exportJsonPath: "artifacts/ado.json", sampleTop: 200);
+await using var raw = new SqliteConnection("Data Source=:memory:");
+await raw.OpenAsync();
+
+using var conn = new QueryWatchConnection(raw, q.Session);
+using var cmd  = conn.CreateCommand();
+cmd.CommandText = "SELECT 1";
+await cmd.ExecuteNonQueryAsync();
+```
+
+---
+
+## Budgets (counts & timing)
+
+At **test time** (scope) you can enforce `maxQueries`, `maxAverage`, `maxTotal`. At **CI time** use the CLI for stronger rules including **per‑pattern budgets**. Patterns support wildcards (`*`, `?`) or `regex:` prefix.
+
+Example per‑pattern budgets:
+
+```bash
+--budget "SELECT * FROM Users*=1"
+--budget "regex:^UPDATE Orders SET=3"
+```
+
+> If your JSON is **top‑N sampled**, budgets evaluate only over those events. Increase `sampleTop` in your export to tighten guarantees.
+
+---
 
 ## CLI
 
@@ -67,40 +149,22 @@ var options = new DbContextOptionsBuilder<MyDbContext>()
 <!-- END:CLI_FLAGS -->
 
 ### Multi‑file support
-
 Repeat `--input` to aggregate multiple JSONs (e.g., per‑project reports in a mono‑repo). Budgets evaluate on the aggregate.
 
 ### GitHub PR summary
+When run inside GitHub Actions, the CLI writes a Markdown table to the **Step Summary** automatically.
 
-When run inside GitHub Actions, the CLI writes a Markdown table to the **Step Summary** automatically, so reviewers see metrics and any violations at a glance.
+---
 
-### Note on per‑pattern budgets
+## Troubleshooting
 
-Budgets match against the `events` captured in the JSON file(s). These are the top‑N slowest events by duration to keep files small. If you want strict coverage, export with a higher `sampleTop` in `QueryWatchJson.ExportToFile`, or pass a larger `sampleTop` to `QueryWatchScope.Start(...)`.
+- **“Budget violations:” but no pattern table** → you didn’t pass any `--budget`, or your JSON was **heavily sampled**. Re‑export with higher `sampleTop` (e.g., 200–500).  
+- **Baselines seem too strict** → tolerances are **percent of baseline**. Ensure your baseline is representative; use `--baseline-allow-percent` to allow small drift.  
+- **CLI help in README looks stale** → run `./build/Update-ReadmeFlags.ps1` (or `--print-flags-md`) to refresh the block between markers.  
+- **Hot path text capture** → disable per‑adapter: `QueryWatchOptions.Disable{Ado|Dapper|EfCore}TextCapture=true`.  
+- **Parameter metadata** → set `QueryWatchOptions.CaptureParameterShape=true` (emits `event.meta.parameters`), never values.
 
-## Redactor ordering tips
+---
 
-If you use multiple redactors, **order matters**. A safe, effective default is:
-
-1. **Whitespace normalizer** – make SQL text stable across environments/providers.
-2. **High‑entropy token masks** – long hex tokens, JWTs, API keys.
-3. **PII masks** – emails, phone numbers, IPs.
-4. **Custom rules** – your app–specific patterns (use `AddRegexRedactor(...)`).
-
-> Put *broad* rules (like whitespace) first, and *specific* rules (like PII) after. This lowers the chance one rule prevents another from matching.
-
-## Typical budgets for Dapper‑heavy solutions
-
-Dapper often issues *fewer, more targeted* commands than ORMs. Reasonable starting points (tune per project):
-
-- **End‑to‑end web test:** `--max-queries 40`, `--max-average-ms 50`, `--max-total-ms 1500`.
-- **Repository‑level test:** `--max-queries 10`, `--max-average-ms 25`, `--max-total-ms 250`.
-- **Per‑pattern budgets:** cap hot spots explicitly, e.g.:
-
-  ```
-  --budget "SELECT * FROM Users*=5" --budget "regex:^UPDATE Orders SET=3"
-  ```
-
-- Increase `sampleTop` in code (`QueryWatchScope.Start(..., sampleTop: 200)`) if you rely on many per‑pattern budgets.
-
-Treat these as **guardrails**: keep design flexible but catch accidental N+1s or slow queries early.
+## License
+MIT

@@ -42,6 +42,10 @@ jobs:
         run: dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
       - name: Pack QueryWatch.EfCore
         run: dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+      - name: Build QueryWatch.Redaction (Release)
+        run: dotnet build ./src/KeelMatrix.QueryWatch.Redaction/KeelMatrix.QueryWatch.Redaction.csproj -c Release --no-restore
+      - name: Pack QueryWatch.Redaction
+        run: dotnet pack ./src/KeelMatrix.QueryWatch.Redaction/KeelMatrix.QueryWatch.Redaction.csproj -c Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
 
       # 3) Restore samples using their NuGet.config (pins KeelMatrix.QueryWatch* to ../artifacts/packages)
       - name: Restore samples
