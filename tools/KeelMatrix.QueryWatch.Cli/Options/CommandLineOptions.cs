@@ -109,23 +109,7 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
             return ParseResult.Successful(opts);
         }
 
-        public static readonly string HelpText =
-            "QueryWatch CLI\n" +
-            "\n" +
-            "Usage: qwatch --input file.json [options]\n" +
-            "\n" +
-            "Options:\n" +
-            "  --input <path>                Input JSON summary file (repeatable).\n" +
-            "  --max-queries N               Fail if total query count exceeds N.\n" +
-            "  --max-average-ms N            Fail if average duration exceeds N ms.\n" +
-            "  --max-total-ms N              Fail if total duration exceeds N ms.\n" +
-            "  --baseline <path>             Baseline summary JSON to compare against.\n" +
-            "  --baseline-allow-percent P    Allow +P% regression vs baseline before failing.\n" +
-            "  --write-baseline              Write current aggregated summary to --baseline.\n" +
-            "  --budget \"<pattern>=<max>\"    Per-pattern query count budget (repeatable).\n" +
-            "                                 Pattern supports wildcards (*, ?) or prefix with 'regex:' for raw regex.\n" +
-            "  --require-full-events         Fail if input summaries are top-N sampled.\n" +
-            "  --help                        Show this help.\n";
+        public static string HelpText => CliSpec.BuildHelpText();
     }
 
     internal readonly record struct ParseResult(bool Success, CommandLineOptions Options, string? ErrorMessage, bool ShowHelp) {

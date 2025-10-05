@@ -4,13 +4,12 @@ namespace KeelMatrix.QueryWatch {
     /// Immutable snapshot of a session used for assertions and inspection.
     /// </summary>
     public sealed class QueryWatchReport {
-        private readonly IReadOnlyList<QueryEvent> _events;
 
         private QueryWatchReport(IReadOnlyList<QueryEvent> events,
                                  QueryWatchOptions options,
                                  DateTimeOffset startedAt,
                                  DateTimeOffset stoppedAt) {
-            _events = events;
+            Events = events;
             Options = options;
             StartedAt = startedAt;
             StoppedAt = stoppedAt;
@@ -34,22 +33,22 @@ namespace KeelMatrix.QueryWatch {
         /// <summary>
         /// Recorded query events in chronological order.
         /// </summary>
-        public IReadOnlyList<QueryEvent> Events => _events;
+        public IReadOnlyList<QueryEvent> Events { get; }
 
         /// <summary>
         /// Number of recorded queries.
         /// </summary>
-        public int TotalQueries => _events.Count;
+        public int TotalQueries => Events.Count;
 
         /// <summary>
         /// Total duration across all recorded queries.
         /// </summary>
-        public TimeSpan TotalDuration => TimeSpan.FromMilliseconds(_events.Sum(e => e.Duration.TotalMilliseconds));
+        public TimeSpan TotalDuration => TimeSpan.FromMilliseconds(Events.Sum(e => e.Duration.TotalMilliseconds));
 
         /// <summary>
         /// Average duration per query across all recorded queries.
         /// </summary>
-        public TimeSpan AverageDuration => TotalQueries == 0 ? TimeSpan.Zero : TimeSpan.FromMilliseconds(_events.Average(e => e.Duration.TotalMilliseconds));
+        public TimeSpan AverageDuration => TotalQueries == 0 ? TimeSpan.Zero : TimeSpan.FromMilliseconds(Events.Average(e => e.Duration.TotalMilliseconds));
 
         /// <summary>
         /// Creates a snapshot report from raw events and timing.
@@ -60,7 +59,7 @@ namespace KeelMatrix.QueryWatch {
         /// <param name="stoppedAt">Session stop (UTC).</param>
         /// <returns>A new report.</returns>
         public static QueryWatchReport CreateSnapshot(IReadOnlyList<QueryEvent> events, QueryWatchOptions options, DateTimeOffset startedAt, DateTimeOffset stoppedAt)
-            => new(events.ToArray(), options, startedAt, stoppedAt);
+            => new([.. events], options, startedAt, stoppedAt);
 
         /// <summary>
         /// Validates configured thresholds and throws on violations.
@@ -81,7 +80,7 @@ namespace KeelMatrix.QueryWatch {
                 problems.Add($"MaxTotalDuration={Options.MaxTotalDuration} but actual {TotalDuration}.");
 
             if (problems.Count > 0) {
-                var header = "Summary: QueryWatch detected one or more performance/query budget violations.";
+                const string header = "Summary: QueryWatch detected one or more performance/query budget violations.";
                 var details = string.Join(" ", problems);
                 var message = $"{header} {details}";
                 throw new QueryWatchViolationException(message);

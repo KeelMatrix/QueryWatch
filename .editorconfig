@@ -33,6 +33,9 @@ dotnet_diagnostic.RS0017.severity = error   # Mark APIs as obsolete/removed
 dotnet_diagnostic.RS0025.severity = error   # Duplicate member in the public API file
 dotnet_diagnostic.RS0037.severity = error   # The generated public API file is not up to date
 
+[*.{cs,vb}]
+dotnet_code_quality.CA1826.exclude_ordefault_methods = true
+
 # (we continue to rely on: EnableNETAnalyzers=true, AnalysisLevel=8.0-recommended)
 
 # ---------------------------

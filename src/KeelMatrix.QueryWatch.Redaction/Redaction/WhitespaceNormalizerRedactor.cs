@@ -17,5 +17,3 @@ namespace KeelMatrix.QueryWatch.Redaction {
         }
     }
 }
-
-

@@ -5,6 +5,7 @@
 /BenchmarkDotNet.Artifacts/
 **/bin/
 /**/obj/
+/docs/CLI_FLAGS.generated.md
 
 # NuGet outputs (don’t commit built packages or local feeds)
 *.nupkg

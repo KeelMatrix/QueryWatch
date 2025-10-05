@@ -49,17 +49,22 @@ var options = new DbContextOptionsBuilder<MyDbContext>()
 
 ## CLI
 
+<!-- BEGIN:CLI_FLAGS -->
 ```
---input <file>               (repeatable) JSON summary exported by QueryWatch
---max-queries N              Fail if total queries exceed N
---max-average-ms MS          Fail if average duration (ms) exceeds MS
---max-total-ms MS            Fail if total duration (ms) exceeds MS
---baseline <file>            Compare against a baseline summary file
---baseline-allow-percent P   Allow +P% regression vs baseline before failing
---write-baseline             Write current aggregated summary to --baseline
---budget "<pattern>=<max>"   Per‑pattern query count budget (repeatable). Pattern
-                             supports wildcards (*, ?) or prefix with 'regex:'.
+--input <path>               Input JSON summary file. (repeatable)
+--max-queries N              Fail if total query count exceeds N.
+--max-average-ms N           Fail if average duration exceeds N ms.
+--max-total-ms N             Fail if total duration exceeds N ms.
+--baseline <path>            Baseline summary JSON to compare against.
+--baseline-allow-percent P   Allow +P% regression vs baseline before failing.
+--write-baseline             Write current aggregated summary to --baseline.
+--budget "<pattern>=<max>"   Per-pattern query count budget (repeatable). (repeatable)
+                             Pattern supports wildcards (*, ?) or prefix with 'regex:' for raw regex.
+--require-full-events        Fail if input summaries are top-N sampled.
+--help                       Show this help.
 ```
+
+<!-- END:CLI_FLAGS -->
 
 ### Multi‑file support
 

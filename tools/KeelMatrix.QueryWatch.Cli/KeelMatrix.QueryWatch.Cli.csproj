@@ -6,8 +6,41 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <!-- Deterministic builds -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+
+    <!-- Safe trimming only when publishing self-contained -->
+    <EnableCliTrim Condition="'$(Configuration)'=='Release' and '$(EnableCliTrim)'==''">true</EnableCliTrim>
+    <PublishTrimmed Condition="'$(EnableCliTrim)'=='true' and '$(SelfContained)'=='true'">true</PublishTrimmed>
+    <TrimMode Condition="'$(EnableCliTrim)'=='true' and '$(SelfContained)'=='true'">partial</TrimMode>
+    <InvariantGlobalization>true</InvariantGlobalization>
+
+    <!-- Optional: pack as a dotnet tool when PackAsDotNetTool=true -->
+    <IsPackable Condition="'$(PackAsDotNetTool)'=='true'">true</IsPackable>
+    <PackAsTool Condition="'$(PackAsDotNetTool)'=='true'">true</PackAsTool>
+    <ToolCommandName Condition="'$(PackAsDotNetTool)'=='true'">qwatch</ToolCommandName>
+    <!-- Keep PackageId short and ergonomic for dotnet tool install -g qwatch -->
+    <PackageId Condition="'$(PackAsDotNetTool)'=='true'">qwatch</PackageId>
+    <!-- Only set PackageReadmeFile if the file actually exists -->
+    <PackageReadmeFile Condition="'$(PackAsDotNetTool)'=='true' and Exists('README.md')">README.md</PackageReadmeFile>
+    <!-- Deterministic versioning path: require ToolVersion when packing as a tool -->
+    <Version Condition="'$(PackAsDotNetTool)'=='true'">$(ToolVersion)</Version>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <!-- Pack it only if present -->
+    <None Include="README.md" Pack="true" PackagePath="" Condition="Exists('README.md')" />
+  </ItemGroup>
+
+  <!-- Guard: fail the pack if version is missing when packing a tool -->
+  <Target Name="EnsureToolVersion" BeforeTargets="Pack" Condition="'$(PackAsDotNetTool)'=='true' and '$(ToolVersion)'==''">
+    <Error Text="When PackAsDotNetTool=true, you must pass ToolVersion= &lt;semver&gt; (e.g., dotnet pack -p:PackAsDotNetTool=true -p:ToolVersion=0.1.0)." />
+  </Target>
 </Project>

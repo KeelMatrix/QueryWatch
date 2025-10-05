@@ -189,6 +189,13 @@ static KeelMatrix.QueryWatch.Redaction.QueryWatchOptionsExtensions.UseRecommende
 static KeelMatrix.QueryWatch.Reporting.QueryWatchJson.ExportToFile(KeelMatrix.QueryWatch.QueryWatchReport! report, string! path, int sampleTop = 5) -> void
 static KeelMatrix.QueryWatch.Reporting.QueryWatchJson.ToSummary(KeelMatrix.QueryWatch.QueryWatchReport! report, int sampleTop = 5) -> KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary!
 static KeelMatrix.QueryWatch.Testing.QueryWatchScope.Start(int? maxQueries = null, System.TimeSpan? maxAverage = null, System.TimeSpan? maxTotal = null, KeelMatrix.QueryWatch.QueryWatchOptions? options = null, string? exportJsonPath = null, int sampleTop = 5) -> KeelMatrix.QueryWatch.Testing.QueryWatchScope!
-
-
-
+KeelMatrix.QueryWatch.QueryWatchOptions.CaptureParameterShape.get -> bool
+KeelMatrix.QueryWatch.QueryWatchOptions.CaptureParameterShape.set -> void
+KeelMatrix.QueryWatch.QueryWatchOptions.DisableAdoTextCapture.get -> bool
+KeelMatrix.QueryWatch.QueryWatchOptions.DisableAdoTextCapture.set -> void
+KeelMatrix.QueryWatch.QueryWatchOptions.DisableDapperTextCapture.get -> bool
+KeelMatrix.QueryWatch.QueryWatchOptions.DisableDapperTextCapture.set -> void
+KeelMatrix.QueryWatch.QueryWatchOptions.DisableEfCoreTextCapture.get -> bool
+KeelMatrix.QueryWatch.QueryWatchOptions.DisableEfCoreTextCapture.set -> void
+KeelMatrix.QueryWatch.QueryWatchViolationException.QueryWatchViolationException() -> void
+KeelMatrix.QueryWatch.QueryWatchViolationException.QueryWatchViolationException(string? message, System.Exception? innerException) -> void

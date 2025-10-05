@@ -1,12 +1,1 @@
 #nullable enable
-KeelMatrix.QueryWatch.QueryWatchOptions.CaptureParameterShape.get -> bool
-KeelMatrix.QueryWatch.QueryWatchOptions.CaptureParameterShape.set -> void
-KeelMatrix.QueryWatch.QueryWatchOptions.DisableAdoTextCapture.get -> bool
-KeelMatrix.QueryWatch.QueryWatchOptions.DisableAdoTextCapture.set -> void
-KeelMatrix.QueryWatch.QueryWatchOptions.DisableDapperTextCapture.get -> bool
-KeelMatrix.QueryWatch.QueryWatchOptions.DisableDapperTextCapture.set -> void
-KeelMatrix.QueryWatch.QueryWatchOptions.DisableEfCoreTextCapture.get -> bool
-KeelMatrix.QueryWatch.QueryWatchOptions.DisableEfCoreTextCapture.set -> void
-
-
-
