@@ -1,4 +1,18 @@
+# KeelMatrix.QueryWatch (core)
 
-## Event metadata policy
+Core library for QueryWatch.
 
-For a detailed overview of parameter-shape capture, failure envelopes, and per-adapter text capture toggles, see **docs/METADATA_POLICY.md**.
+- ✅ **Docs, quickstart, budgets, and wiring (ADO/Dapper/EF Core)** live in the repo root:  
+  https://github.com/KeelMatrix/QueryWatch#readme
+
+### Install
+```bash
+dotnet add package KeelMatrix.QueryWatch
+```
+
+### See also
+- [Quick Start — Samples (local)](https://github.com/KeelMatrix/QueryWatch#quick-start--samples-local)
+- [EF Core wiring](https://github.com/KeelMatrix/QueryWatch#ef-core-wiring)
+- [Dapper wiring](https://github.com/KeelMatrix/QueryWatch#dapper-wiring)
+- [CLI](https://github.com/KeelMatrix/QueryWatch#cli)
+- [Troubleshooting](https://github.com/KeelMatrix/QueryWatch#troubleshooting)
