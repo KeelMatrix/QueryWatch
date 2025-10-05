@@ -1,11 +1,18 @@
+// Copyright (c) KeelMatrix
 #nullable enable
+using System;
+using System.Collections.Generic;
+using System.Threading;
+
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Collects query events for the lifetime of a session. Thread‑safe for recording.
+    /// This version uses a simple <c>lock</c> (monitor) for minimal overhead on write‑heavy workloads,
+    /// and snapshots the list on <see cref="Stop"/>.
     /// </summary>
     public sealed class QueryWatchSession : IDisposable {
         private readonly List<QueryEvent> _events = new List<QueryEvent>();
-        private readonly ReaderWriterLockSlim _gate = new ReaderWriterLockSlim();
+        private readonly object _sync = new object();
         private bool _disposed;
         private int _stopped; // 0 = running, 1 = stopped
 
@@ -18,43 +25,22 @@ namespace KeelMatrix.QueryWatch {
             StartedAt = DateTimeOffset.UtcNow;
         }
 
-        /// <summary>
-        /// Options for this session.
-        /// </summary>
+        /// <summary>Options for this session.</summary>
         public QueryWatchOptions Options { get; }
 
-        /// <summary>
-        /// UTC timestamp when the session started.
-        /// </summary>
+        /// <summary>UTC timestamp when the session started.</summary>
         public DateTimeOffset StartedAt { get; }
 
-        /// <summary>
-        /// UTC timestamp when the session stopped, or <c>null</c> if still running.
-        /// </summary>
+        /// <summary>UTC timestamp when the session stopped, or <c>null</c> if still running.</summary>
         public DateTimeOffset? StoppedAt { get; private set; }
 
-        /// <summary>
-        /// Starts a new session.
-        /// </summary>
-        /// <param name="options">Optional session options.</param>
-        /// <returns>The started session.</returns>
+        /// <summary>Starts a new session.</summary>
         public static QueryWatchSession Start(QueryWatchOptions? options = null) => new QueryWatchSession(options);
 
-        /// <summary>
-        /// Records a query execution event.
-        /// </summary>
-        /// <param name="commandText">Executed SQL or provider command text.</param>
-        /// <param name="duration">Execution duration.</param>
-        public void Record(string commandText, TimeSpan duration) {
-            Record(commandText, duration, meta: null);
-        }
+        /// <summary>Records a query execution event.</summary>
+        public void Record(string commandText, TimeSpan duration) => Record(commandText, duration, meta: null);
 
-        /// <summary>
-        /// Records a query execution event with optional metadata.
-        /// </summary>
-        /// <param name="commandText">Executed SQL or provider command text.</param>
-        /// <param name="duration">Execution duration.</param>
-        /// <param name="meta">Optional metadata bag for provider‑specific details.</param>
+        /// <summary>Records a query execution event with optional metadata.</summary>
         public void Record(string commandText, TimeSpan duration, IReadOnlyDictionary<string, object?>? meta) {
             if (_disposed) throw new ObjectDisposedException(nameof(QueryWatchSession));
 
@@ -62,12 +48,11 @@ namespace KeelMatrix.QueryWatch {
             if (Volatile.Read(ref _stopped) != 0)
                 throw new InvalidOperationException("Session has been stopped; cannot record new events.");
 
-            _gate.EnterWriteLock();
-            try {
+            lock (_sync) {
                 if (_stopped != 0)
                     throw new InvalidOperationException("Session has been stopped; cannot record new events.");
 
-                // Optionally redact or drop SQL text.
+                // Early‑out: if CaptureSqlText=false, avoid any redactor passes and store empty string.
                 string text = string.Empty;
                 if (Options.CaptureSqlText) {
                     text = commandText ?? string.Empty;
@@ -79,15 +64,9 @@ namespace KeelMatrix.QueryWatch {
                 var ev = new QueryEvent(text, duration, DateTimeOffset.UtcNow, meta);
                 _events.Add(ev);
             }
-            finally {
-                _gate.ExitWriteLock();
-            }
         }
 
-        /// <summary>
-        /// Stops the session and returns a snapshot report.
-        /// </summary>
-        /// <returns>A report representing the recorded data.</returns>
+        /// <summary>Stops the session and returns a snapshot report.</summary>
         public QueryWatchReport Stop() {
             if (_disposed) throw new ObjectDisposedException(nameof(QueryWatchSession));
 
@@ -100,27 +79,22 @@ namespace KeelMatrix.QueryWatch {
                 throw new InvalidOperationException("Session has already been stopped.");
             }
 
-            // Snapshot under read lock
-            _gate.EnterReadLock();
-            try {
-                return QueryWatchReport.CreateSnapshot(_events, Options, StartedAt, StoppedAt ?? now);
+            // Snapshot under the same lock that protects writes to maintain no-post-stop recording guarantee.
+            List<QueryEvent> snapshot;
+            lock (_sync) {
+                snapshot = new List<QueryEvent>(_events);
             }
-            finally {
-                _gate.ExitReadLock();
-            }
+
+            return QueryWatchReport.CreateSnapshot(snapshot, Options, StartedAt, StoppedAt ?? now);
         }
 
-        /// <summary>
-        /// Disposes session resources and marks it as stopped.
-        /// </summary>
+        /// <summary>Disposes session resources and marks it as stopped.</summary>
         public void Dispose() {
             // Mark stopped and set StoppedAt once if not set.
             if (Interlocked.Exchange(ref _stopped, 1) == 0) {
                 StoppedAt = DateTimeOffset.UtcNow;
             }
-
             _disposed = true;
-            _gate.Dispose();
         }
     }
 }
