@@ -22,7 +22,6 @@ namespace KeelMatrix.QueryWatch.Tests {
             report.Events.Should().HaveCount(1);
             var recorded = report.Events[0].CommandText;
 
-            // Expected: digits are masked. Current skeleton does NOT implement this → this assertion should FAIL.
             recorded.Should().NotContain("123");
             recorded.Should().Contain("***");
         }

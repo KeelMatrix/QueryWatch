@@ -162,7 +162,7 @@ When run inside GitHub Actions, the CLI writes a Markdown table to the **Step Su
 - **Baselines seem too strict** → tolerances are **percent of baseline**. Ensure your baseline is representative; use `--baseline-allow-percent` to allow small drift.  
 - **CLI help in README looks stale** → run `./build/Update-ReadmeFlags.ps1` (or `--print-flags-md`) to refresh the block between markers.  
 - **Hot path text capture** → disable per‑adapter: `QueryWatchOptions.Disable{Ado|Dapper|EfCore}TextCapture=true`.  
-- **Parameter metadata** → set `QueryWatchOptions.CaptureParameterShape=true` (emits `event.meta.parameters`), never values.
+- **Parameter metadata** → **ON by default**. Set `QueryWatchOptions.CaptureParameterShape=false` (emits `event.meta.parameters`), never values.
 
 ---
 

@@ -61,7 +61,8 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void QueryWatchCommand_Does_Not_Capture_Parameter_Metadata_When_Disabled() {
-            using var session = QueryWatcher.Start(); // default CaptureParameterShape=false
+            var opts = new QueryWatchOptions { CaptureParameterShape = false };
+            using var session = QueryWatcher.Start(opts); // explicitly disabled
 
             var inner = new FakeDbCommand { CommandText = "SELECT 1" };
             var p = inner.CreateParameter();
@@ -74,7 +75,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
             var report = session.Stop();
             report.Events.Should().HaveCount(1);
-            report.Events[0].Meta.Should().BeNull("metadata capture is off by default");
+            report.Events[0].Meta.Should().BeNull("metadata capture is disabled");
         }
 
         [Fact]

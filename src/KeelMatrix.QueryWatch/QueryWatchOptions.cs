@@ -27,12 +27,12 @@ namespace KeelMatrix.QueryWatch {
         /// <summary>
         /// Redactors applied to captured SQL text in the order listed.
         /// </summary>
-        public IList<IQueryTextRedactor> Redactors { get; } = new List<IQueryTextRedactor>();
+        public IList<IQueryTextRedactor> Redactors { get; } = [];
 
         /// <summary>
-        /// Whether to capture only parameter shapes (types/directions), never values. Defaults to <c>true</c>.
+        /// Whether to capture only parameter shapes (names, DbType, size, direction), never values. Defaults to <c>true</c>.
         /// </summary>
-        public bool CaptureParameterShape { get; set; }
+        public bool CaptureParameterShape { get; set; } = true;
 
         /// <summary>
         /// Fast path to entirely disable text capture for the ADO adapter (overrides <see cref="CaptureSqlText"/>). Default: <c>false</c>.

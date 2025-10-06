@@ -4,7 +4,7 @@ This document explains how event-level metadata is attached across adapters (ADO
 
 ## Parameter shape capture (privacy-preserving)
 
-- Flag: `QueryWatchOptions.CaptureParameterShape` (top-level).
+- Flag: `QueryWatchOptions.CaptureParameterShape` (top-level, **default: true**).
 - When `true`, adapters attach **parameter shape** only — _names, DB types, CLR types, directions_ — never values.
 - JSON shape is emitted under `event.meta.parameters`, e.g.:
 

@@ -208,7 +208,7 @@ Read more in `bench/BENCHMARKS.md`.
 - **Trimming**: if a future change adds heavy reflection to the CLI, publish with `-p:EnableCliTrim=false` temporarily.
 - **Tests expecting strings**: several integration tests assert exact substrings like `Baseline written:` or `Baseline regressions:`; keep them stable.
 - **Per‑adapter text capture toggles**: use `QueryWatchOptions.Disable{Ado|Dapper|EfCore}TextCapture` if a hot path shouldn’t record SQL text.
-- **Parameter shapes**: set `QueryWatchOptions.CaptureParameterShape=true` to attach parameter metadata; exported JSON will include `event.meta.parameters`.
+- **Parameter shapes**: **ON by default**. Set `QueryWatchOptions.CaptureParameterShape=false` to disable; exported JSON will include `event.meta.parameters`.
 
 ---
 

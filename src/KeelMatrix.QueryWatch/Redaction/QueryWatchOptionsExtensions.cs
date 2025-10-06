@@ -4,27 +4,6 @@ namespace KeelMatrix.QueryWatch.Redaction {
     /// Extensions for <see cref="QueryWatchOptions"/> to add built‑in redactors.
     /// </summary>
     public static class QueryWatchOptionsExtensions {
-        ///// <summary>
-        ///// Adds a recommended set of redactors in a safe order (normalize → PII/secrets → noise).
-        ///// Flags allow fine tuning; defaults aim for privacy and stability with low false-positive risk.
-        ///// </summary>
-        ///// <param name="options">Options to modify.</param>
-        ///// <param name="includeWhitespaceNormalizer">Normalize whitespace before masking. Default: true.</param>
-        ///// <param name="includeEmails">Mask emails. Default: true.</param>
-        ///// <param name="includeLongHex">Mask long hex tokens (32+). Default: true.</param>
-        ///// <param name="includeJwt">Mask JWT-like tokens. Default: true.</param>
-        ///// <param name="includeAuthorization">Mask Authorization headers. Default: true.</param>
-        ///// <param name="includeConnStringPwd">Mask connection string Password/Pwd. Default: true.</param>
-        ///// <param name="includeGuid">Mask GUIDs. Default: true.</param>
-        ///// <param name="includeUrlTokens">Mask URL query tokens (token/access_token/code/id_token/auth). Default: true.</param>
-        ///// <param name="includeAwsAccessKey">Mask AWS Access Key IDs. Default: true.</param>
-        ///// <param name="includeAzureKeys">Mask Azure AccountKey/SharedAccess*. Default: true.</param>
-        ///// <param name="includeGuidLikeHex">Mask shorter hex identifiers (16–31 chars, at least one letter). Default: true.</param>
-        ///// <param name="includeTimestamps">Mask ISO/Unix timestamps (can increase false positives). Default: false.</param>
-        ///// <param name="includeIpAddresses">Mask IP addresses (IPv4/IPv6) (can increase false positives). Default: false.</param>
-        ///// <param name="includePhone">Mask phone numbers (can increase false positives). Default: false.</param>
-        ///// 
-
         /// <summary>
         /// Adds a recommended set of redactors in a safe order (normalize → PII/secrets → noise).
         /// </summary>
