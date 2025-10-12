@@ -1,4 +1,3 @@
-
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -13,12 +12,9 @@
 
   <ItemGroup>
     <!-- Prefer physical src\… layout; fall back to sibling project layout -->
-    <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch\KeelMatrix.QueryWatch.csproj"
-                      Condition="Exists('..\..\src\KeelMatrix.QueryWatch\KeelMatrix.QueryWatch.csproj')" />
-    <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj"
-                      Condition="Exists('..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj')" />
-      <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch.Redaction\KeelMatrix.QueryWatch.Redaction.csproj"
-                      Condition="Exists('..\..\src\KeelMatrix.QueryWatch.Redaction\KeelMatrix.QueryWatch.Redaction.csproj')" />
+    <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch\KeelMatrix.QueryWatch.csproj" Condition="Exists('..\..\src\KeelMatrix.QueryWatch\KeelMatrix.QueryWatch.csproj')" />
+    <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj" Condition="Exists('..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj')" />
+      <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch.Redaction\KeelMatrix.QueryWatch.Redaction.csproj" Condition="Exists('..\..\src\KeelMatrix.QueryWatch.Redaction\KeelMatrix.QueryWatch.Redaction.csproj')" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,6 +37,3 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" Condition="'$(ManagePackageVersionsCentrally)' != 'true'" />
   </ItemGroup>
 </Project>
-
-
-

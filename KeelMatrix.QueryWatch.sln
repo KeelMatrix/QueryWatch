@@ -31,6 +31,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeelMatrix.QueryWatch.Redac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeelMatrix.QueryWatch.Benchmarks", "bench\KeelMatrix.QueryWatch.Benchmarks\KeelMatrix.QueryWatch.Benchmarks.csproj", "{F483136B-5F73-44F1-8BA3-718B200B258A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeelMatrix.QueryWatch.Dapper.Tests", "tests\KeelMatrix.QueryWatch.Dapper.Tests\KeelMatrix.QueryWatch.Dapper.Tests.csproj", "{13D2376F-FFB3-4263-93A1-907D2A974393}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeelMatrix.QueryWatch.Providers.SmokeTests", "tests\KeelMatrix.QueryWatch.Providers.SmokeTests\KeelMatrix.QueryWatch.Providers.SmokeTests.csproj", "{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{61864139-D205-400F-82D4-252426688579}"
+	ProjectSection(SolutionItems) = preProject
+		tests\Shared\SmokePlaceholder.cs = tests\Shared\SmokePlaceholder.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -161,6 +170,30 @@ Global
 		{F483136B-5F73-44F1-8BA3-718B200B258A}.Release|x64.Build.0 = Release|Any CPU
 		{F483136B-5F73-44F1-8BA3-718B200B258A}.Release|x86.ActiveCfg = Release|Any CPU
 		{F483136B-5F73-44F1-8BA3-718B200B258A}.Release|x86.Build.0 = Release|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Debug|x64.Build.0 = Debug|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Debug|x86.Build.0 = Debug|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Release|x64.ActiveCfg = Release|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Release|x64.Build.0 = Release|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Release|x86.ActiveCfg = Release|Any CPU
+		{13D2376F-FFB3-4263-93A1-907D2A974393}.Release|x86.Build.0 = Release|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Debug|x64.Build.0 = Debug|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Debug|x86.Build.0 = Debug|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Release|x64.ActiveCfg = Release|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Release|x64.Build.0 = Release|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Release|x86.ActiveCfg = Release|Any CPU
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -176,6 +209,9 @@ Global
 		{5BE6CC64-5276-4832-ADB1-AD0D334D26D1} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{FE18583F-2A73-43C3-9EAF-94CA8292F5B8} = {760AB15A-8938-8D9B-BEDE-5CE1484B84C3}
 		{F483136B-5F73-44F1-8BA3-718B200B258A} = {760AB15A-8938-8D9B-BEDE-5CE1484B84C3}
+		{13D2376F-FFB3-4263-93A1-907D2A974393} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{B54B2F7C-A17E-4C4B-96FE-6244B10F41CE} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{61864139-D205-400F-82D4-252426688579} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B433EB21-BD3B-4E85-9645-38C1E8BDC563}

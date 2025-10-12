@@ -1,0 +1,40 @@
+<Project>
+  <PropertyGroup>
+    <DbComposeFile>$(MSBuildThisFileDirectory)docker-compose.db.yml</DbComposeFile>
+
+    <!-- Only bring up DBs for the SmokeTests project, never on Windows,
+         and allow CI to hard-disable via env var QWATCH__DISABLE_COMPOSE=1 -->
+    <RunDbCompose
+      Condition="'$(MSBuildProjectName)'=='KeelMatrix.QueryWatch.Providers.SmokeTests'
+                 and '$(OS)'!='Windows_NT'
+                 and '$(QWATCH__DISABLE_COMPOSE)'!='1'">true</RunDbCompose>
+  </PropertyGroup>
+
+  <!-- Bring containers up exactly once per smoke test run -->
+  <Target Name="ComposeUpForTests"
+          BeforeTargets="VSTest"
+          Condition="'$(RunDbCompose)'=='true' and Exists('$(DbComposeFile)')">
+    <Message Text="Starting DB containers for smoke tests via docker compose." Importance="High" />
+    <Exec Command="docker compose version" />
+    <Exec Command="docker compose -f &quot;$(DbComposeFile)&quot; down -v --remove-orphans" IgnoreExitCode="true" />
+    <Exec Command="docker compose -f &quot;$(DbComposeFile)&quot; up -d --wait" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="ComposeOut" />
+    </Exec>
+    <Message Text="$(ComposeOut)" Importance="High" />
+  </Target>
+
+  <Target Name="ComposeDownAfterTests"
+          AfterTargets="VSTest"
+          Condition="'$(RunDbCompose)'=='true' and Exists('$(DbComposeFile)')">
+    <Message Text="Stopping DB containers for smoke tests." Importance="High" />
+    <Exec Command="docker compose -f &quot;$(DbComposeFile)&quot; down -v --remove-orphans" IgnoreExitCode="true" />
+  </Target>
+
+  <ItemGroup Condition="'$(IsTestProject)'=='true'
+		and '$(IncludeSmokePlaceholder)'!='false'
+		and '$(BuildingInsideVisualStudio)'=='true'">
+    <Compile Include="$([System.IO.Path]::Combine('$(MSBuildThisFileDirectory)','Shared','SmokePlaceholder.cs'))">
+      <Link>SmokePlaceholder.cs</Link>
+    </Compile>
+  </ItemGroup>
+</Project>

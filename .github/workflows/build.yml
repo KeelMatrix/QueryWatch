@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ "*" ]
+
+permissions:
+  contents: read
+
+jobs:
+  # Regular tests (exclude provider smoke tests)
+  unit-and-integration:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      QWATCH__DISABLE_COMPOSE: "0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore KeelMatrix.QueryWatch.sln
+
+      - name: Build
+        run: dotnet build KeelMatrix.QueryWatch.sln -c Release --no-restore
+
+      # IMPORTANT: exclude the provider smoke tests here so they only run in the dedicated job below
+      - name: Test (exclude smoke)
+        run: >
+          dotnet test KeelMatrix.QueryWatch.sln -c Release --no-build
+          --filter "FullyQualifiedName!~KeelMatrix.QueryWatch.Providers.SmokeTests"
+
+  # Provider smoke tests (run in isolation; DBs auto up/down via Directory.Build.targets)
+  smoke-tests:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # No manual docker steps needed; tests/Directory.Build.targets handles compose up/down
+      - name: Run smoke tests
+        run: >
+          dotnet test --configuration Release
+          --filter "FullyQualifiedName~KeelMatrix.QueryWatch.Providers.SmokeTests"
