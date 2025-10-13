@@ -37,10 +37,11 @@ This repo ships three tiny sample apps (EF Core, ADO.NET, Dapper) that **consume
    ```bash
    dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
    dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+   dotnet pack ./src/KeelMatrix.QueryWatch.Redaction/KeelMatrix.QueryWatch.Redaction.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
    ```
-2. **Install local packages to samples** (pins to `./artifacts/packages` via `samples/NuGet.config`):
-   - Windows (PowerShell): `./samples/init.ps1`  
-   - Linux/macOS (bash): `./samples/init.sh`
+2. **Install local packages to samples** (pins to `../artifacts/packages` via `samples/NuGet.config`):
+   - Windows (PowerShell): `pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1`  
+   - Linux/macOS (bash): `bash build/Dev-PackInstallSamples.sh`
 3. **Run a sample** (EF example shown):
    ```bash
    dotnet run --project ./samples/EFCore.Sqlite/EFCore.Sqlite.csproj -c Release
@@ -77,7 +78,7 @@ var options = new DbContextOptionsBuilder<MyDbContext>()
 ```csharp
 using Dapper;
 using Microsoft.Data.Sqlite;
-using KeelMatrix.QueryWatch.Dapper;
+using KeelMatrix.QueryWatch;
 using KeelMatrix.QueryWatch.Testing;
 
 using var q = QueryWatchScope.Start(exportJsonPath: "artifacts/dapper.json", sampleTop: 200);
@@ -99,7 +100,7 @@ var rows = await conn.QueryAsync("SELECT 1");
 
 ```csharp
 using Microsoft.Data.Sqlite;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch;
 using KeelMatrix.QueryWatch.Testing;
 
 using var q = QueryWatchScope.Start(exportJsonPath: "artifacts/ado.json", sampleTop: 200);

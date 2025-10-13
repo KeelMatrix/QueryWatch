@@ -10,7 +10,7 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class DapperWrapperTests {
         [Fact]
         public void CreateCommand_Wraps_And_Records_On_ExecuteNonQuery() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using var session = QueryWatcher.Start();
             var inner = new OnlyIdbConnection();
             using var wrapped = new DapperQueryWatchConnection(inner, session);
 
@@ -28,7 +28,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void ExecuteScalar_And_Reader_Record_Events() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using var session = QueryWatcher.Start();
             using var wrapped = new DapperQueryWatchConnection(new OnlyIdbConnection(), session);
 
             using (var cmd = wrapped.CreateCommand()) {
@@ -47,7 +47,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void BeginTransaction_Preserves_Wrapper_Connection_And_Unwraps_Inner_On_Command_Setter() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using var session = QueryWatcher.Start();
             var inner = new OnlyIdbConnection();
             using var wrapped = new DapperQueryWatchConnection(inner, session);
 
@@ -63,7 +63,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void Command_Connection_Getter_Is_Wrapper_And_Setter_Unwraps() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using var session = QueryWatcher.Start();
             var inner = new OnlyIdbConnection();
             using var wrapped = new DapperQueryWatchConnection(inner, session);
 
@@ -78,7 +78,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void Dapper_Extension_WithQueryWatch_Chooses_Highest_Fidelity_Wrapper() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using var session = QueryWatcher.Start();
 
             // 1) If provider derives from DbConnection, we should get ADO wrapper (supports async).
             var dbDerived = new DbDerivedConnection();
@@ -87,7 +87,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
             // 2) If provider does not derive from DbConnection, we should get the Dapper-only wrapper.
             IDbConnection onlyIdb = new OnlyIdbConnection();
-            var wrapped2 = KeelMatrix.QueryWatch.Dapper.DapperQueryWatchExtensions.WithQueryWatch(onlyIdb, session);
+            var wrapped2 = QueryWatchExtensions.WithQueryWatch(onlyIdb, session);
             wrapped2.Should().BeOfType<DapperQueryWatchConnection>();
         }
 

@@ -195,8 +195,8 @@ Read more in `bench/BENCHMARKS.md`.
   dotnet pack  ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg -o ./artifacts/packages
   dotnet pack  ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg -o ./artifacts/packages
 
-  # Then run the sample helper
-  pwsh -NoProfile -File samples/init.ps1
+  # Then run the sample setup
+  pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
   dotnet run --project samples/EFCore.Sqlite/EFCore.Sqlite.csproj -c Release
   ```
 
