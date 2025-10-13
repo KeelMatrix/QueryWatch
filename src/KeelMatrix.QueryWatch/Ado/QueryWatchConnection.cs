@@ -71,31 +71,4 @@ namespace KeelMatrix.QueryWatch.Ado {
             base.Dispose(disposing);
         }
     }
-
-    /// <summary>
-    /// Extension helpers for wrapping connections with QueryWatch.
-    /// </summary>
-    public static class QueryWatchConnectionExtensions {
-        /// <summary>
-        /// Wrap a <see cref="DbConnection"/> to record commands into <see cref="QueryWatchSession"/>.
-        /// </summary>
-        /// <param name="connection">Connection to wrap.</param>
-        /// <param name="session">Session to record into.</param>
-        /// <returns>A wrapper connection that instruments commands.</returns>
-        public static DbConnection WithQueryWatch(this DbConnection connection, QueryWatchSession session)
-            => new QueryWatchConnection(connection, session);
-
-        /// <summary>
-        /// Wrap an <see cref="IDbConnection"/> whose underlying type is a <see cref="DbConnection"/>.
-        /// </summary>
-        /// <param name="connection">Connection to wrap.</param>
-        /// <param name="session">Session to record into.</param>
-        /// <returns>A wrapper connection that instruments commands.</returns>
-        /// <exception cref="NotSupportedException">Thrown when the connection type does not derive from <see cref="DbConnection"/>.</exception>
-        public static IDbConnection WithQueryWatch(this IDbConnection connection, QueryWatchSession session) {
-            if (connection is DbConnection db) return new QueryWatchConnection(db, session);
-            throw new NotSupportedException("This provider doesn't derive from DbConnection; wrap commands manually.");
-        }
-    }
 }
-

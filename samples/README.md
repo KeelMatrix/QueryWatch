@@ -12,7 +12,7 @@ Tiny apps that consume the local `KeelMatrix.QueryWatch*` packages so you can se
 ## Start here
 Follow the **[Quick Start — Samples (local)](../README.md#quick-start--samples-local)** in the root README.
 
-> After you run `dotnet pack ...` at the repo root, use `./init.ps1` (or `./init.sh`) once to add local packages. No other tweaks are needed.
+> After you run `dotnet pack ...` at the repo root, use `pwsh -NoProfile -File ../build/Dev-PackInstallSamples.ps1` (or `bash ../build/Dev-PackInstallSamples.sh`) once to install local packages. No other tweaks are needed.
 
 ### Run a sample
 ```bash

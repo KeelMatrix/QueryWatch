@@ -44,7 +44,7 @@ for (int i = 0; i < 5; i++) {
 // Query back
 using (var select = conn.CreateCommand()) {
     select.CommandText = Redaction.Apply("SELECT COUNT(*) FROM Users WHERE Name LIKE 'User_%';");
-    var count = Convert.ToInt32(await select.ExecuteScalarAsync());
+    var count = Convert.ToInt32(await select.ExecuteScalarAsync(), System.Globalization.CultureInfo.InvariantCulture);
     Console.WriteLine($"Users in DB: {count}");
 }
 

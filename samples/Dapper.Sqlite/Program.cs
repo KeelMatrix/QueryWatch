@@ -1,6 +1,6 @@
 using Dapper;
 using DapperSample;
-using KeelMatrix.QueryWatch.Dapper;
+using KeelMatrix.QueryWatch;
 using KeelMatrix.QueryWatch.Testing;
 using Microsoft.Data.Sqlite;
 
@@ -26,7 +26,7 @@ using var conn = raw.WithQueryWatch(q.Session);
 await conn.ExecuteAsync(Redaction.Apply("/* contact: admin@example.com */ CREATE TABLE Users(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL);"));
 
 // Insert in a transaction (exercise Transaction wrapper + async APIs)
-using (var tx = conn.BeginTransaction()) {
+using (var tx = await conn.BeginTransactionAsync()) {
     for (int i = 0; i < 3; i++) {
         var email = $"user{i}@example.com"; // will be redacted in CommandText
         await conn.ExecuteAsync(
@@ -34,7 +34,7 @@ using (var tx = conn.BeginTransaction()) {
             new { name = Redaction.Param("User_" + i) },
             transaction: tx);
     }
-    tx.Commit();
+    await tx.CommitAsync();
 }
 
 // Query back (async)

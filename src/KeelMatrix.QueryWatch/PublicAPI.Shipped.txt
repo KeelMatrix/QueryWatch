@@ -5,7 +5,6 @@ KeelMatrix.QueryWatch.Ado.QueryWatchCommand.QueryWatchCommand(System.Data.Common
 KeelMatrix.QueryWatch.Ado.QueryWatchConnection
 KeelMatrix.QueryWatch.Ado.QueryWatchConnection.Inner.get -> System.Data.Common.DbConnection!
 KeelMatrix.QueryWatch.Ado.QueryWatchConnection.QueryWatchConnection(System.Data.Common.DbConnection! inner, KeelMatrix.QueryWatch.QueryWatchSession! session) -> void
-KeelMatrix.QueryWatch.Ado.QueryWatchConnectionExtensions
 KeelMatrix.QueryWatch.Ado.QueryWatchTransaction
 KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.Inner.get -> System.Data.Common.DbTransaction!
 KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.QueryWatchTransaction(System.Data.Common.DbTransaction! inner, KeelMatrix.QueryWatch.Ado.QueryWatchConnection! owner) -> void
@@ -47,7 +46,6 @@ KeelMatrix.QueryWatch.Dapper.DapperQueryWatchConnection.Dispose() -> void
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchConnection.Inner.get -> System.Data.IDbConnection!
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchConnection.Open() -> void
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchConnection.State.get -> System.Data.ConnectionState
-KeelMatrix.QueryWatch.Dapper.DapperQueryWatchExtensions
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchTransaction
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchTransaction.Commit() -> void
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchTransaction.Connection.get -> System.Data.IDbConnection!
@@ -177,9 +175,6 @@ override KeelMatrix.QueryWatch.Ado.QueryWatchConnection.State.get -> System.Data
 override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.Commit() -> void
 override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.IsolationLevel.get -> System.Data.IsolationLevel
 override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.Rollback() -> void
-static KeelMatrix.QueryWatch.Ado.QueryWatchConnectionExtensions.WithQueryWatch(this System.Data.Common.DbConnection! connection, KeelMatrix.QueryWatch.QueryWatchSession! session) -> System.Data.Common.DbConnection!
-static KeelMatrix.QueryWatch.Ado.QueryWatchConnectionExtensions.WithQueryWatch(this System.Data.IDbConnection! connection, KeelMatrix.QueryWatch.QueryWatchSession! session) -> System.Data.IDbConnection!
-static KeelMatrix.QueryWatch.Dapper.DapperQueryWatchExtensions.WithQueryWatch(this System.Data.IDbConnection! connection, KeelMatrix.QueryWatch.QueryWatchSession! session) -> System.Data.IDbConnection!
 static KeelMatrix.QueryWatch.IO.PathUtils.Combine(params string![]! segments) -> string!
 static KeelMatrix.QueryWatch.QueryWatcher.Start(KeelMatrix.QueryWatch.QueryWatchOptions? options = null) -> KeelMatrix.QueryWatch.QueryWatchSession!
 static KeelMatrix.QueryWatch.QueryWatchReport.CreateSnapshot(System.Collections.Generic.IReadOnlyList<KeelMatrix.QueryWatch.QueryEvent!>! events, KeelMatrix.QueryWatch.QueryWatchOptions! options, System.DateTimeOffset startedAt, System.DateTimeOffset stoppedAt) -> KeelMatrix.QueryWatch.QueryWatchReport!
@@ -199,3 +194,6 @@ KeelMatrix.QueryWatch.QueryWatchOptions.DisableEfCoreTextCapture.get -> bool
 KeelMatrix.QueryWatch.QueryWatchOptions.DisableEfCoreTextCapture.set -> void
 KeelMatrix.QueryWatch.QueryWatchViolationException.QueryWatchViolationException() -> void
 KeelMatrix.QueryWatch.QueryWatchViolationException.QueryWatchViolationException(string? message, System.Exception? innerException) -> void
+KeelMatrix.QueryWatch.QueryWatchExtensions
+static KeelMatrix.QueryWatch.QueryWatchExtensions.WithQueryWatch(this System.Data.Common.DbConnection! connection, KeelMatrix.QueryWatch.QueryWatchSession! session) -> System.Data.Common.DbConnection!
+static KeelMatrix.QueryWatch.QueryWatchExtensions.WithQueryWatch(this System.Data.IDbConnection! connection, KeelMatrix.QueryWatch.QueryWatchSession! session) -> System.Data.IDbConnection!

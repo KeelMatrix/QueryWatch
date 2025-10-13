@@ -3,40 +3,49 @@ using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Ado;
-using KeelMatrix.QueryWatch.Dapper;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
     public class ExtensionHelpersOverloadsTests {
         [Fact]
         public void Ado_Extensions_WithQueryWatch_Overloads_Work_For_DbConnection_And_IDbConnection() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using var session = QueryWatcher.Start();
             var provider = new FakeDbConnection();
 
             // DbConnection overload
-            var w1 = KeelMatrix.QueryWatch.Ado.QueryWatchConnectionExtensions.WithQueryWatch((DbConnection)provider, session);
+            var w1 = QueryWatchExtensions.WithQueryWatch((DbConnection)provider, session);
             w1.Should().BeOfType<QueryWatchConnection>();
 
             // IDbConnection overload with Db-derived type must also return QueryWatchConnection
-            var w2 = KeelMatrix.QueryWatch.Ado.QueryWatchConnectionExtensions.WithQueryWatch((IDbConnection)provider, session);
+            var w2 = QueryWatchExtensions.WithQueryWatch((IDbConnection)provider, session);
             w2.Should().BeOfType<QueryWatchConnection>();
         }
 
         [Fact]
-        public void Ado_Extension_WithQueryWatch_On_NonDbConnection_Throws_NotSupported() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+        public void Ado_Extension_WithQueryWatch_On_NonDbConnection_Uses_DapperWrapper_And_Records() {
+            using var session = QueryWatcher.Start();
             IDbConnection onlyIdb = new OnlyIdbConnection();
+            var wrapped = QueryWatchExtensions.WithQueryWatch(onlyIdb, session);
 
-            Action act = () => KeelMatrix.QueryWatch.Ado.QueryWatchConnectionExtensions.WithQueryWatch(onlyIdb, session);
-            act.Should().Throw<NotSupportedException>();
+            wrapped.Should().NotBeSameAs(onlyIdb);
+            wrapped.Should().BeOfType<Dapper.DapperQueryWatchConnection>();
+
+            // Smoke: a command executed through the wrapper should be recorded
+            using (var cmd = wrapped.CreateCommand()) {
+                cmd.CommandText = "SELECT 1";
+                _ = cmd.ExecuteNonQuery();
+            }
+
+            var report = session.Stop();
+            report.Events.Count.Should().BeGreaterThan(0, "executing a command via the Dapper wrapper must be recorded");
         }
 
         [Fact]
         public void Dapper_Extension_Prefers_Ado_Wrapper_For_DbDerived() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using var session = QueryWatcher.Start();
             IDbConnection provider = new FakeDbConnection();
 
-            var wrapped = KeelMatrix.QueryWatch.Dapper.DapperQueryWatchExtensions.WithQueryWatch(provider, session);
+            var wrapped = QueryWatchExtensions.WithQueryWatch(provider, session);
             wrapped.Should().BeOfType<QueryWatchConnection>();
         }
 
