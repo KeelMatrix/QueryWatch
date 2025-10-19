@@ -8,14 +8,15 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests {
             public Setup() {
                 const string passwordSQLSERVER = "SqlServer!Passw0rd";
                 const string passwordPOSTGRES = "postgres";
+                const string passwordMYSQL = "mysql";
 
                 // 1) If running under VS (no MSBuild VSTest targets), ensure DBs are up.
                 //    This is idempotent and cheap when already up (CLI path).
                 var composeFile = FindComposeFile();
                 if (composeFile is not null && DockerAvailable()
-                    && (!PortOpen("localhost", 14333) || !PortOpen("localhost", 5433))) {
+                    && (!PortOpen("localhost", 14333) || !PortOpen("localhost", 5433) || !PortOpen("localhost", 3307))) {
                     // docker compose up -d --wait
-                    _startedCompose = RunDockerCompose(composeFile, $"up -d --wait");
+                    _startedCompose = RunDockerCompose(composeFile, "up -d --wait");
                 }
 
                 // 2) Provide default connection strings (used by smoke tests).
@@ -23,6 +24,8 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests {
                     $"Server=localhost,14333;User Id=sa;Password={passwordSQLSERVER};Encrypt=True;TrustServerCertificate=True;Initial Catalog=master");
                 SetIfEmpty("QWATCH__POSTGRES__CS",
                     $"Host=localhost;Port=5433;Username=postgres;Password={passwordPOSTGRES};Database=postgres");
+                SetIfEmpty("QWATCH__MYSQL__CS",
+                    $"Server=localhost;Port=3307;User ID=root;Password={passwordMYSQL};Database=testdb;SslMode=None;");
             }
 
             private static void SetIfEmpty(string name, string value) {
@@ -34,7 +37,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests {
                 // docker compose down only if we were the ones to start it
                 var composeFile = FindComposeFile();
                 if (_startedCompose && composeFile is not null && DockerAvailable()) {
-                    RunDockerCompose(composeFile, $"down -v --remove-orphans");
+                    RunDockerCompose(composeFile, "down -v --remove-orphans");
                 }
             }
 
@@ -42,7 +45,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests {
 
             private static string? FindComposeFile() {
                 // repo-relative: tests/docker-compose.db.yml
-                var f = "tests/docker-compose.db.yml";
+                const string f = "tests/docker-compose.db.yml";
                 var dir = new DirectoryInfo(AppContext.BaseDirectory);
                 for (var i = 0; i < 8 && dir is not null; i++, dir = dir.Parent) {
                     var path = Path.Combine(dir.FullName, f);

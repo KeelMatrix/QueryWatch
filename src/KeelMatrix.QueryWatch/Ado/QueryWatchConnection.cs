@@ -8,7 +8,6 @@ namespace KeelMatrix.QueryWatch.Ado {
     /// Wraps a provider <see cref="DbConnection"/> and returns commands that record execution into a <see cref="QueryWatchSession"/>.
     /// </summary>
     public sealed class QueryWatchConnection : DbConnection {
-        private readonly DbConnection _inner;
         private readonly QueryWatchSession _session;
 
         /// <summary>
@@ -18,55 +17,55 @@ namespace KeelMatrix.QueryWatch.Ado {
         /// <param name="session">Session to record into.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="inner"/> or <paramref name="session"/> is null.</exception>
         public QueryWatchConnection(DbConnection inner, QueryWatchSession session) {
-            _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+            Inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _session = session ?? throw new ArgumentNullException(nameof(session));
         }
 
         /// <summary>
         /// Gets the inner provider connection.
         /// </summary>
-        public DbConnection Inner => _inner;
+        public DbConnection Inner { get; }
 
         /// <inheritdoc />
         [AllowNull]
         public override string ConnectionString {
-            get => _inner.ConnectionString;
-            set => _inner.ConnectionString = value;
+            get => Inner.ConnectionString;
+            set => Inner.ConnectionString = value;
         }
 
         /// <inheritdoc />
-        public override string Database => _inner.Database;
+        public override string Database => Inner.Database;
 
         /// <inheritdoc />
-        public override string DataSource => _inner.DataSource;
+        public override string DataSource => Inner.DataSource;
 
         /// <inheritdoc />
-        public override string ServerVersion => _inner.ServerVersion;
+        public override string ServerVersion => Inner.ServerVersion;
 
         /// <inheritdoc />
-        public override ConnectionState State => _inner.State;
+        public override ConnectionState State => Inner.State;
 
         /// <inheritdoc />
-        public override void ChangeDatabase(string databaseName) => _inner.ChangeDatabase(databaseName);
+        public override void ChangeDatabase(string databaseName) => Inner.ChangeDatabase(databaseName);
 
         /// <inheritdoc />
-        public override void Close() => _inner.Close();
+        public override void Close() => Inner.Close();
 
         /// <inheritdoc />
-        public override void Open() => _inner.Open();
+        public override void Open() => Inner.Open();
 
         /// <inheritdoc />
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
-            => new QueryWatchTransaction(_inner.BeginTransaction(isolationLevel), this);
+            => new QueryWatchTransaction(Inner.BeginTransaction(isolationLevel), this);
 
         /// <inheritdoc />
         protected override DbCommand CreateDbCommand()
-            => new QueryWatchCommand(_inner.CreateCommand(), _session, this);
+            => new QueryWatchCommand(Inner.CreateCommand(), _session, this);
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing) {
             if (disposing) {
-                _inner.Dispose();
+                Inner.Dispose();
             }
             base.Dispose(disposing);
         }

@@ -28,9 +28,11 @@
     <!-- ADO.NET providers (reflection-activated in tests) -->
     <PackageReference Include="Microsoft.Data.SqlClient" PrivateAssets="all" />
     <PackageReference Include="Npgsql" PrivateAssets="all" />
+    <PackageReference Include="MySqlConnector" PrivateAssets="all" />
 
     <!-- EF Core provider extensions (optional paths exercised in smoke tests) -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" PrivateAssets="all" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" PrivateAssets="all" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" PrivateAssets="all" />
   </ItemGroup>
 </Project>
