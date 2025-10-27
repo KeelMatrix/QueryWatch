@@ -49,7 +49,7 @@ jobs:
       - name: Pack (EF Core adapter)
         run: dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
       - name: Upload packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: nuget-packages
           path: ./artifacts/packages
@@ -98,7 +98,7 @@ jobs:
           -CoolDownSec 0
   
       - name: Upload benchmark artifacts (${{ matrix.shard.name }})
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: perf-benchmarks-${{ matrix.shard.name }}
           path: artifacts/benchmarks
