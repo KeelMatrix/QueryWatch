@@ -8,7 +8,11 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             modelBuilder.Entity<Item>(e => {
                 e.ToTable("qw_items");
                 e.HasKey(x => x.Id);
-                e.Property(x => x.Name).HasMaxLength(200);
+                e.Property(x => x.Id)
+                    .HasColumnName("id");
+                e.Property(x => x.Name)
+                    .HasColumnName("name")
+                    .HasMaxLength(200);
             });
         }
     }

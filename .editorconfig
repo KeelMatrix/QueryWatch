@@ -45,6 +45,7 @@ dotnet_code_quality.CA1826.exclude_ordefault_methods = true
 [tests/**.cs]
 dotnet_diagnostic.CA1707.severity = none   # disable “no underscores in identifiers” for test names
 dotnet_diagnostic.CS1591.severity = none   # disable “missing XML documentation” for test code
+dotnet_diagnostic.IDE0290.severity = none  # disable “Use primary constructor”
 
 # sample apps under /samples
 [samples/**.cs]
@@ -60,6 +61,9 @@ dotnet_diagnostic.CS1591.severity = none   # disable “missing XML documentatio
 [src/KeelMatrix.QueryWatch/**.cs]
 dotnet_diagnostic.CA1510.severity = none   # disable “prefer ArgumentNullException.ThrowIfNull” requirement
 dotnet_diagnostic.CA1513.severity = none   # disable “prefer nameof(...) in exceptions” requirement
+dotnet_diagnostic.CA2249.severity = none   # disable “Use 'string.Contains' instead of 'string.IndexOf' to improve readability”
+dotnet_diagnostic.IDE0290.severity = none  # disable “Use primary constructor”
+dotnet_diagnostic.RCS1001.severity = none  # disable “Add braces to if statement”
 
 # Project: Contracts — src/KeelMatrix.QueryWatch.Contracts
 [src/KeelMatrix.QueryWatch.Contracts/**.cs]
