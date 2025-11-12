@@ -12,7 +12,7 @@ namespace KeelMatrix.QueryWatch.Redaction {
         /// <inheritdoc />
         public string Redact(string input) {
             if (string.IsNullOrEmpty(input)) return string.Empty;
-            var normalized = Ws.Replace(input, " ");
+            string normalized = Ws.Replace(input, " ");
             return normalized.Trim();
         }
     }

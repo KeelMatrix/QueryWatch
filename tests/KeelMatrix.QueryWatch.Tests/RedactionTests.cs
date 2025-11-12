@@ -1,29 +1,31 @@
-using System;
 using FluentAssertions;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
-    public class RedactionTests {
-        private sealed class DigitsToAsterisks : KeelMatrix.QueryWatch.IQueryTextRedactor {
-            public string Redact(string input) => System.Text.RegularExpressions.Regex.Replace(input ?? string.Empty, @"\d", "*");
+    public partial class RedactionTests {
+        private sealed partial class DigitsToAsterisks : KeelMatrix.QueryWatch.IQueryTextRedactor {
+            public string Redact(string input) => RedactRegex().Replace(input ?? string.Empty, "*");
+
+            [System.Text.RegularExpressions.GeneratedRegex(@"\d")]
+            private static partial System.Text.RegularExpressions.Regex RedactRegex();
         }
 
         [Fact]
         public void Record_Applies_Redactors_To_CommandText() {
-            var options = new KeelMatrix.QueryWatch.QueryWatchOptions {
+            QueryWatchOptions options = new() {
                 CaptureSqlText = true
             };
             options.Redactors.Add(new DigitsToAsterisks());
 
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start(options);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start(options);
             session.Record("SELECT * FROM Users WHERE Id=123", TimeSpan.FromMilliseconds(5));
-            var report = session.Stop();
+            QueryWatchReport report = session.Stop();
 
-            report.Events.Should().HaveCount(1);
+            _ = report.Events.Should().HaveCount(1);
             var recorded = report.Events[0].CommandText;
 
-            recorded.Should().NotContain("123");
-            recorded.Should().Contain("***");
+            _ = recorded.Should().NotContain("123");
+            _ = recorded.Should().Contain("***");
         }
     }
 }

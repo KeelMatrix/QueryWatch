@@ -1,4 +1,3 @@
-#nullable enable
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -28,18 +27,17 @@ namespace KeelMatrix.QueryWatch.Dapper {
         #region Helper plumbing
 
         private string ResolveTextForRecording() {
-            if (_session.Options.DisableDapperTextCapture) return string.Empty;
-            return _inner.CommandText ?? string.Empty;
+            return _session.Options.DisableDapperTextCapture ? string.Empty : _inner.CommandText ?? string.Empty;
         }
 
         private void RecordSuccess(TimeSpan elapsed) {
-            var text = ResolveTextForRecording();
+            string text = ResolveTextForRecording();
             _session.Record(text, elapsed);
         }
 
         private void RecordFailure(TimeSpan elapsed, Exception ex) {
-            var text = ResolveTextForRecording();
-            var meta = new Dictionary<string, object?>(StringComparer.Ordinal) {
+            string text = ResolveTextForRecording();
+            Dictionary<string, object?> meta = new(StringComparer.Ordinal) {
                 ["failed"] = true,
                 ["exception"] = ex?.GetType().FullName ?? "UnknownException",
                 ["provider"] = "dapper"
@@ -74,12 +72,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
         public IDbConnection? Connection {
             get => (IDbConnection?)_ownerConnection ?? _inner.Connection;
             set {
-                if (value is DapperQueryWatchConnection wrapped) {
-                    _inner.Connection = wrapped.Inner;
-                }
-                else {
-                    _inner.Connection = value;
-                }
+                _inner.Connection = value is DapperQueryWatchConnection wrapped ? wrapped.Inner : value;
             }
         }
 
@@ -90,12 +83,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
         public IDbTransaction? Transaction {
             get => _inner.Transaction;
             set {
-                if (value is DapperQueryWatchTransaction tx) {
-                    _inner.Transaction = tx.Inner;
-                }
-                else {
-                    _inner.Transaction = value;
-                }
+                _inner.Transaction = value is DapperQueryWatchTransaction tx ? tx.Inner : value;
             }
         }
 
@@ -116,7 +104,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
 
         /// <inheritdoc />
         public int ExecuteNonQuery() {
-            var sw = Stopwatch.StartNew();
+            Stopwatch sw = Stopwatch.StartNew();
             try { return _inner.ExecuteNonQuery(); }
             catch (Exception ex) { sw.Stop(); RecordFailure(sw.Elapsed, ex); throw; }
             finally { if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); } }
@@ -124,7 +112,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
 
         /// <inheritdoc />
         public object? ExecuteScalar() {
-            var sw = Stopwatch.StartNew();
+            Stopwatch sw = Stopwatch.StartNew();
             try { return _inner.ExecuteScalar(); }
             catch (Exception ex) { sw.Stop(); RecordFailure(sw.Elapsed, ex); throw; }
             finally { if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); } }
@@ -132,7 +120,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
 
         /// <inheritdoc />
         public IDataReader ExecuteReader() {
-            var sw = Stopwatch.StartNew();
+            Stopwatch sw = Stopwatch.StartNew();
             try { return _inner.ExecuteReader(); }
             catch (Exception ex) { sw.Stop(); RecordFailure(sw.Elapsed, ex); throw; }
             finally { if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); } }
@@ -140,7 +128,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
 
         /// <inheritdoc />
         public IDataReader ExecuteReader(CommandBehavior behavior) {
-            var sw = Stopwatch.StartNew();
+            Stopwatch sw = Stopwatch.StartNew();
             try { return _inner.ExecuteReader(behavior); }
             catch (Exception ex) { sw.Stop(); RecordFailure(sw.Elapsed, ex); throw; }
             finally { if (sw.IsRunning) { sw.Stop(); RecordSuccess(sw.Elapsed); } }

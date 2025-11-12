@@ -1,4 +1,3 @@
-#nullable enable
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Options for a monitoring session.

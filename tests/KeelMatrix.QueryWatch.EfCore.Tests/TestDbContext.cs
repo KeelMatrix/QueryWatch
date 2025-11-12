@@ -1,5 +1,4 @@
 // Copyright (c) KeelMatrix
-#nullable enable
 using Microsoft.EntityFrameworkCore;
 
 namespace KeelMatrix.QueryWatch.EfCore.Tests {
@@ -9,10 +8,10 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
         public DbSet<Thing> Things => Set<Thing>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
-            modelBuilder.Entity<Thing>(b => {
-                b.ToTable("Things");
-                b.HasKey(e => e.Id);
-                b.Property(e => e.Name).HasMaxLength(200);
+            _ = modelBuilder.Entity<Thing>(b => {
+                _ = b.ToTable("Things");
+                _ = b.HasKey(e => e.Id);
+                _ = b.Property(e => e.Name).HasMaxLength(200);
             });
         }
     }

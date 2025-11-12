@@ -6,22 +6,22 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class QueryWatchJsonMetaTests {
         [Fact]
         public void ToSummary_Includes_Library_Meta() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
             session.Record("x", TimeSpan.FromMilliseconds(1));
-            var report = session.Stop();
+            QueryWatchReport report = session.Stop();
 
-            var s = QueryWatchJson.ToSummary(report, sampleTop: 1);
-            s.Meta.Should().ContainKey("library").WhoseValue.Should().Be("KeelMatrix.QueryWatch");
+            QueryWatchJson.Summary s = QueryWatchJson.ToSummary(report, sampleTop: 1);
+            _ = s.Meta.Should().ContainKey("library").WhoseValue.Should().Be("KeelMatrix.QueryWatch");
         }
 
         [Fact]
         public void ToSummary_Populates_SampleTop_Meta() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
             session.Record("x", TimeSpan.FromMilliseconds(1));
-            var report = session.Stop();
+            QueryWatchReport report = session.Stop();
 
-            var s = QueryWatchJson.ToSummary(report, sampleTop: 2);
-            s.Meta.Should().ContainKey("sampleTop").WhoseValue.Should().Be("2");
+            QueryWatchJson.Summary s = QueryWatchJson.ToSummary(report, sampleTop: 2);
+            _ = s.Meta.Should().ContainKey("sampleTop").WhoseValue.Should().Be("2");
         }
     }
 }

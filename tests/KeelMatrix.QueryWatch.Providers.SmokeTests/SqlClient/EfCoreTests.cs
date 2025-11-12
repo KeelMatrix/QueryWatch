@@ -15,23 +15,23 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.SqlClient {
 
         [Fact]
         public void EfCore_Linq_Path_Is_Recorded() {
-            var cs = GetConnString();
-            var builder = new DbContextOptionsBuilder<EfCtx>().UseSqlServer(cs);
+            string? cs = GetConnString();
+            DbContextOptionsBuilder<EfCtx> builder = new DbContextOptionsBuilder<EfCtx>().UseSqlServer(cs);
 
             using var session = new QueryWatchSession();
-            builder.UseQueryWatch(session);
+            _ = builder.UseQueryWatch(session);
             using var db = new EfCtx(builder.Options);
 
             // Ensure table
-            db.Database.ExecuteSqlRaw("IF OBJECT_ID('dbo.QW_Items','U') IS NULL CREATE TABLE dbo.QW_Items (Id INT IDENTITY PRIMARY KEY, Name NVARCHAR(200));");
+            _ = db.Database.ExecuteSqlRaw("IF OBJECT_ID('dbo.QW_Items','U') IS NULL CREATE TABLE dbo.QW_Items (Id INT IDENTITY PRIMARY KEY, Name NVARCHAR(200));");
 
-            db.Items.Add(new Item { Name = "Alice" });
-            db.SaveChanges();
-            var count = db.Items.Count(i => i.Name != null);
-            count.Should().BeGreaterThan(0);
+            _ = db.Items.Add(new Item { Name = "Alice" });
+            _ = db.SaveChanges();
+            int count = db.Items.Count(i => i.Name != null);
+            _ = count.Should().BeGreaterThan(0);
 
-            var report = session.Stop();
-            report.TotalQueries.Should().BeGreaterThan(0);
+            QueryWatchReport report = session.Stop();
+            _ = report.TotalQueries.Should().BeGreaterThan(0);
         }
     }
 }

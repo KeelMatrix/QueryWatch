@@ -1,4 +1,3 @@
-#nullable enable
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Convenience facade API for the simplest manual usage.

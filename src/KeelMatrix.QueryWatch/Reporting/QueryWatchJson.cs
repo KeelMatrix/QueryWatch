@@ -1,4 +1,3 @@
-#nullable enable
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -66,13 +65,13 @@ namespace KeelMatrix.QueryWatch.Reporting {
             /// Top sample of events for quick inspection.
             /// </summary>
             [JsonPropertyName("events")]
-            public IReadOnlyList<EventSample> Events { get; init; } = Array.Empty<EventSample>();
+            public IReadOnlyList<EventSample> Events { get; init; } = [];
 
             /// <summary>
             /// Arbitrary metadata associated with the report.
             /// </summary>
             [JsonPropertyName("meta")]
-            public Dictionary<string, string> Meta { get; init; } = new();
+            public Dictionary<string, string> Meta { get; init; } = [];
         }
 
         /// <summary>
@@ -123,7 +122,7 @@ namespace KeelMatrix.QueryWatch.Reporting {
                     DurationMs = e.Duration.TotalMilliseconds,
                     Text = e.CommandText ?? string.Empty,
                     // Explicit ToDictionary to avoid the IDictionary<TK,TV> ctor resolution on netstandard2.0
-                    Meta = e.Meta is null ? null : e.Meta.ToDictionary(kv => kv.Key, kv => kv.Value)
+                    Meta = e.Meta?.ToDictionary(kv => kv.Key, kv => kv.Value)
                 })
                 .ToArray();
 
@@ -149,18 +148,18 @@ namespace KeelMatrix.QueryWatch.Reporting {
         /// <param name="sampleTop">Number of top events to include in the sample. Default: 5.</param>
         public static void ExportToFile(QueryWatchReport report, string path, int sampleTop = 5) {
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Path is required.", nameof(path));
-            var summary = ToSummary(report, sampleTop);
+            Summary summary = ToSummary(report, sampleTop);
 
             // Record the effective sampling configuration in metadata for downstream tools.
             // This is additive metadata; it does not change the schema.
             summary.Meta["sampleTop"] = sampleTop.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
-            var dir = Path.GetDirectoryName(path);
+            string? dir = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) {
-                Directory.CreateDirectory(dir);
+                _ = Directory.CreateDirectory(dir);
             }
 
-            var json = JsonSerializer.Serialize(summary, _jsonOptions);
+            string json = JsonSerializer.Serialize(summary, _jsonOptions);
             File.WriteAllText(path, json, Encoding.UTF8);
         }
 

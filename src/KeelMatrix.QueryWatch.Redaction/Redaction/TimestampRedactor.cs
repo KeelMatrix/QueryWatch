@@ -1,4 +1,3 @@
-#nullable enable
 using System.Text.RegularExpressions;
 using KeelMatrix.QueryWatch.Redaction.Internal;
 
@@ -20,9 +19,8 @@ namespace KeelMatrix.QueryWatch.Redaction {
         /// <inheritdoc />
         public string Redact(string input) {
             if (string.IsNullOrEmpty(input)) return string.Empty;
-            var r = Iso.Replace(input, "***");
-            r = Unix.Replace(r, "***");
-            return r;
+            string r = Iso.Replace(input, "***");
+            return Unix.Replace(r, "***");
         }
     }
 }

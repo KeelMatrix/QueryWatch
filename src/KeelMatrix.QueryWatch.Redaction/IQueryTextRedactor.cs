@@ -1,4 +1,3 @@
-#nullable enable
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Contract for text redactors used by QueryWatch to mask secrets/PII or normalize noise

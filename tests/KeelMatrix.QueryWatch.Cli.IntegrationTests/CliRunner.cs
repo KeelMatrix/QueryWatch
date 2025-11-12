@@ -8,10 +8,10 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
         private static string? _publishedDll;
 
         public static (int ExitCode, string StdOut, string StdErr) Run(string[] args, (string Key, string Value)[]? env = null) {
-            var repoRoot = FindRepoRoot();
-            EnsurePublished(repoRoot, out var dllPath, out var workDir);
+            string repoRoot = FindRepoRoot();
+            EnsurePublished(repoRoot, out string? dllPath, out string? workDir);
 
-            var psi = new ProcessStartInfo("dotnet") {
+            ProcessStartInfo psi = new("dotnet") {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -21,7 +21,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
 
             // Run the published app: dotnet <dll> -- <args>
             psi.ArgumentList.Add(dllPath);
-            foreach (var a in args) psi.ArgumentList.Add(a);
+            foreach (string a in args) psi.ArgumentList.Add(a);
 
             if (env is not null) {
                 foreach (var (k, v) in env)
@@ -29,8 +29,8 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             }
 
             using var proc = Process.Start(psi)!;
-            var stdout = proc.StandardOutput.ReadToEnd();
-            var stderr = proc.StandardError.ReadToEnd();
+            string stdout = proc.StandardOutput.ReadToEnd();
+            string stderr = proc.StandardError.ReadToEnd();
             proc.WaitForExit();
             return (proc.ExitCode, stdout, stderr);
         }
@@ -43,16 +43,16 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
                     return;
                 }
 
-                var cliProj = Path.Combine(repoRoot, "tools", "KeelMatrix.QueryWatch.Cli", "KeelMatrix.QueryWatch.Cli.csproj");
+                string cliProj = Path.Combine(repoRoot, "tools", "KeelMatrix.QueryWatch.Cli", "KeelMatrix.QueryWatch.Cli.csproj");
                 if (!File.Exists(cliProj))
                     throw new FileNotFoundException($"CLI project not found: {cliProj}");
 
-                var configuration = GuessConfiguration();
-                var tfm = "net8.0";
-                var outDir = Path.Combine(repoRoot, "artifacts", "cli-publish", configuration, tfm);
-                Directory.CreateDirectory(outDir);
+                string configuration = GuessConfiguration();
+                const string tfm = "net8.0";
+                string outDir = Path.Combine(repoRoot, "artifacts", "cli-publish", configuration, tfm);
+                _ = Directory.CreateDirectory(outDir);
 
-                var psi = new ProcessStartInfo("dotnet") {
+                ProcessStartInfo psi = new("dotnet") {
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -73,20 +73,20 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
                 psi.ArgumentList.Add("minimal");
 
                 using var proc = Process.Start(psi)!;
-                var pubOut = proc.StandardOutput.ReadToEnd();
-                var pubErr = proc.StandardError.ReadToEnd();
+                string pubOut = proc.StandardOutput.ReadToEnd();
+                string pubErr = proc.StandardError.ReadToEnd();
                 proc.WaitForExit();
 
                 if (proc.ExitCode != 0) {
-                    var sb = new StringBuilder();
-                    sb.AppendLine("dotnet publish failed:");
-                    sb.AppendLine(pubOut);
-                    sb.AppendLine(pubErr);
+                    StringBuilder sb = new();
+                    _ = sb.AppendLine("dotnet publish failed:");
+                    _ = sb.AppendLine(pubOut);
+                    _ = sb.AppendLine(pubErr);
                     throw new InvalidOperationException(sb.ToString());
                 }
 
-                var dll = Path.Combine(outDir, "KeelMatrix.QueryWatch.Cli.dll");
-                var runtimeConfig = Path.Combine(outDir, "KeelMatrix.QueryWatch.Cli.runtimeconfig.json");
+                string dll = Path.Combine(outDir, "KeelMatrix.QueryWatch.Cli.dll");
+                string runtimeConfig = Path.Combine(outDir, "KeelMatrix.QueryWatch.Cli.runtimeconfig.json");
                 if (!File.Exists(dll) || !File.Exists(runtimeConfig))
                     throw new FileNotFoundException($"Published outputs not found under {outDir}");
 
@@ -98,21 +98,27 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
         }
 
         private static string GuessConfiguration() {
-            var envCfg = Environment.GetEnvironmentVariable("Configuration");
+            string? envCfg = Environment.GetEnvironmentVariable("Configuration");
             if (!string.IsNullOrWhiteSpace(envCfg)) return envCfg!;
 
             // Derive from test binary path
-            var baseDir = AppContext.BaseDirectory ?? "";
-            if (baseDir.IndexOf($"{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) >= 0) return "Debug";
-            if (baseDir.IndexOf($"{Path.DirectorySeparatorChar}Release{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) >= 0) return "Release";
-            return "Release";
+            string baseDir = AppContext.BaseDirectory ?? "";
+            if (baseDir.Contains($"{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)) {
+                return "Debug";
+            }
+            else if (baseDir.Contains($"{Path.DirectorySeparatorChar}Release{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)) {
+                return "Release";
+            }
+            else {
+                return "Release";
+            }
         }
 
         private static string FindRepoRoot() {
-            var dir = AppContext.BaseDirectory;
+            string dir = AppContext.BaseDirectory;
             for (int i = 0; i < 12; i++) {
-                var sln = Path.Combine(dir, "KeelMatrix.QueryWatch.sln");
-                var cliProj = Path.Combine(dir, "tools", "KeelMatrix.QueryWatch.Cli", "KeelMatrix.QueryWatch.Cli.csproj");
+                string sln = Path.Combine(dir, "KeelMatrix.QueryWatch.sln");
+                string cliProj = Path.Combine(dir, "tools", "KeelMatrix.QueryWatch.Cli", "KeelMatrix.QueryWatch.Cli.csproj");
                 if (File.Exists(sln) || File.Exists(cliProj)) return dir;
                 dir = Path.GetFullPath(Path.Combine(dir, ".."));
             }

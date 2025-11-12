@@ -1,4 +1,3 @@
-#nullable enable
 using System.Text.RegularExpressions;
 using KeelMatrix.QueryWatch.Redaction.Internal;
 
@@ -18,18 +17,18 @@ namespace KeelMatrix.QueryWatch.Redaction {
 
         /// <inheritdoc />
         public string Redact(string input) {
-            if (string.IsNullOrEmpty(input)) return string.Empty;
-
-            return AzureKey.Replace(input, static m => {
-                var key = m.Groups[1].Value.ToLowerInvariant();
-                var canonicalKey = key switch {
-                    "accountkey" => "AccountKey",
-                    "sharedaccesskey" => "SharedAccessKey",
-                    "sharedaccesssignature" => "SharedAccessSignature",
-                    _ => m.Groups[1].Value // fallback (shouldn't happen)
-                };
-                return $"{canonicalKey}=***";
-            });
+            return string.IsNullOrEmpty(input)
+                ? string.Empty
+                : AzureKey.Replace(input, static m => {
+                    string key = m.Groups[1].Value.ToLowerInvariant();
+                    string canonicalKey = key switch {
+                        "accountkey" => "AccountKey",
+                        "sharedaccesskey" => "SharedAccessKey",
+                        "sharedaccesssignature" => "SharedAccessSignature",
+                        _ => m.Groups[1].Value // fallback (shouldn't happen)
+                    };
+                    return $"{canonicalKey}=***";
+                });
         }
     }
 }

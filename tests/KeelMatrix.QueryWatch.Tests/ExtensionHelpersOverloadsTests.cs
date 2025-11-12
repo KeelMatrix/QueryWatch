@@ -9,44 +9,44 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class ExtensionHelpersOverloadsTests {
         [Fact]
         public void Ado_Extensions_WithQueryWatch_Overloads_Work_For_DbConnection_And_IDbConnection() {
-            using var session = QueryWatcher.Start();
-            var provider = new FakeDbConnection();
+            using QueryWatchSession session = QueryWatcher.Start();
+            FakeDbConnection provider = new();
 
             // DbConnection overload
-            var w1 = QueryWatchExtensions.WithQueryWatch((DbConnection)provider, session);
-            w1.Should().BeOfType<QueryWatchConnection>();
+            DbConnection w1 = provider.WithQueryWatch(session);
+            _ = w1.Should().BeOfType<QueryWatchConnection>();
 
             // IDbConnection overload with Db-derived type must also return QueryWatchConnection
-            var w2 = QueryWatchExtensions.WithQueryWatch((IDbConnection)provider, session);
-            w2.Should().BeOfType<QueryWatchConnection>();
+            IDbConnection w2 = ((IDbConnection)provider).WithQueryWatch(session);
+            _ = w2.Should().BeOfType<QueryWatchConnection>();
         }
 
         [Fact]
         public void Ado_Extension_WithQueryWatch_On_NonDbConnection_Uses_DapperWrapper_And_Records() {
-            using var session = QueryWatcher.Start();
+            using QueryWatchSession session = QueryWatcher.Start();
             IDbConnection onlyIdb = new OnlyIdbConnection();
-            var wrapped = QueryWatchExtensions.WithQueryWatch(onlyIdb, session);
+            IDbConnection wrapped = onlyIdb.WithQueryWatch(session);
 
-            wrapped.Should().NotBeSameAs(onlyIdb);
-            wrapped.Should().BeOfType<Dapper.DapperQueryWatchConnection>();
+            _ = wrapped.Should().NotBeSameAs(onlyIdb);
+            _ = wrapped.Should().BeOfType<Dapper.DapperQueryWatchConnection>();
 
             // Smoke: a command executed through the wrapper should be recorded
-            using (var cmd = wrapped.CreateCommand()) {
+            using (IDbCommand cmd = wrapped.CreateCommand()) {
                 cmd.CommandText = "SELECT 1";
                 _ = cmd.ExecuteNonQuery();
             }
 
-            var report = session.Stop();
-            report.Events.Count.Should().BeGreaterThan(0, "executing a command via the Dapper wrapper must be recorded");
+            QueryWatchReport report = session.Stop();
+            _ = report.Events.Count.Should().BeGreaterThan(0, "executing a command via the Dapper wrapper must be recorded");
         }
 
         [Fact]
         public void Dapper_Extension_Prefers_Ado_Wrapper_For_DbDerived() {
-            using var session = QueryWatcher.Start();
+            using QueryWatchSession session = QueryWatcher.Start();
             IDbConnection provider = new FakeDbConnection();
 
-            var wrapped = QueryWatchExtensions.WithQueryWatch(provider, session);
-            wrapped.Should().BeOfType<QueryWatchConnection>();
+            IDbConnection wrapped = provider.WithQueryWatch(session);
+            _ = wrapped.Should().BeOfType<QueryWatchConnection>();
         }
 
         // --- Fakes ---
@@ -83,7 +83,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
             private sealed class FakeParameters : DbParameterCollection {
                 private readonly System.Collections.ArrayList _list = [];
-                public override int Add(object value) { _list.Add(value); return _list.Count - 1; }
+                public override int Add(object value) { _ = _list.Add(value); return _list.Count - 1; }
                 public override void AddRange(Array values) { _list.AddRange(values); }
                 public override void Clear() => _list.Clear();
                 public override bool Contains(object value) => _list.Contains(value);

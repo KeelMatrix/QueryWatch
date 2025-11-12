@@ -5,12 +5,12 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
         public EfCtx(DbContextOptions options) : base(options) { }
         public DbSet<Item> Items => Set<Item>();
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
-            modelBuilder.Entity<Item>(e => {
-                e.ToTable("qw_items");
-                e.HasKey(x => x.Id);
-                e.Property(x => x.Id)
+            _ = modelBuilder.Entity<Item>(e => {
+                _ = e.ToTable("qw_items");
+                _ = e.HasKey(x => x.Id);
+                _ = e.Property(x => x.Id)
                     .HasColumnName("id");
-                e.Property(x => x.Name)
+                _ = e.Property(x => x.Name)
                     .HasColumnName("name")
                     .HasMaxLength(200);
             });

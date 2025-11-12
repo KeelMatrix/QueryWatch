@@ -1,4 +1,3 @@
-#nullable enable
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
     /// Extensions for <see cref="QueryWatchOptions"/> to add built‑in redactors.
@@ -14,11 +13,11 @@ namespace KeelMatrix.QueryWatch.Redaction {
         /// <param name="includeJwt">Mask JWT‑like tokens. Default: <c>true</c>.</param>
         /// <param name="includeAuthorization">Mask Authorization headers. Default: <c>true</c>.</param>
         /// <param name="includeConnStringPwd">Mask password in connection strings. Default: <c>true</c>.</param>
-        /// <param name="includeGuidLikeHex">Mask shorter hex identifiers (16–31 chars, at least one letter). Default: <c>true</c>.</param>
         /// <param name="includeGuid">Mask GUIDs. Default: <c>true</c>.</param>
         /// <param name="includeUrlTokens">Mask URL query tokens (token/access_token/code/id_token/auth). Default: <c>true</c>.</param>
         /// <param name="includeAwsAccessKey">Mask AWS Access Key IDs. Default: <c>true</c>.</param>
         /// <param name="includeAzureKeys">Mask Azure AccountKey/SharedAccess*. Default: <c>true</c>.</param>
+        /// <param name="includeGuidLikeHex">Mask shorter hex identifiers (16–31 chars, at least one letter). Default: <c>true</c>.</param>
         /// <param name="includeTimestamps">Mask ISO/Unix timestamps (can increase false positives). Default: <c>false</c>.</param>
         /// <param name="includeIpAddresses">Mask IPv4/IPv6 addresses. Default: <c>false</c>.</param>
         /// <param name="includePhone">Mask common phone numbers. Default: <c>false</c>.</param>

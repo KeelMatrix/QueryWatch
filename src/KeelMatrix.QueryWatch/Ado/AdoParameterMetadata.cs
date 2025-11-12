@@ -1,4 +1,3 @@
-#nullable enable
 using System.Data;
 using System.Data.Common;
 using System.Text.Json.Serialization;
@@ -31,9 +30,9 @@ namespace KeelMatrix.QueryWatch.Ado {
             if (command.Parameters is null || command.Parameters.Count == 0)
                 return null;
 
-            var list = new List<AdoParameterShape>(command.Parameters.Count);
+            List<AdoParameterShape> list = new(command.Parameters.Count);
             foreach (DbParameter p in command.Parameters) {
-                var shape = new AdoParameterShape {
+                AdoParameterShape shape = new() {
                     Name = SafeName(p.ParameterName),
                     DbType = SafeDbType(p.DbType),
                     ClrType = MapClrType(p.DbType),

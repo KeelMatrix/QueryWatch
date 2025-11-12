@@ -1,4 +1,3 @@
-#nullable enable
 using System.Text.RegularExpressions;
 using KeelMatrix.QueryWatch.Redaction.Internal;
 
@@ -32,11 +31,9 @@ namespace KeelMatrix.QueryWatch.Redaction {
             int digits = 0;
             for (int i = 0; i < input.Length && digits < 7; i++) {
                 char ch = input[i];
-                if (ch >= '0' && ch <= '9') digits++;
+                if (ch is >= '0' and <= '9') digits++;
             }
-            if (digits < 7) return input;
-
-            return Phone.Replace(input, "***");
+            return digits < 7 ? input : Phone.Replace(input, "***");
         }
     }
 }

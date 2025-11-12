@@ -8,19 +8,18 @@ namespace KeelMatrix.QueryWatch.Tests {
     /// Writes JSON snapshots to a '__snapshots__' folder next to the test file.
     /// </summary>
     public static class SnapshotExtensions {
-        public static void ShouldMatchSnapshot(
-            this object value,
-            string? snapshotName = null,
-            [CallerFilePath] string? callerFile = null) {
-            if (callerFile is null) throw new ArgumentNullException(nameof(callerFile));
+        private static readonly JsonSerializerOptions _jsonOptions = new() {
+            WriteIndented = true
+        };
 
-            var dir = Path.Combine(Path.GetDirectoryName(callerFile)!, "__snapshots__");
-            Directory.CreateDirectory(dir);
+        public static void ShouldMatchSnapshot(this object value,
+            string? snapshotName = null, [CallerFilePath] string? callerFile = null) {
+            string dir = Path.Combine(Path.GetDirectoryName(callerFile)!, "__snapshots__");
+            _ = Directory.CreateDirectory(dir);
 
             snapshotName ??= $"snapshot_{Guid.NewGuid():N}.json";
-            var snapshotPath = Path.Combine(dir, snapshotName);
-
-            var json = JsonSerializer.Serialize(value, new JsonSerializerOptions { WriteIndented = true });
+            string snapshotPath = Path.Combine(dir, snapshotName);
+            string json = JsonSerializer.Serialize(value, _jsonOptions);
 
             if (!File.Exists(snapshotPath)) {
                 File.WriteAllText(snapshotPath, json);
@@ -28,8 +27,8 @@ namespace KeelMatrix.QueryWatch.Tests {
                 return;
             }
 
-            var expected = File.ReadAllText(snapshotPath);
-            json.Should().Be(expected, "snapshot should match stored expectations");
+            string expected = File.ReadAllText(snapshotPath);
+            _ = json.Should().Be(expected, "snapshot should match stored expectations");
         }
     }
 }

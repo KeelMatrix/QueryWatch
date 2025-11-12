@@ -1,5 +1,4 @@
 // Copyright (c) KeelMatrix
-#nullable enable
 using System.Data.Common;
 using KeelMatrix.QueryWatch.Ado;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -9,40 +8,34 @@ namespace KeelMatrix.QueryWatch.EfCore {
     /// EF Core <see cref="DbCommandInterceptor"/> that records command timings and metadata
     /// into a <see cref="QueryWatchSession"/> (sync and async; reader/scalar/non-query; failures included).
     /// </summary>
-    public sealed class EfCoreQueryWatchInterceptor : DbCommandInterceptor {
-        private readonly QueryWatchSession _session;
-
-        /// <summary>
-        /// Initializes a new interceptor that records EF Core command events into the specified session.
-        /// </summary>
-        /// <param name="session">The target <see cref="QueryWatchSession"/>; must not be <c>null</c>.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="session"/> is <c>null</c>.</exception>
-        public EfCoreQueryWatchInterceptor(QueryWatchSession session) {
-            _session = session ?? throw new ArgumentNullException(nameof(session));
-        }
+    /// <remarks>
+    /// Initializes a new interceptor that records EF Core command events into the specified session.
+    /// </remarks>
+    /// <param name="session">The target <see cref="QueryWatchSession"/>; must not be <c>null</c>.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="session"/> is <c>null</c>.</exception>
+    public sealed class EfCoreQueryWatchInterceptor(QueryWatchSession session) : DbCommandInterceptor {
+        private readonly QueryWatchSession _session = session ?? throw new ArgumentNullException(nameof(session));
 
         private string ResolveTextForRecording(DbCommand command) {
-            if (_session.Options.DisableEfCoreTextCapture) return string.Empty;
-            return command.CommandText ?? string.Empty;
+            return _session.Options.DisableEfCoreTextCapture ? string.Empty : command.CommandText ?? string.Empty;
         }
 
         private IReadOnlyDictionary<string, object?>? CaptureParameterShapeIfEnabled(DbCommand command) {
-            if (!_session.Options.CaptureParameterShape) return null;
-            return AdoParameterMetadata.TryCapture(command);
+            return !_session.Options.CaptureParameterShape ? null : AdoParameterMetadata.TryCapture(command);
         }
 
         private void Record(QueryWatchSession session, DbCommand command, long elapsedTicks) {
-            var duration = TimeSpan.FromTicks(elapsedTicks);
-            var text = ResolveTextForRecording(command);
+            TimeSpan duration = TimeSpan.FromTicks(elapsedTicks);
+            string text = ResolveTextForRecording(command);
             var meta = CaptureParameterShapeIfEnabled(command);
             session.Record(text, duration, meta);
         }
 
         private void RecordFailed(QueryWatchSession session, DbCommand command, long elapsedTicks, CommandErrorEventData error) {
-            var duration = TimeSpan.FromTicks(elapsedTicks);
-            var text = ResolveTextForRecording(command);
+            TimeSpan duration = TimeSpan.FromTicks(elapsedTicks);
+            string text = ResolveTextForRecording(command);
 
-            var meta = new Dictionary<string, object?>(StringComparer.Ordinal) {
+            Dictionary<string, object?> meta = new(StringComparer.Ordinal) {
                 ["failed"] = true,
                 ["exception"] = error.Exception?.GetType().FullName ?? "UnknownException",
                 ["provider"] = "efcore"

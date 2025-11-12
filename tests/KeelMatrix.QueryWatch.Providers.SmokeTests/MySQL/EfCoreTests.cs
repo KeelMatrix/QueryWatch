@@ -16,21 +16,21 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.MySQL {
 
         [Fact]
         public void EfCore_Linq_Path_Is_Recorded() {
-            var cs = GetConnString();
-            var builder = new DbContextOptionsBuilder<EfCtx>()
+            string? cs = GetConnString();
+            DbContextOptionsBuilder<EfCtx> builder = new DbContextOptionsBuilder<EfCtx>()
                 .UseMySql(cs, ServerVersion.AutoDetect(cs));
 
             using var session = new QueryWatchSession();
-            builder.UseQueryWatch(session);
+            _ = builder.UseQueryWatch(session);
             using var db = new EfCtx(builder.Options);
 
-            db.Database.ExecuteSqlRaw("CREATE TABLE IF NOT EXISTS QW_Items (Id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, Name VARCHAR(200))");
-            db.Items.Add(new Item { Name = "Alice" });
-            db.SaveChanges();
-            var count = db.Items.Count(i => i.Name != null);
-            count.Should().BeGreaterThan(0);
+            _ = db.Database.ExecuteSqlRaw("CREATE TABLE IF NOT EXISTS QW_Items (Id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, Name VARCHAR(200))");
+            _ = db.Items.Add(new Item { Name = "Alice" });
+            _ = db.SaveChanges();
+            int count = db.Items.Count(i => i.Name != null);
+            _ = count.Should().BeGreaterThan(0);
 
-            session.Stop().TotalQueries.Should().BeGreaterThan(0);
+            _ = session.Stop().TotalQueries.Should().BeGreaterThan(0);
         }
     }
 }

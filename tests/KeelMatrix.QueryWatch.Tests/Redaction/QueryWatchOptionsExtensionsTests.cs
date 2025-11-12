@@ -6,7 +6,7 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
     public class QueryWatchOptionsExtensionsTests {
         [Fact]
         public void UseRecommendedRedactors_Normalize_Then_UrlTokens_Functionally() {
-            var opts = new QueryWatchOptions().UseRecommendedRedactors(
+            QueryWatchOptions opts = new QueryWatchOptions().UseRecommendedRedactors(
                 includeWhitespaceNormalizer: true,
                 includeEmails: false,
                 includeLongHex: false,
@@ -22,23 +22,23 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
                 includeIpAddresses: false,
                 includePhone: false);
 
-            using var session = QueryWatcher.Start(opts);
-            var input = "  SELECT 1  /* url=https://ex.com?a=1&token=abc123 */  ";
+            using QueryWatchSession session = QueryWatcher.Start(opts);
+            const string input = "  SELECT 1  /* url=https://ex.com?a=1&token=abc123 */  ";
             session.Record(input, TimeSpan.FromMilliseconds(1));
-            var report = session.Stop();
+            QueryWatchReport report = session.Stop();
 
-            var txt = report.Events[0].CommandText;
-            txt.Should().Be("SELECT 1 /* url=https://ex.com?a=1&token=*** */");
+            string txt = report.Events[0].CommandText;
+            _ = txt.Should().Be("SELECT 1 /* url=https://ex.com?a=1&token=*** */");
         }
 
         [Fact]
         public void AddRegexRedactor_Adds_Rule_With_Default_Replacement() {
-            var opts = new QueryWatchOptions().AddRegexRedactor("foo");
-            using var session = QueryWatcher.Start(opts);
+            QueryWatchOptions opts = new QueryWatchOptions().AddRegexRedactor("foo");
+            using QueryWatchSession session = QueryWatcher.Start(opts);
             session.Record("Foo BAR", TimeSpan.FromMilliseconds(1));
-            var report = session.Stop();
-            report.Events[0].CommandText.Should().Contain("***");
-            report.Events[0].CommandText.Should().NotContain("Foo");
+            QueryWatchReport report = session.Stop();
+            _ = report.Events[0].CommandText.Should().Contain("***");
+            _ = report.Events[0].CommandText.Should().NotContain("Foo");
         }
     }
 }

@@ -1,5 +1,4 @@
 // Copyright (c) KeelMatrix
-#nullable enable
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// A single observed database command execution.

@@ -1,4 +1,3 @@
-using System;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
@@ -10,33 +9,33 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class AdoWrapperTests {
         [Fact]
         public void QueryWatchCommand_ExecuteNonQuery_Records_One_Event_With_Text() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            var inner = new FakeDbCommand { CommandText = "SELECT 1" };
-            using var cmd = new QueryWatchCommand(inner, session);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            FakeDbCommand inner = new() { CommandText = "SELECT 1" };
+            using QueryWatchCommand cmd = new(inner, session);
 
             var result = cmd.ExecuteNonQuery();
-            result.Should().Be(1);
+            _ = result.Should().Be(1);
 
-            var report = session.Stop();
-            report.TotalQueries.Should().Be(1);
-            report.Events[0].CommandText.Should().Be("SELECT 1");
+            QueryWatchReport report = session.Stop();
+            _ = report.TotalQueries.Should().Be(1);
+            _ = report.Events[0].CommandText.Should().Be("SELECT 1");
         }
 
         [Fact]
         public void QueryWatchConnection_CreateDbCommand_Wraps_Inner_Command() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            using var innerConn = new FakeDbConnection();
-            using var wrapped = new QueryWatchConnection(innerConn, session);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using FakeDbConnection innerConn = new();
+            using QueryWatchConnection wrapped = new(innerConn, session);
 
-            using var cmd = wrapped.CreateCommand();
-            cmd.Should().BeOfType<QueryWatchCommand>();
+            using DbCommand cmd = wrapped.CreateCommand();
+            _ = cmd.Should().BeOfType<QueryWatchCommand>();
 
             cmd.CommandText = "UPDATE X";
-            cmd.ExecuteNonQuery();
+            _ = cmd.ExecuteNonQuery();
 
-            var report = session.Stop();
-            report.TotalQueries.Should().Be(1);
-            report.Events[0].CommandText.Should().Be("UPDATE X");
+            QueryWatchReport report = session.Stop();
+            _ = report.TotalQueries.Should().Be(1);
+            _ = report.Events[0].CommandText.Should().Be("UPDATE X");
         }
 
         private sealed class FakeDbConnection : DbConnection {
@@ -74,9 +73,9 @@ namespace KeelMatrix.QueryWatch.Tests {
             protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => throw new NotSupportedException();
 
             private sealed class FakeDbParameterCollection : DbParameterCollection {
-                private readonly System.Collections.ArrayList _list = new();
-                public override int Add(object value) { _list.Add(value); return _list.Count - 1; }
-                public override void AddRange(Array values) { foreach (var v in values) _list.Add(v); }
+                private readonly System.Collections.ArrayList _list = [];
+                public override int Add(object value) { _ = _list.Add(value); return _list.Count - 1; }
+                public override void AddRange(Array values) { foreach (var v in values) _ = _list.Add(v); }
                 public override void Clear() => _list.Clear();
                 public override bool Contains(object value) => _list.Contains(value);
                 public override bool Contains(string value) => IndexOf(value) >= 0;

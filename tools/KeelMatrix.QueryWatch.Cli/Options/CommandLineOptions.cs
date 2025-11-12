@@ -1,23 +1,22 @@
-#nullable enable
 using System.Globalization;
 
 namespace KeelMatrix.QueryWatch.Cli.Options {
     internal sealed class CommandLineOptions {
-        public List<string> Inputs { get; } = new();
+        public List<string> Inputs { get; } = [];
         public int? MaxQueries { get; set; }
         public double? MaxAverageMs { get; set; }
         public double? MaxTotalMs { get; set; }
         public string? BaselinePath { get; set; }
         public bool WriteBaseline { get; set; }
         public double BaselineAllowPercent { get; set; }
-        public List<string> PatternBudgetSpecs { get; } = new();
+        public List<string> PatternBudgetSpecs { get; } = [];
         public bool RequireFullEvents { get; set; }
         public bool ShowHelp { get; set; }
 
         public static ParseResult Parse(string[] args) {
-            var opts = new CommandLineOptions { BaselineAllowPercent = 0 };
+            CommandLineOptions opts = new() { BaselineAllowPercent = 0 };
             // invariant culture for numeric parsing
-            var culture = CultureInfo.InvariantCulture;
+            CultureInfo culture = CultureInfo.InvariantCulture;
 
             int i = 0;
             while (i < args.Length) {
@@ -83,7 +82,7 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
                 }
                 else if (string.Equals(a, "--write-baseline", StringComparison.OrdinalIgnoreCase)) {
                     opts.WriteBaseline = true;
-                    i += 1;
+                    i++;
                 }
                 else if (string.Equals(a, "--budget", StringComparison.OrdinalIgnoreCase)) {
                     if (i + 1 >= args.Length || args[i + 1].StartsWith("--", StringComparison.Ordinal)) {
@@ -94,7 +93,7 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
                 }
                 else if (string.Equals(a, "--require-full-events", StringComparison.OrdinalIgnoreCase)) {
                     opts.RequireFullEvents = true;
-                    i += 1;
+                    i++;
                 }
                 else {
                     return ParseResult.Error($"Unknown argument: {a}");
@@ -102,11 +101,9 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
             }
 
             // Post-parse validations
-            if (opts.WriteBaseline && string.IsNullOrWhiteSpace(opts.BaselinePath)) {
-                return ParseResult.Error("Cannot use --write-baseline without --baseline");
-            }
-
-            return ParseResult.Successful(opts);
+            return opts.WriteBaseline && string.IsNullOrWhiteSpace(opts.BaselinePath)
+                ? ParseResult.Error("Cannot use --write-baseline without --baseline")
+                : ParseResult.Successful(opts);
         }
 
         public static string HelpText => CliSpec.BuildHelpText();

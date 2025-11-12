@@ -1,4 +1,3 @@
-using System;
 using FluentAssertions;
 using Xunit;
 
@@ -14,17 +13,17 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void Redactors_Are_Applied_In_Order() {
-            var options = new KeelMatrix.QueryWatch.QueryWatchOptions { CaptureSqlText = true };
+            QueryWatchOptions options = new() { CaptureSqlText = true };
             options.Redactors.Add(new ReplaceFooWithBar());
             options.Redactors.Add(new ReplaceBarWithBaz());
 
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start(options);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start(options);
             session.Record("select * from foo", TimeSpan.FromMilliseconds(1));
-            var report = session.Stop();
+            QueryWatchReport report = session.Stop();
 
-            report.Events[0].CommandText.Should().Contain("baz");
-            report.Events[0].CommandText.Should().NotContain("foo");
-            report.Events[0].CommandText.Should().NotContain("bar");
+            _ = report.Events[0].CommandText.Should().Contain("baz");
+            _ = report.Events[0].CommandText.Should().NotContain("foo");
+            _ = report.Events[0].CommandText.Should().NotContain("bar");
         }
     }
 }

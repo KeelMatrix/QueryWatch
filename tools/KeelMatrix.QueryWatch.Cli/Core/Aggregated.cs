@@ -6,24 +6,24 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
         public int TotalQueries { get; private set; }
         public double TotalDurationMs { get; private set; }
         public double AverageDurationMs { get; private set; }
-        public List<EventSample> Events { get; } = new();
+        public List<EventSample> Events { get; } = [];
 
         public int SampledEventsCount => Events?.Count ?? 0;
 
         public static Aggregated From(IEnumerable<Summary> inputs) {
-            var list = inputs.ToList();
-            var agg = new Aggregated();
-            agg.Files = list.Count;
-            agg.TotalQueries = list.Sum(s => s.TotalQueries);
-            agg.TotalDurationMs = list.Sum(s => s.TotalDurationMs);
+            List<Summary> list = [.. inputs];
+            Aggregated agg = new() {
+                Files = list.Count,
+                TotalQueries = list.Sum(s => s.TotalQueries),
+                TotalDurationMs = list.Sum(s => s.TotalDurationMs)
+            };
             agg.AverageDurationMs = agg.TotalQueries == 0 ? 0 : agg.TotalDurationMs / agg.TotalQueries;
-            foreach (var s in list) {
-                if (s.Events is not null) agg.Events.AddRange(s.Events);
-            }
+            foreach (Summary? s in list.Where(s => s.Events is not null))
+                agg.Events.AddRange(s.Events);
+
             return agg;
         }
 
-        // New: allow projecting Aggregated back to a Summary
         public Summary ToSummary(
             DateTimeOffset? startedAt = null,
             DateTimeOffset? stoppedAt = null,
@@ -33,11 +33,11 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
                 Schema = "1.0.0",
                 StartedAt = startedAt ?? DateTimeOffset.UtcNow,
                 StoppedAt = stoppedAt ?? DateTimeOffset.UtcNow,
-                TotalQueries = this.TotalQueries,
-                TotalDurationMs = this.TotalDurationMs,
-                AverageDurationMs = this.AverageDurationMs,
-                Events = includeEvents ? this.Events.ToArray() : Array.Empty<EventSample>(),
-                Meta = meta is null ? new Dictionary<string, string>() : new Dictionary<string, string>(meta)
+                TotalQueries = TotalQueries,
+                TotalDurationMs = TotalDurationMs,
+                AverageDurationMs = AverageDurationMs,
+                Events = includeEvents ? [.. Events] : Array.Empty<EventSample>(),
+                Meta = meta is null ? [] : new Dictionary<string, string>(meta)
             };
         }
     }

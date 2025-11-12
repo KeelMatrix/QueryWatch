@@ -10,44 +10,44 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void ToSummary_Respects_SampleTop_And_Sorts_Descending() {
-            using var session = QueryWatcher.Start();
+            using QueryWatchSession session = QueryWatcher.Start();
             session.Record("fast", TimeSpan.FromMilliseconds(5));
             session.Record("slow", TimeSpan.FromMilliseconds(12));
             session.Record("medium", TimeSpan.FromMilliseconds(7));
-            var report = session.Stop();
+            QueryWatchReport report = session.Stop();
 
-            var summary = QueryWatchJson.ToSummary(report, sampleTop: 2);
+            QueryWatchJson.Summary summary = QueryWatchJson.ToSummary(report, sampleTop: 2);
 
-            summary.Schema.Should().Be(QueryWatchJson.SchemaVersion);
-            summary.TotalQueries.Should().Be(3);
-            summary.Events.Should().HaveCount(2, "sampleTop limits the number of items");
-            summary.Events.Select(e => e.DurationMs).Should().BeInDescendingOrder();
-            summary.Events.First().Text.Should().Be("slow");
+            _ = summary.Schema.Should().Be(QueryWatchJson.SchemaVersion);
+            _ = summary.TotalQueries.Should().Be(3);
+            _ = summary.Events.Should().HaveCount(2, "sampleTop limits the number of items");
+            _ = summary.Events.Select(e => e.DurationMs).Should().BeInDescendingOrder();
+            _ = summary.Events[0].Text.Should().Be("slow");
         }
 
         [Fact]
         public void ExportToFile_Writes_File_With_Meta_SampleTop_And_Creates_Directory() {
-            using var session = QueryWatcher.Start();
+            using QueryWatchSession session = QueryWatcher.Start();
             session.Record("a", TimeSpan.FromMilliseconds(3));
             session.Record("b", TimeSpan.FromMilliseconds(9));
-            var report = session.Stop();
+            QueryWatchReport report = session.Stop();
 
             var tempRoot = Path.Combine(Path.GetTempPath(), "QueryWatchTests", Guid.NewGuid().ToString("N"));
             var path = Path.Combine(tempRoot, "out", "qwatch.json");
-            Directory.Exists(tempRoot).Should().BeFalse("we want to verify the exporter creates the directory");
+            _ = Directory.Exists(tempRoot).Should().BeFalse("we want to verify the exporter creates the directory");
 
             QueryWatchJson.ExportToFile(report, path, sampleTop: 1);
 
-            File.Exists(path).Should().BeTrue("exporter should write the file");
+            _ = File.Exists(path).Should().BeTrue("exporter should write the file");
             var json = File.ReadAllText(path);
-            json.Should().NotBeNullOrWhiteSpace();
+            _ = json.Should().NotBeNullOrWhiteSpace();
 
-            var summary = JsonSerializer.Deserialize<QueryWatchJson.Summary>(json);
-            summary.Should().NotBeNull();
-            summary!.Schema.Should().Be(QueryWatchJson.SchemaVersion);
-            summary.Events.Should().HaveCount(1);
-            summary.Meta.Should().ContainKey("sampleTop");
-            summary.Meta["sampleTop"].Should().Be("1");
+            QueryWatchJson.Summary? summary = JsonSerializer.Deserialize<QueryWatchJson.Summary>(json);
+            _ = summary.Should().NotBeNull();
+            _ = summary!.Schema.Should().Be(QueryWatchJson.SchemaVersion);
+            _ = summary.Events.Should().HaveCount(1);
+            _ = summary.Meta.Should().ContainKey("sampleTop");
+            _ = summary.Meta["sampleTop"].Should().Be("1");
         }
     }
 }

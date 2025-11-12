@@ -10,59 +10,59 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class AdapterParityMetaTests {
         [Fact]
         public void Ado_Failure_Emits_Normalized_Failure_Meta() {
-            using var session = QueryWatcher.Start();
-            var inner = new ThrowingDbCommand { CommandText = "SELECT 1" };
-            using var cmd = new QueryWatchCommand(inner, session);
+            using QueryWatchSession session = QueryWatcher.Start();
+            ThrowingDbCommand inner = new() { CommandText = "SELECT 1" };
+            using QueryWatchCommand cmd = new(inner, session);
 
             Action act = () => cmd.ExecuteNonQuery();
-            act.Should().Throw<InvalidOperationException>();
+            _ = act.Should().Throw<InvalidOperationException>();
 
-            var ev = session.Stop().Events[^1];
-            ev.Meta.Should().NotBeNull();
-            ev.Meta!.Should().ContainKey("failed").WhoseValue.Should().Be(true);
-            ev.Meta!.Should().ContainKey("exception");
-            ev.Meta!.Should().ContainKey("provider").WhoseValue.Should().Be("ado");
+            QueryEvent ev = session.Stop().Events[^1];
+            _ = ev.Meta.Should().NotBeNull();
+            _ = ev.Meta!.Should().ContainKey("failed").WhoseValue.Should().Be(true);
+            _ = ev.Meta!.Should().ContainKey("exception");
+            _ = ev.Meta!.Should().ContainKey("provider").WhoseValue.Should().Be("ado");
         }
 
         [Fact]
         public void Dapper_Failure_Emits_Normalized_Failure_Meta() {
-            using var session = QueryWatcher.Start();
-            var inner = new ThrowingIdbCommand { CommandText = "UPDATE T SET X=1" };
-            using var conn = new DapperQueryWatchConnection(new OnlyIdbConnection(), session);
-            using var cmd = new DapperQueryWatchCommand(inner, session, conn);
+            using QueryWatchSession session = QueryWatcher.Start();
+            ThrowingIdbCommand inner = new() { CommandText = "UPDATE T SET X=1" };
+            using DapperQueryWatchConnection conn = new(new OnlyIdbConnection(), session);
+            using DapperQueryWatchCommand cmd = new(inner, session, conn);
 
             Action act = () => cmd.ExecuteNonQuery();
-            act.Should().Throw<InvalidOperationException>();
+            _ = act.Should().Throw<InvalidOperationException>();
 
-            var ev = session.Stop().Events[^1];
-            ev.Meta.Should().NotBeNull();
-            ev.Meta!.Should().ContainKey("failed").WhoseValue.Should().Be(true);
-            ev.Meta!.Should().ContainKey("exception");
-            ev.Meta!.Should().ContainKey("provider").WhoseValue.Should().Be("dapper");
+            QueryEvent ev = session.Stop().Events[^1];
+            _ = ev.Meta.Should().NotBeNull();
+            _ = ev.Meta!.Should().ContainKey("failed").WhoseValue.Should().Be(true);
+            _ = ev.Meta!.Should().ContainKey("exception");
+            _ = ev.Meta!.Should().ContainKey("provider").WhoseValue.Should().Be("dapper");
         }
 
         [Fact]
         public void PerAdapter_Disable_Text_Capture_Works_For_ADO_And_Dapper() {
-            var opts = new QueryWatchOptions {
+            QueryWatchOptions opts = new() {
                 CaptureSqlText = true,
                 DisableAdoTextCapture = true,
                 DisableDapperTextCapture = true
             };
-            using var session = QueryWatcher.Start(opts);
+            using QueryWatchSession session = QueryWatcher.Start(opts);
 
-            var adoInner = new NoopDbCommand { CommandText = "SELECT 42" };
-            using var adoCmd = new QueryWatchCommand(adoInner, session);
-            adoCmd.ExecuteNonQuery();
+            NoopDbCommand adoInner = new() { CommandText = "SELECT 42" };
+            using QueryWatchCommand adoCmd = new(adoInner, session);
+            _ = adoCmd.ExecuteNonQuery();
 
-            var dapperInner = new NoopIdbCommand { CommandText = "SELECT 7" };
-            using var conn = new DapperQueryWatchConnection(new OnlyIdbConnection(), session);
-            using var dapperCmd = new DapperQueryWatchCommand(dapperInner, session, conn);
-            dapperCmd.ExecuteNonQuery();
+            NoopIdbCommand dapperInner = new() { CommandText = "SELECT 7" };
+            using DapperQueryWatchConnection conn = new(new OnlyIdbConnection(), session);
+            using DapperQueryWatchCommand dapperCmd = new(dapperInner, session, conn);
+            _ = dapperCmd.ExecuteNonQuery();
 
-            var report = session.Stop();
-            report.Events.Should().HaveCount(2);
-            report.Events[0].CommandText.Should().BeEmpty();
-            report.Events[1].CommandText.Should().BeEmpty();
+            QueryWatchReport report = session.Stop();
+            _ = report.Events.Should().HaveCount(2);
+            _ = report.Events[0].CommandText.Should().BeEmpty();
+            _ = report.Events[1].CommandText.Should().BeEmpty();
         }
 
         #region Minimal fakes
@@ -212,7 +212,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         private sealed class FakeDbParameterCollection : DbParameterCollection {
             private readonly System.Collections.ArrayList _list = [];
-            public override int Add(object value) { _list.Add(value); return _list.Count - 1; }
+            public override int Add(object value) { _ = _list.Add(value); return _list.Count - 1; }
             public override void AddRange(Array values) { _list.AddRange(values); }
             public override void Clear() => _list.Clear();
             public override bool Contains(object value) => _list.Contains(value);

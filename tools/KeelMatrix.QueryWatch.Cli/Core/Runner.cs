@@ -1,6 +1,3 @@
-#nullable enable
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using KeelMatrix.QueryWatch.Cli.IO;
@@ -26,9 +23,9 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
 
             if (summaries.Count == 0) {
                 await Console.Error.WriteLineAsync("No input JSON found.").ConfigureAwait(false);
-                foreach (var p in from p in opts.Inputs
-                                  where !File.Exists(p)
-                                  select p) {
+                foreach (string? p in from p in opts.Inputs
+                                      where !File.Exists(p)
+                                      select p) {
                     await Console.Error.WriteLineAsync("Missing: " + p).ConfigureAwait(false);
                 }
 
@@ -36,7 +33,7 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
             }
 
             // 1a) Friendly schema-forward warning (never fails the run)
-            var toolSchema = new Summary().Schema; // single source from contracts default
+            string toolSchema = new Summary().Schema; // single source from contracts default
             if (summaries.Any(s => IsNewerSchema(s.Schema, toolSchema))) {
                 await Console.Error
                     .WriteLineAsync($"Warning: one or more inputs use a newer schema than this tool supports (input>'{toolSchema}'). Some fields may be ignored. Consider upgrading qwatch.")
@@ -44,7 +41,7 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
             }
 
             // 2) Aggregate
-            var agg = Aggregated.From(summaries);
+            Aggregated agg = Aggregated.From(summaries);
 
             // 2a) --require-full-events: fail only if meta.sampleTop is present
             if (opts.RequireFullEvents) {
@@ -65,29 +62,29 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
 
             // 2c) Write baseline snapshot
             if (opts.WriteBaseline) {
-                var outPath = opts.BaselinePath!;
-                var outDir = Path.GetDirectoryName(outPath);
+                string outPath = opts.BaselinePath!;
+                string? outDir = Path.GetDirectoryName(outPath);
                 if (!string.IsNullOrEmpty(outDir) && !Directory.Exists(outDir))
-                    Directory.CreateDirectory(outDir!);
+                    _ = Directory.CreateDirectory(outDir!);
 
-                var current = new Summary {
+                Summary current = new() {
                     Schema = toolSchema,
                     StartedAt = summaries[0].StartedAt,
                     StoppedAt = summaries[^1].StoppedAt,
                     TotalQueries = agg.TotalQueries,
                     TotalDurationMs = agg.TotalDurationMs,
                     AverageDurationMs = agg.AverageDurationMs,
-                    Events = Array.Empty<EventSample>(),
+                    Events = [],
                     Meta = []
                 };
 
-                var json = JsonSerializer.Serialize(current, QueryWatchJsonContext.Default.Summary);
+                string json = JsonSerializer.Serialize(current, QueryWatchJsonContext.Default.Summary);
                 await File.WriteAllTextAsync(outPath, json, Encoding.UTF8).ConfigureAwait(false);
                 await Console.Out.WriteLineAsync("Baseline written: " + outPath).ConfigureAwait(false);
             }
 
             // 3) Numeric budgets
-            var violations = new List<string>();
+            List<string> violations = [];
             if (opts.MaxQueries.HasValue && agg.TotalQueries > opts.MaxQueries.Value) {
                 violations.Add($"Max queries exceeded: {agg.TotalQueries} > {opts.MaxQueries.Value}");
             }
@@ -99,13 +96,13 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
             }
 
             // 4) Pattern budgets
-            var patternFindings = new List<(PatternBudget budget, int count, bool over)>();
-            foreach (var spec in opts.PatternBudgetSpecs) {
-                if (!PatternBudget.TryParse(spec, out var budget, out var error)) {
+            List<(PatternBudget budget, int count, bool over)> patternFindings = [];
+            foreach (string spec in opts.PatternBudgetSpecs) {
+                if (!PatternBudget.TryParse(spec, out var budget, out string? error)) {
                     await Console.Error.WriteLineAsync(error).ConfigureAwait(false);
                     return ExitCodes.InvalidArguments;
                 }
-                var count = budget!.CountMatches(agg.Events.Select(e => e.Text!));
+                int count = budget!.CountMatches(agg.Events.Select(e => e.Text!));
                 bool over = count > budget.Max;
                 patternFindings.Add((budget, count, over));
                 if (over) {
@@ -115,7 +112,7 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
 
             // 5) Baseline comparison (if provided and not writing)
             Summary? baseline = null;
-            var baselineViolations = new List<string>();
+            List<string> baselineViolations = [];
             if (!opts.WriteBaseline && !string.IsNullOrWhiteSpace(opts.BaselinePath)) {
                 try {
                     baseline = (await SummaryLoader.LoadAsync([opts.BaselinePath!]).ConfigureAwait(false)).FirstOrDefault();
@@ -130,10 +127,10 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
                 }
 
                 if (baseline is not null) {
-                    var p = opts.BaselineAllowPercent;
+                    double p = opts.BaselineAllowPercent;
                     double Allowed(double baseVal) => baseVal * (1 + (p / 100.0));
                     void Check(string name, double baseVal, double curr) {
-                        var allowed = Allowed(baseVal);
+                        double allowed = Allowed(baseVal);
                         if (curr > allowed + 1e-9)
                             baselineViolations.Add($"{name}: {curr:0.##} > {allowed:0.##} (baseline {baseVal:0.##}, +{p:0.##}% allowed)");
                     }
@@ -143,27 +140,27 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
 
                     if (baselineViolations.Count > 0) {
                         await Console.Error.WriteLineAsync("Baseline regressions:").ConfigureAwait(false);
-                        foreach (var v in baselineViolations)
+                        foreach (string v in baselineViolations)
                             await Console.Error.WriteLineAsync("  - " + v).ConfigureAwait(false);
                     }
                 }
             }
 
             // 6) Emit Markdown step summary (GitHub Actions)
-            var summaryMd = StepSummaryBuilder.Build(
+            string summaryMd = StepSummaryBuilder.Build(
                 agg,
                 maxQueries: opts.MaxQueries,
                 maxAvgMs: opts.MaxAverageMs,
                 maxTotalMs: opts.MaxTotalMs,
-                violations: violations.Where(v => v.StartsWith("Max ", StringComparison.Ordinal)).ToList(),
+                violations: [.. violations.Where(v => v.StartsWith("Max ", StringComparison.Ordinal))],
                 patternFindings: patternFindings,
                 baseline: baseline,
                 baselineAllowPercent: opts.BaselineAllowPercent,
                 baselineViolations: baselineViolations);
-            var stepSummaryPath = Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY");
+            string? stepSummaryPath = Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY");
             if (!string.IsNullOrWhiteSpace(stepSummaryPath)) {
                 try {
-                    Directory.CreateDirectory(Path.GetDirectoryName(stepSummaryPath)!);
+                    _ = Directory.CreateDirectory(Path.GetDirectoryName(stepSummaryPath)!);
                 }
                 catch { /* ignore */ }
                 try {
@@ -178,16 +175,16 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
             }
             if (violations.Count > 0) {
                 await Console.Error.WriteLineAsync("Budget violations:").ConfigureAwait(false);
-                foreach (var v in violations) {
+                foreach (string v in violations) {
                     await Console.Error.WriteLineAsync(" - " + v).ConfigureAwait(false);
                 }
                 return ExitCodes.BudgetExceeded;
             }
 
             // 8) Print a compact success line for logs + tests
-            var sb = new StringBuilder();
-            sb.AppendLine($"files {agg.Files}");
-            sb.AppendLine($"Queries: {agg.TotalQueries}");
+            StringBuilder sb = new();
+            _ = sb.AppendLine($"files {agg.Files}");
+            _ = sb.AppendLine($"Queries: {agg.TotalQueries}");
             await Console.Out.WriteLineAsync(sb.ToString()).ConfigureAwait(false);
 
             return ExitCodes.Ok;
@@ -196,17 +193,23 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
         private static bool IsNewerSchema(string? input, string? tool) {
             if (string.IsNullOrWhiteSpace(input) || string.IsNullOrWhiteSpace(tool)) return false;
             static (int a, int b, int c) Parse(string s) {
-                var parts = s.Split('.', 3, StringSplitOptions.RemoveEmptyEntries);
-                int A = parts.Length > 0 && int.TryParse(parts[0], out var x) ? x : 0;
-                int B = parts.Length > 1 && int.TryParse(parts[1], out var y) ? y : 0;
-                int C = parts.Length > 2 && int.TryParse(parts[2], out var z) ? z : 0;
+                string[] parts = s.Split('.', 3, StringSplitOptions.RemoveEmptyEntries);
+                int A = parts.Length > 0 && int.TryParse(parts[0], out int x) ? x : 0;
+                int B = parts.Length > 1 && int.TryParse(parts[1], out int y) ? y : 0;
+                int C = parts.Length > 2 && int.TryParse(parts[2], out int z) ? z : 0;
                 return (A, B, C);
             }
             var (a, b, c) = Parse(input);
             var t = Parse(tool);
-            if (a != t.a) return a > t.a;
-            if (b != t.b) return b > t.b;
-            return c > t.c;
+            if (a != t.a) {
+                return a > t.a;
+            }
+            else if (b != t.b) {
+                return b > t.b;
+            }
+            else {
+                return c > t.c;
+            }
         }
     }
 }

@@ -1,9 +1,4 @@
 // Copyright (c) KeelMatrix
-#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Threading;
-
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Collects query events for the lifetime of a session. Thread‑safe for recording.
@@ -11,8 +6,8 @@ namespace KeelMatrix.QueryWatch {
     /// and snapshots the list on <see cref="Stop"/>.
     /// </summary>
     public sealed class QueryWatchSession : IDisposable {
-        private readonly List<QueryEvent> _events = new List<QueryEvent>();
-        private readonly object _sync = new object();
+        private readonly List<QueryEvent> _events = [];
+        private readonly object _sync = new();
         private bool _disposed;
         private int _stopped; // 0 = running, 1 = stopped
 
@@ -35,7 +30,7 @@ namespace KeelMatrix.QueryWatch {
         public DateTimeOffset? StoppedAt { get; private set; }
 
         /// <summary>Starts a new session.</summary>
-        public static QueryWatchSession Start(QueryWatchOptions? options = null) => new QueryWatchSession(options);
+        public static QueryWatchSession Start(QueryWatchOptions? options = null) => new(options);
 
         /// <summary>Records a query execution event.</summary>
         public void Record(string commandText, TimeSpan duration) => Record(commandText, duration, meta: null);
@@ -56,12 +51,12 @@ namespace KeelMatrix.QueryWatch {
                 string text = string.Empty;
                 if (Options.CaptureSqlText) {
                     text = commandText ?? string.Empty;
-                    foreach (var r in Options.Redactors) {
+                    foreach (IQueryTextRedactor r in Options.Redactors) {
                         text = r.Redact(text);
                     }
                 }
 
-                var ev = new QueryEvent(text, duration, DateTimeOffset.UtcNow, meta);
+                QueryEvent ev = new(text, duration, DateTimeOffset.UtcNow, meta);
                 _events.Add(ev);
             }
         }
@@ -70,7 +65,7 @@ namespace KeelMatrix.QueryWatch {
         public QueryWatchReport Stop() {
             if (_disposed) throw new ObjectDisposedException(nameof(QueryWatchSession));
 
-            var now = DateTimeOffset.UtcNow;
+            DateTimeOffset now = DateTimeOffset.UtcNow;
             if (Interlocked.CompareExchange(ref _stopped, 1, 0) == 0) {
                 StoppedAt = now;
             }
@@ -82,7 +77,7 @@ namespace KeelMatrix.QueryWatch {
             // Snapshot under the same lock that protects writes to maintain no-post-stop recording guarantee.
             List<QueryEvent> snapshot;
             lock (_sync) {
-                snapshot = new List<QueryEvent>(_events);
+                snapshot = [.. _events];
             }
 
             return QueryWatchReport.CreateSnapshot(snapshot, Options, StartedAt, StoppedAt ?? now);

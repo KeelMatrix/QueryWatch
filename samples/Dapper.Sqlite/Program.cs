@@ -5,18 +5,18 @@ using KeelMatrix.QueryWatch.Testing;
 using Microsoft.Data.Sqlite;
 
 // Dapper + SQLite sample (async + transactions)
-var artifacts = Path.Combine(AppContext.BaseDirectory, "artifacts");
+string artifacts = Path.Combine(AppContext.BaseDirectory, "artifacts");
 Directory.CreateDirectory(artifacts);
-var outJson = Path.Combine(artifacts, "qwatch.dapper.json");
+string outJson = Path.Combine(artifacts, "qwatch.dapper.json");
 
-using var q = QueryWatchScope.Start(
+using QueryWatchScope q = QueryWatchScope.Start(
     maxQueries: 50,
     maxAverage: TimeSpan.FromMilliseconds(200),
     exportJsonPath: outJson,
     sampleTop: 50);
 
 // Create an in-memory DB
-using var raw = new SqliteConnection("Data Source=:memory:");
+using SqliteConnection raw = new("Data Source=:memory:");
 await raw.OpenAsync();
 
 // Wrap with QueryWatch (returns QueryWatchConnection under the hood for SQLite)
@@ -28,8 +28,8 @@ await conn.ExecuteAsync(Redaction.Apply("/* contact: admin@example.com */ CREATE
 // Insert in a transaction (exercise Transaction wrapper + async APIs)
 using (var tx = await conn.BeginTransactionAsync()) {
     for (int i = 0; i < 3; i++) {
-        var email = $"user{i}@example.com"; // will be redacted in CommandText
-        await conn.ExecuteAsync(
+        string email = $"user{i}@example.com"; // will be redacted in CommandText
+        _ = await conn.ExecuteAsync(
             Redaction.Apply($"/* email: {email} */ INSERT INTO Users(Name) VALUES (@name);"),
             new { name = Redaction.Param("User_" + i) },
             transaction: tx);
@@ -38,7 +38,7 @@ using (var tx = await conn.BeginTransactionAsync()) {
 }
 
 // Query back (async)
-var total = await conn.ExecuteScalarAsync<int>(Redaction.Apply("SELECT COUNT(*) FROM Users WHERE Name LIKE 'User_%';"));
+int total = await conn.ExecuteScalarAsync<int>(Redaction.Apply("SELECT COUNT(*) FROM Users WHERE Name LIKE 'User_%';"));
 Console.WriteLine($"Users in DB: {total}");
 
 Console.WriteLine($"QueryWatch JSON written to: {outJson}");

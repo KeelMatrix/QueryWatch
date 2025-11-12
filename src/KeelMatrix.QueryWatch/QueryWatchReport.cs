@@ -1,4 +1,3 @@
-#nullable enable
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Immutable snapshot of a session used for assertions and inspection.
@@ -68,7 +67,7 @@ namespace KeelMatrix.QueryWatch {
         /// Thrown when <see cref="TotalQueries"/>, <see cref="AverageDuration"/>, or <see cref="TotalDuration"/> exceed configured limits.
         /// </exception>
         public void ThrowIfViolations() {
-            var problems = new List<string>();
+            List<string> problems = [];
 
             if (Options.MaxQueries.HasValue && TotalQueries > Options.MaxQueries.Value)
                 problems.Add($"MaxQueries={Options.MaxQueries.Value} but executed {TotalQueries}.");
@@ -81,8 +80,8 @@ namespace KeelMatrix.QueryWatch {
 
             if (problems.Count > 0) {
                 const string header = "Summary: QueryWatch detected one or more performance/query budget violations.";
-                var details = string.Join(" ", problems);
-                var message = $"{header} {details}";
+                string details = string.Join(" ", problems);
+                string message = $"{header} {details}";
                 throw new QueryWatchViolationException(message);
             }
         }
@@ -94,9 +93,9 @@ namespace KeelMatrix.QueryWatch {
         /// <returns>The same report for chaining.</returns>
         /// <exception cref="QueryWatchViolationException">Thrown when the assertion fails.</exception>
         public QueryWatchReport ShouldHaveExecutedAtMost(int maxQueries) {
-            if (TotalQueries > maxQueries)
-                throw new QueryWatchViolationException($"Expected ≤{maxQueries} queries, but executed {TotalQueries}.");
-            return this;
+            return TotalQueries > maxQueries
+                ? throw new QueryWatchViolationException($"Expected ≤{maxQueries} queries, but executed {TotalQueries}.")
+                : this;
         }
 
         /// <summary>
@@ -106,9 +105,9 @@ namespace KeelMatrix.QueryWatch {
         /// <returns>The same report for chaining.</returns>
         /// <exception cref="QueryWatchViolationException">Thrown when the assertion fails.</exception>
         public QueryWatchReport ShouldHaveMaxAverageTime(TimeSpan maxAverage) {
-            if (AverageDuration > maxAverage)
-                throw new QueryWatchViolationException($"Expected average ≤{maxAverage}, actual {AverageDuration}.");
-            return this;
+            return AverageDuration > maxAverage
+                ? throw new QueryWatchViolationException($"Expected average ≤{maxAverage}, actual {AverageDuration}.")
+                : this;
         }
 
         /// <summary>
@@ -118,9 +117,9 @@ namespace KeelMatrix.QueryWatch {
         /// <returns>The same report for chaining.</returns>
         /// <exception cref="QueryWatchViolationException">Thrown when the assertion fails.</exception>
         public QueryWatchReport ShouldHaveMaxTotalTime(TimeSpan maxTotal) {
-            if (TotalDuration > maxTotal)
-                throw new QueryWatchViolationException($"Expected total ≤{maxTotal}, actual {TotalDuration}.");
-            return this;
+            return TotalDuration > maxTotal
+                ? throw new QueryWatchViolationException($"Expected total ≤{maxTotal}, actual {TotalDuration}.")
+                : this;
         }
     }
 

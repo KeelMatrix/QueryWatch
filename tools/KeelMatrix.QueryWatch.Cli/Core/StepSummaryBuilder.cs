@@ -15,65 +15,65 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
             double baselineAllowPercent,
             IReadOnlyCollection<string> baselineViolations) {
 
-            var sb = new StringBuilder();
-            sb.AppendLine("# QueryWatch Gate");
-            sb.AppendLine();
-            sb.AppendLine("## Overview");
-            sb.AppendLine();
-            sb.AppendLine(CultureInfo.InvariantCulture, $"* Files: **{agg.Files}**");
-            sb.AppendLine(CultureInfo.InvariantCulture, $"* Total queries: **{agg.TotalQueries}**");
-            sb.AppendLine(CultureInfo.InvariantCulture, $"* Average duration: **{agg.AverageDurationMs.ToString("0.00", CultureInfo.InvariantCulture)} ms**");
-            sb.AppendLine(CultureInfo.InvariantCulture, $"* Total duration: **{agg.TotalDurationMs.ToString("0.00", CultureInfo.InvariantCulture)} ms**");
-            sb.AppendLine();
-            sb.AppendLine("## Budgets");
-            sb.AppendLine();
-            sb.AppendLine("| Metric | Limit | Actual | Status |");
-            sb.AppendLine("|---|---:|---:|:--:|");
-            sb.AppendLine(RowInt("Max Queries", maxQueries, agg.TotalQueries));
-            sb.AppendLine(RowDouble("Max Average (ms)", maxAvgMs, agg.AverageDurationMs));
-            sb.AppendLine(RowDouble("Max Total (ms)", maxTotalMs, agg.TotalDurationMs));
-            sb.AppendLine();
+            StringBuilder sb = new();
+            _ = sb.AppendLine("# QueryWatch Gate");
+            _ = sb.AppendLine();
+            _ = sb.AppendLine("## Overview");
+            _ = sb.AppendLine();
+            _ = sb.AppendLine(CultureInfo.InvariantCulture, $"* Files: **{agg.Files}**");
+            _ = sb.AppendLine(CultureInfo.InvariantCulture, $"* Total queries: **{agg.TotalQueries}**");
+            _ = sb.AppendLine(CultureInfo.InvariantCulture, $"* Average duration: **{agg.AverageDurationMs.ToString("0.00", CultureInfo.InvariantCulture)} ms**");
+            _ = sb.AppendLine(CultureInfo.InvariantCulture, $"* Total duration: **{agg.TotalDurationMs.ToString("0.00", CultureInfo.InvariantCulture)} ms**");
+            _ = sb.AppendLine();
+            _ = sb.AppendLine("## Budgets");
+            _ = sb.AppendLine();
+            _ = sb.AppendLine("| Metric | Limit | Actual | Status |");
+            _ = sb.AppendLine("|---|---:|---:|:--:|");
+            _ = sb.AppendLine(RowInt("Max Queries", maxQueries, agg.TotalQueries));
+            _ = sb.AppendLine(RowDouble("Max Average (ms)", maxAvgMs, agg.AverageDurationMs));
+            _ = sb.AppendLine(RowDouble("Max Total (ms)", maxTotalMs, agg.TotalDurationMs));
+            _ = sb.AppendLine();
 
             if (patternFindings.Count != 0) {
-                sb.AppendLine("## Pattern Budgets");
-                sb.AppendLine();
-                sb.AppendLine("| Pattern | Max | Count | Status |");
-                sb.AppendLine("|---|---:|---:|:--:|");
-                foreach (var (b, c, over) in patternFindings) {
-                    sb.AppendLine(CultureInfo.InvariantCulture, $"| `{b.Raw}` | {b.Max} | {c} | {(over ? "❌" : "✅")} |");
+                _ = sb.AppendLine("## Pattern Budgets");
+                _ = sb.AppendLine();
+                _ = sb.AppendLine("| Pattern | Max | Count | Status |");
+                _ = sb.AppendLine("|---|---:|---:|:--:|");
+                foreach ((PatternBudget? b, int c, bool over) in patternFindings) {
+                    _ = sb.AppendLine(CultureInfo.InvariantCulture, $"| `{b.Raw}` | {b.Max} | {c} | {(over ? "❌" : "✅")} |");
                 }
-                sb.AppendLine();
+                _ = sb.AppendLine();
             }
 
             if (baseline is not null) {
-                sb.AppendLine("## Baseline Comparison");
-                sb.AppendLine();
-                sb.AppendLine(CultureInfo.InvariantCulture, $"Allowed regression: **+{baselineAllowPercent.ToString("0.00", CultureInfo.InvariantCulture)}%**");
-                sb.AppendLine();
-                sb.AppendLine("| Metric | Baseline | Allowed | Current | Status |");
-                sb.AppendLine("|---|---:|---:|---:|:--:|");
+                _ = sb.AppendLine("## Baseline Comparison");
+                _ = sb.AppendLine();
+                _ = sb.AppendLine(CultureInfo.InvariantCulture, $"Allowed regression: **+{baselineAllowPercent.ToString("0.00", CultureInfo.InvariantCulture)}%**");
+                _ = sb.AppendLine();
+                _ = sb.AppendLine("| Metric | Baseline | Allowed | Current | Status |");
+                _ = sb.AppendLine("|---|---:|---:|---:|:--:|");
                 void RowB(string name, double baseVal, double curr) {
-                    var allowed = baseVal * (1 + baselineAllowPercent / 100.0);
+                    var allowed = baseVal * (1 + (baselineAllowPercent / 100.0));
                     var ok = curr <= allowed + 1e-9;
-                    sb.AppendLine(CultureInfo.InvariantCulture, $"| {name} | {baseVal:0.##} | {allowed:0.##} | {curr:0.##} | {(ok ? "✅" : "❌")} |");
+                    _ = sb.AppendLine(CultureInfo.InvariantCulture, $"| {name} | {baseVal:0.##} | {allowed:0.##} | {curr:0.##} | {(ok ? "✅" : "❌")} |");
                 }
                 RowB("Queries", baseline.TotalQueries, agg.TotalQueries);
                 RowB("Average (ms)", baseline.AverageDurationMs, agg.AverageDurationMs);
                 RowB("Total (ms)", baseline.TotalDurationMs, agg.TotalDurationMs);
-                sb.AppendLine();
+                _ = sb.AppendLine();
             }
 
             if (violations.Count != 0 || baselineViolations.Count != 0) {
-                sb.AppendLine("## Violations");
-                foreach (var v in violations) sb.AppendLine(CultureInfo.InvariantCulture, $"- {v}");
-                foreach (var v in baselineViolations) sb.AppendLine(CultureInfo.InvariantCulture, $"- {v}");
+                _ = sb.AppendLine("## Violations");
+                foreach (var v in violations) _ = sb.AppendLine(CultureInfo.InvariantCulture, $"- {v}");
+                foreach (var v in baselineViolations) _ = sb.AppendLine(CultureInfo.InvariantCulture, $"- {v}");
             }
 
             // add plain-text hints for tests
-            sb.AppendLine();
-            sb.AppendLine(CultureInfo.InvariantCulture, $"files {agg.Files}");
-            sb.AppendLine(CultureInfo.InvariantCulture, $"files {agg.Files}");
-            sb.AppendLine(CultureInfo.InvariantCulture, $"Queries: {agg.TotalQueries}");
+            _ = sb.AppendLine();
+            _ = sb.AppendLine(CultureInfo.InvariantCulture, $"files {agg.Files}");
+            _ = sb.AppendLine(CultureInfo.InvariantCulture, $"files {agg.Files}");
+            _ = sb.AppendLine(CultureInfo.InvariantCulture, $"Queries: {agg.TotalQueries}");
 
             return sb.ToString();
         }

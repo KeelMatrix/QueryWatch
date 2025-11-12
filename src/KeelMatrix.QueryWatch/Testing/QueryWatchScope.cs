@@ -1,4 +1,3 @@
-#nullable enable
 using KeelMatrix.QueryWatch.Reporting;
 
 namespace KeelMatrix.QueryWatch.Testing {
@@ -54,12 +53,12 @@ namespace KeelMatrix.QueryWatch.Testing {
         /// <summary>
         /// Optional file path for exporting JSON before assertions.
         /// </summary>
-        public string? ExportJsonPath { get; private set; }
+        public string? ExportJsonPath { get; }
 
         /// <summary>
         /// Number of top events to include in the JSON sample.
         /// </summary>
-        public int SampleTop { get; private set; }
+        public int SampleTop { get; }
 
         /// <summary>
         /// Starts a new scope with a new session.
@@ -78,7 +77,7 @@ namespace KeelMatrix.QueryWatch.Testing {
             QueryWatchOptions? options = null,
             string? exportJsonPath = null,
             int sampleTop = 5) {
-            var session = QueryWatcher.Start(options);
+            QueryWatchSession session = QueryWatcher.Start(options);
             return new QueryWatchScope(session, maxQueries, maxAverage, maxTotal, exportJsonPath, sampleTop);
         }
 
@@ -89,16 +88,16 @@ namespace KeelMatrix.QueryWatch.Testing {
             if (_disposed) return;
             _disposed = true;
 
-            var report = Session.Stop();
+            QueryWatchReport report = Session.Stop();
 
             if (!string.IsNullOrWhiteSpace(ExportJsonPath)) {
                 try { QueryWatchJson.ExportToFile(report, ExportJsonPath!, SampleTop); }
                 catch { /* swallow export errors to avoid masking the real test failure */ }
             }
 
-            if (MaxQueries.HasValue) report.ShouldHaveExecutedAtMost(MaxQueries.Value);
-            if (MaxAverage.HasValue) report.ShouldHaveMaxAverageTime(MaxAverage.Value);
-            if (MaxTotal.HasValue) report.ShouldHaveMaxTotalTime(MaxTotal.Value);
+            if (MaxQueries.HasValue) _ = report.ShouldHaveExecutedAtMost(MaxQueries.Value);
+            if (MaxAverage.HasValue) _ = report.ShouldHaveMaxAverageTime(MaxAverage.Value);
+            if (MaxTotal.HasValue) _ = report.ShouldHaveMaxTotalTime(MaxTotal.Value);
         }
     }
 }

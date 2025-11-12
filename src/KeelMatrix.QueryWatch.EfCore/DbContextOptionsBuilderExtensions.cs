@@ -1,5 +1,4 @@
 // Copyright (c) KeelMatrix
-#nullable enable
 using Microsoft.EntityFrameworkCore;
 
 namespace KeelMatrix.QueryWatch.EfCore {
@@ -17,7 +16,7 @@ namespace KeelMatrix.QueryWatch.EfCore {
         public static DbContextOptionsBuilder UseQueryWatch(
             this DbContextOptionsBuilder builder,
             QueryWatchSession session) {
-            builder.AddInterceptors(new EfCoreQueryWatchInterceptor(session));
+            _ = builder.AddInterceptors(new EfCoreQueryWatchInterceptor(session));
             return builder;
         }
     }

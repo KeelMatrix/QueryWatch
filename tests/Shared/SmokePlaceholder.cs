@@ -1,7 +1,6 @@
 using Xunit;
 
-namespace KeelMatrix.QueryWatch.Providers.SmokeTests
-{
+namespace KeelMatrix.QueryWatch.Providers.SmokeTests {
     /// <summary>
     /// Ensures each test project has at least one discovered test for broad filters.
     /// Kept skipped locally to avoid “No test matches” noise.

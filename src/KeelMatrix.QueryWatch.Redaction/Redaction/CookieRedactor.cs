@@ -1,5 +1,4 @@
 
-#nullable enable
 using System.Text.RegularExpressions;
 
 using KeelMatrix.QueryWatch.Redaction.Internal;
@@ -22,10 +21,9 @@ namespace KeelMatrix.QueryWatch.Redaction {
         public string Redact(string input) {
             if (string.IsNullOrEmpty(input)) return string.Empty;
             // Collapse entire Cookie header to avoid partial leaks across many pairs
-            var r = CookieHeader.Replace(input, "Cookie: ***");
+            string r = CookieHeader.Replace(input, "Cookie: ***");
             // Keep cookie name but mask the primary value; leave attributes as-is
-            r = SetCookie.Replace(r, m => $"Set-Cookie: {m.Groups[1].Value}=***");
-            return r;
+            return SetCookie.Replace(r, m => $"Set-Cookie: {m.Groups[1].Value}=***");
         }
     }
 }

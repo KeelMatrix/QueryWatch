@@ -9,44 +9,44 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class AdoAsyncWrapperTests {
         [Fact]
         public async Task ExecuteNonQueryAsync_Records_Event() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            var inner = new FakeAsyncDbCommand { CommandText = "UPDATE T" };
-            using var cmd = new QueryWatchCommand(inner, session);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            FakeAsyncDbCommand inner = new() { CommandText = "UPDATE T" };
+            await using QueryWatchCommand cmd = new(inner, session);
 
             var n = await cmd.ExecuteNonQueryAsync(CancellationToken.None);
-            n.Should().Be(1);
+            _ = n.Should().Be(1);
 
-            var report = session.Stop();
-            report.TotalQueries.Should().Be(1);
-            report.Events[0].CommandText.Should().Be("UPDATE T");
+            QueryWatchReport report = session.Stop();
+            _ = report.TotalQueries.Should().Be(1);
+            _ = report.Events[0].CommandText.Should().Be("UPDATE T");
         }
 
         [Fact]
         public async Task ExecuteScalarAsync_Records_Event() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            var inner = new FakeAsyncDbCommand { CommandText = "SELECT 42" };
-            using var cmd = new QueryWatchCommand(inner, session);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            FakeAsyncDbCommand inner = new() { CommandText = "SELECT 42" };
+            await using QueryWatchCommand cmd = new(inner, session);
 
             var v = await cmd.ExecuteScalarAsync(CancellationToken.None);
-            v.Should().Be(42);
+            _ = v.Should().Be(42);
 
-            var report = session.Stop();
-            report.TotalQueries.Should().Be(1);
-            report.Events[0].CommandText.Should().Be("SELECT 42");
+            QueryWatchReport report = session.Stop();
+            _ = report.TotalQueries.Should().Be(1);
+            _ = report.Events[0].CommandText.Should().Be("SELECT 42");
         }
 
         [Fact]
         public async Task ExecuteReaderAsync_Records_Event() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            var inner = new FakeAsyncDbCommand { CommandText = "SELECT * FROM T" };
-            using var cmd = new QueryWatchCommand(inner, session);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            FakeAsyncDbCommand inner = new() { CommandText = "SELECT * FROM T" };
+            await using QueryWatchCommand cmd = new(inner, session);
 
-            using var reader = await cmd.ExecuteReaderAsync(CommandBehavior.Default, CancellationToken.None);
-            reader.Should().NotBeNull();
+            await using DbDataReader reader = await cmd.ExecuteReaderAsync(CommandBehavior.Default, CancellationToken.None);
+            _ = reader.Should().NotBeNull();
 
-            var report = session.Stop();
-            report.TotalQueries.Should().Be(1);
-            report.Events[0].CommandText.Should().Be("SELECT * FROM T");
+            QueryWatchReport report = session.Stop();
+            _ = report.TotalQueries.Should().Be(1);
+            _ = report.Events[0].CommandText.Should().Be("SELECT * FROM T");
         }
 
         // ---- Fakes for async surface ----
@@ -77,9 +77,9 @@ namespace KeelMatrix.QueryWatch.Tests {
                 => Task.FromResult<DbDataReader>(new FakeDbDataReader());
 
             private sealed class FakeDbParameterCollection : DbParameterCollection {
-                private readonly System.Collections.ArrayList _list = new();
-                public override int Add(object value) { _list.Add(value); return _list.Count - 1; }
-                public override void AddRange(Array values) { foreach (var v in values) _list.Add(v); }
+                private readonly System.Collections.ArrayList _list = [];
+                public override int Add(object value) { _ = _list.Add(value); return _list.Count - 1; }
+                public override void AddRange(Array values) { foreach (var v in values) _ = _list.Add(v); }
                 public override void Clear() => _list.Clear();
                 public override bool Contains(object value) => _list.Contains(value);
                 public override bool Contains(string value) => IndexOf(value) >= 0;

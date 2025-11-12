@@ -1,9 +1,4 @@
-#nullable enable
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
 using KeelMatrix.QueryWatch.Contracts;
 
 namespace KeelMatrix.QueryWatch.Cli.IO {
@@ -14,13 +9,13 @@ namespace KeelMatrix.QueryWatch.Cli.IO {
     internal static class SummaryLoader {
         public static async Task<IReadOnlyList<Summary>> LoadAsync(IEnumerable<string> paths) {
             ArgumentNullException.ThrowIfNull(paths);
-            var list = new List<Summary>();
-            foreach (var p in paths) {
+            List<Summary> list = [];
+            foreach (string p in paths) {
                 try {
                     await using var fs = File.OpenRead(p);
                     // Use the shared source-generated context from the contracts package
-                    var s = await JsonSerializer.DeserializeAsync(fs, QueryWatchJsonContext.Default.Summary).ConfigureAwait(false);
-                    if (s is null) throw new JsonException("File did not contain a valid summary payload.");
+                    var s = await JsonSerializer.DeserializeAsync(fs, QueryWatchJsonContext.Default.Summary).ConfigureAwait(false) ??
+                        throw new JsonException("File did not contain a valid summary payload.");
                     list.Add(s);
                 }
                 catch (FileNotFoundException ex) {
@@ -42,12 +37,10 @@ namespace KeelMatrix.QueryWatch.Cli.IO {
     }
 
     /// <summary>Thrown when an input file path does not exist.</summary>
-    internal sealed class InputFileNotFoundException : Exception {
-        public InputFileNotFoundException(string message, Exception? inner) : base(message, inner) { }
+    internal sealed class InputFileNotFoundException(string message, Exception? inner) : Exception(message, inner) {
     }
 
     /// <summary>Thrown when JSON parsing fails for an input file.</summary>
-    internal sealed class JsonParseException : Exception {
-        public JsonParseException(string message, Exception? inner) : base(message, inner) { }
+    internal sealed class JsonParseException(string message, Exception? inner) : Exception(message, inner) {
     }
 }

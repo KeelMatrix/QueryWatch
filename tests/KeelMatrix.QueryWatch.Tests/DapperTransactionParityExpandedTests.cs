@@ -1,6 +1,6 @@
-using System;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Dapper;
 using Xunit;
@@ -9,47 +9,47 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class DapperTransactionParityExpandedTests {
         [Fact]
         public void Reassign_Transaction_After_Execute_RoundTrips_Inner_Correctly() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            var provider = new OnlyIdbConnection();
-            using var wrapped = new DapperQueryWatchConnection(provider, session);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            OnlyIdbConnection provider = new();
+            using DapperQueryWatchConnection wrapped = new(provider, session);
 
-            var dcmd = (DapperQueryWatchCommand)wrapped.CreateCommand();
+            DapperQueryWatchCommand dcmd = (DapperQueryWatchCommand)wrapped.CreateCommand();
             dcmd.CommandText = "UPDATE T SET X=1";
-            var inner = (OnlyIdbCommand)DapperCommandIntrospectionExtensions.GetInnerForTest(dcmd);
+            OnlyIdbCommand inner = (OnlyIdbCommand)DapperCommandIntrospectionExtensions.GetInnerForTest(dcmd);
 
-            dcmd.ExecuteNonQuery();
+            _ = dcmd.ExecuteNonQuery();
 
-            var tx1 = (DapperQueryWatchTransaction)wrapped.BeginTransaction();
+            DapperQueryWatchTransaction tx1 = (DapperQueryWatchTransaction)wrapped.BeginTransaction();
             dcmd.Transaction = tx1;
-            inner.LastAssignedTransaction.Should().BeSameAs(tx1.Inner);
+            _ = inner.LastAssignedTransaction.Should().BeSameAs(tx1.Inner);
 
-            var tx2 = (DapperQueryWatchTransaction)wrapped.BeginTransaction();
+            DapperQueryWatchTransaction tx2 = (DapperQueryWatchTransaction)wrapped.BeginTransaction();
             dcmd.Transaction = tx2;
-            inner.LastAssignedTransaction.Should().BeSameAs(tx2.Inner);
+            _ = inner.LastAssignedTransaction.Should().BeSameAs(tx2.Inner);
 
             dcmd.Transaction = null;
-            inner.LastAssignedTransaction.Should().BeNull();
+            _ = inner.LastAssignedTransaction.Should().BeNull();
         }
 
         [Fact]
         public void Reassign_Connection_After_Execute_RoundTrips_Inner_Correctly() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            var provider = new OnlyIdbConnection();
-            using var wrapped = new DapperQueryWatchConnection(provider, session);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            OnlyIdbConnection provider = new();
+            using DapperQueryWatchConnection wrapped = new(provider, session);
 
-            var dcmd = (DapperQueryWatchCommand)wrapped.CreateCommand();
-            var inner = (OnlyIdbCommand)DapperCommandIntrospectionExtensions.GetInnerForTest(dcmd);
+            DapperQueryWatchCommand dcmd = (DapperQueryWatchCommand)wrapped.CreateCommand();
+            OnlyIdbCommand inner = (OnlyIdbCommand)DapperCommandIntrospectionExtensions.GetInnerForTest(dcmd);
 
             dcmd.CommandText = "SELECT 1";
-            dcmd.ExecuteNonQuery();
+            _ = dcmd.ExecuteNonQuery();
 
             dcmd.Connection = wrapped;
-            inner.LastAssignedConnection.Should().BeSameAs(provider);
+            _ = inner.LastAssignedConnection.Should().BeSameAs(provider);
 
             dcmd.Connection = null;
-            inner.LastAssignedConnection.Should().BeNull();
+            _ = inner.LastAssignedConnection.Should().BeNull();
             dcmd.Connection = wrapped;
-            inner.LastAssignedConnection.Should().BeSameAs(provider);
+            _ = inner.LastAssignedConnection.Should().BeSameAs(provider);
         }
 
         // ----- Minimal fakes -----
@@ -78,21 +78,29 @@ namespace KeelMatrix.QueryWatch.Tests {
         }
 
         private sealed class OnlyIdbCommand : IDbCommand {
-            private string _text = string.Empty;
             private IDbConnection? _conn;
-            private IDbTransaction? _tx;
 
             public IDbConnection? LastAssignedConnection { get; private set; }
             public IDbTransaction? LastAssignedTransaction { get; private set; }
 
             public OnlyIdbCommand(IDbConnection conn) { _conn = conn; }
+
+            private string _commandText = string.Empty;
+
             [AllowNull]
-            public string CommandText { get => _text; set => _text = value ?? string.Empty; }
+            public string CommandText {
+                get => _commandText;
+                set => _commandText = value ?? string.Empty;
+            }
+
             public int CommandTimeout { get; set; }
             public CommandType CommandType { get; set; }
             public IDbConnection? Connection { get => _conn; set { _conn = value; LastAssignedConnection = value; } }
             public IDataParameterCollection Parameters { get; } = new DummyParameters();
-            public IDbTransaction? Transaction { get => _tx; set { _tx = value; LastAssignedTransaction = value; } }
+
+            private IDbTransaction? _transaction;
+            public IDbTransaction? Transaction { get => _transaction; set { _transaction = value; LastAssignedTransaction = value; } }
+
             public UpdateRowSource UpdatedRowSource { get; set; }
 
             public void Cancel() { }
@@ -156,7 +164,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         internal static class DapperCommandIntrospectionExtensions {
             public static IDbCommand GetInnerForTest(DapperQueryWatchCommand cmd) {
-                var f = typeof(DapperQueryWatchCommand).GetField("_inner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                FieldInfo? f = typeof(DapperQueryWatchCommand).GetField("_inner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 return (IDbCommand)f!.GetValue(cmd)!;
             }
         }

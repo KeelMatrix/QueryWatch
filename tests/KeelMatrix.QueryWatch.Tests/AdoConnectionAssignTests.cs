@@ -9,42 +9,42 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class AdoConnectionAssignTests {
         [Fact]
         public void DbConnection_Setter_Unwraps_QueryWatchConnection() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            var providerConn = new FakeDbConnection();
-            var innerCmd = new FakeDbCommand();
-            var wrapped = new QueryWatchConnection(providerConn, session);
-            using var cmd = new QueryWatchCommand(innerCmd, session);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            FakeDbConnection providerConn = new();
+            FakeDbCommand innerCmd = new();
+            QueryWatchConnection wrapped = new(providerConn, session);
+            using QueryWatchCommand cmd = new(innerCmd, session);
 
             // Assign wrapper into the command; inner command should receive provider "unwrapped".
             cmd.Connection = wrapped;
-            innerCmd.AssignedConnection.Should().Be(providerConn, "setter must unwrap wrapper to provider connection");
-            cmd.Connection.Should().Be(wrapped, "getter should return the wrapper when one is assigned");
+            _ = innerCmd.AssignedConnection.Should().Be(providerConn, "setter must unwrap wrapper to provider connection");
+            _ = cmd.Connection.Should().Be(wrapped, "getter should return the wrapper when one is assigned");
         }
 
         [Fact]
         public void DbConnection_Setter_With_Raw_Provider_Clears_Wrapper() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            var providerA = new FakeDbConnection();
-            var providerB = new FakeDbConnection();
-            var innerCmd = new FakeDbCommand();
-            var wrapped = new QueryWatchConnection(providerA, session);
-            using var cmd = new QueryWatchCommand(innerCmd, session, wrapped);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            FakeDbConnection providerA = new();
+            FakeDbConnection providerB = new();
+            FakeDbCommand innerCmd = new();
+            QueryWatchConnection wrapped = new(providerA, session);
+            using QueryWatchCommand cmd = new(innerCmd, session, wrapped);
 
             // Reassign to raw provider B → wrapper should be cleared and reflected by getter.
             cmd.Connection = providerB;
-            innerCmd.AssignedConnection.Should().Be(providerB);
-            cmd.Connection.Should().Be(providerB);
+            _ = innerCmd.AssignedConnection.Should().Be(providerB);
+            _ = cmd.Connection.Should().Be(providerB);
         }
 
         [Fact]
         public void CreateDbCommand_From_Wrapped_Connection_Returns_Command_With_Wrapper_Connection() {
-            using var session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            using var provider = new FakeDbConnection();
-            using var wrapped = new QueryWatchConnection(provider, session);
+            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using FakeDbConnection provider = new();
+            using QueryWatchConnection wrapped = new(provider, session);
 
-            using var cmd = wrapped.CreateCommand();
-            cmd.Should().BeOfType<QueryWatchCommand>();
-            cmd.Connection.Should().Be(wrapped, "command.Connection should present the wrapper so caller keeps using it");
+            using DbCommand cmd = wrapped.CreateCommand();
+            _ = cmd.Should().BeOfType<QueryWatchCommand>();
+            _ = cmd.Connection.Should().Be(wrapped, "command.Connection should present the wrapper so caller keeps using it");
         }
 
         // --- Fakes ---
@@ -91,9 +91,9 @@ namespace KeelMatrix.QueryWatch.Tests {
             protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => throw new NotSupportedException();
 
             private sealed class FakeDbParameterCollection : DbParameterCollection {
-                private readonly System.Collections.ArrayList _list = new();
-                public override int Add(object value) { _list.Add(value); return _list.Count - 1; }
-                public override void AddRange(Array values) { foreach (var v in values) _list.Add(v); }
+                private readonly System.Collections.ArrayList _list = [];
+                public override int Add(object value) { _ = _list.Add(value); return _list.Count - 1; }
+                public override void AddRange(Array values) { foreach (var v in values) _ = _list.Add(v); }
                 public override void Clear() => _list.Clear();
                 public override bool Contains(object value) => _list.Contains(value);
                 public override bool Contains(string value) => IndexOf(value) >= 0;

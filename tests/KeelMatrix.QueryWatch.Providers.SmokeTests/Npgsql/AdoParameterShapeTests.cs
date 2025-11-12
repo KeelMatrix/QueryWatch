@@ -42,7 +42,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             _ = ev.Meta.Should().ContainKey("parameters");
 
             var enumerable = (ev.Meta!["parameters"] as System.Collections.IEnumerable)!;
-            List<object> shapes = enumerable.Cast<object>().ToList();
+            List<object> shapes = [.. enumerable.Cast<object>()];
             _ = shapes.Should().HaveCountGreaterThanOrEqualTo(2);
 
             static string? Get(object o, string name) => o.GetType().GetProperty(name)!.GetValue(o)?.ToString();

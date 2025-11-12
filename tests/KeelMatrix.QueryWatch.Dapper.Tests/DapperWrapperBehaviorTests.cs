@@ -1,5 +1,4 @@
 // Copyright (c) KeelMatrix
-#nullable enable
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
@@ -10,12 +9,12 @@ namespace KeelMatrix.QueryWatch.Dapper.Tests {
     public class DapperWrapperBehaviorTests {
         [Fact]
         public void WithQueryWatch_Returns_Ado_Wrapper_For_DbConnection() {
-            using var session = new QueryWatchSession();
+            using QueryWatchSession session = new();
             IDbConnection raw = new MiniDbConnection();
 
-            var wrapped = raw.WithQueryWatch(session);
+            IDbConnection wrapped = raw.WithQueryWatch(session);
 
-            wrapped.Should().BeOfType<QueryWatchConnection>();
+            _ = wrapped.Should().BeOfType<QueryWatchConnection>();
         }
 
         // Minimal DbConnection just for this test

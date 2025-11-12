@@ -1,14 +1,20 @@
-# Top level EditorConfig file
+# Top-level EditorConfig
 # For more information, see https://aka.ms/editorconfigdocs
 
 root = true
 
+# =====================================================================================
+# Global language settings
+# =====================================================================================
+
 [*.cs]
+# Encoding & formatting
 charset = utf-8
 indent_style = space
 indent_size = 4
 insert_final_newline = true
 
+# Code style
 # Organize usings
 dotnet_sort_system_directives_first = true
 
@@ -21,56 +27,64 @@ dotnet_style_qualification_for_event = false:suggestion
 # New line options
 csharp_new_line_before_open_brace = all:suggestion
 
+# Analyzer: ignore IDE0130 (Namespace does not match folder structure)
+dotnet_diagnostic.IDE0130.severity = none
+
+[*.{cs,vb}]
+dotnet_code_quality.CA1826.exclude_ordefault_methods = true
+
 [*.{csproj,props,targets}]
 indent_style = space
 indent_size = 2
 
-# ---------------------------
-# Analyzer severities
+# (we continue to rely on: EnableNETAnalyzers=true, AnalysisLevel=8.0-recommended)
+
+# =====================================================================================
+# Analyzer severities (global)
+# =====================================================================================
+
 # Public API analyzers
 dotnet_diagnostic.RS0016.severity = error   # Add new APIs to Unshipped
 dotnet_diagnostic.RS0017.severity = error   # Mark APIs as obsolete/removed
 dotnet_diagnostic.RS0025.severity = error   # Duplicate member in the public API file
 dotnet_diagnostic.RS0037.severity = error   # The generated public API file is not up to date
 
-[*.{cs,vb}]
-dotnet_code_quality.CA1826.exclude_ordefault_methods = true
+# =====================================================================================
+# Per-project severity settings
+# =====================================================================================
 
-# (we continue to rely on: EnableNETAnalyzers=true, AnalysisLevel=8.0-recommended)
-
-# ---------------------------
-# Per-project severity settings:
-
-# test projects under /tests
+# tests/*
 [tests/**.cs]
-dotnet_diagnostic.CA1707.severity = none   # disable “no underscores in identifiers” for test names
-dotnet_diagnostic.CS1591.severity = none   # disable “missing XML documentation” for test code
+dotnet_diagnostic.CA1707.severity = none   # allow underscores in identifiers (test names)
+dotnet_diagnostic.CS1591.severity = none   # missing XML docs off in tests
 dotnet_diagnostic.IDE0290.severity = none  # disable “Use primary constructor”
 
-# sample apps under /samples
+# samples/*
 [samples/**.cs]
-dotnet_diagnostic.CS1591.severity = none   # disable “missing XML documentation” for sample code
+dotnet_diagnostic.CS1591.severity = none   # missing XML docs off in samples
 
-# tools/KeelMatrix.QueryWatch.Cli
+# tools/KeelMatrix.QueryWatch.Cli/*
 [tools/KeelMatrix.QueryWatch.Cli/**.cs]
-dotnet_diagnostic.RCS1194.severity = none  # disable Roslynator rule RCS1194 (style/constructor guideline)
-dotnet_diagnostic.S3871.severity = none    # disable Sonar rule S3871 (exception/immutability guideline)
-dotnet_diagnostic.CS1591.severity = none   # disable “missing XML documentation” for CLI code
+dotnet_diagnostic.RCS1194.severity = none  # Roslynator: constructor guideline
+dotnet_diagnostic.S3871.severity = none    # Sonar: exception/immutability guideline
+dotnet_diagnostic.CS1591.severity = none   # missing XML docs off in CLI
 
-# Core library — src/KeelMatrix.QueryWatch
+# src/KeelMatrix.QueryWatch/*
 [src/KeelMatrix.QueryWatch/**.cs]
-dotnet_diagnostic.CA1510.severity = none   # disable “prefer ArgumentNullException.ThrowIfNull” requirement
-dotnet_diagnostic.CA1513.severity = none   # disable “prefer nameof(...) in exceptions” requirement
-dotnet_diagnostic.CA2249.severity = none   # disable “Use 'string.Contains' instead of 'string.IndexOf' to improve readability”
-dotnet_diagnostic.IDE0290.severity = none  # disable “Use primary constructor”
-dotnet_diagnostic.RCS1001.severity = none  # disable “Add braces to if statement”
+dotnet_diagnostic.CA1510.severity = none   # prefer ThrowIfNull
+dotnet_diagnostic.CA1513.severity = none   # prefer nameof(...) in exceptions
+dotnet_diagnostic.CA2249.severity = none   # prefer string.Contains over IndexOf
+dotnet_diagnostic.IDE0290.severity = none  # “Use primary constructor”
+dotnet_diagnostic.RCS1001.severity = none  # “Add braces to if statement”
 
-# Project: Contracts — src/KeelMatrix.QueryWatch.Contracts
+# src/KeelMatrix.QueryWatch.Contracts/*
 [src/KeelMatrix.QueryWatch.Contracts/**.cs]
-dotnet_diagnostic.CS1591.severity = none   # disable “missing XML documentation” for public contracts
+dotnet_diagnostic.CS1591.severity = none   # missing XML docs off for public contracts
 
-# ---------------------------
-# Debug-Release specific severity settings:
+# =====================================================================================
+# Configuration-specific severity settings
+# (Order matters: these come last to override above where applicable)
+# =====================================================================================
 
 # In Debug: suppress CS1591 across the board (keep the build clean)
 [*.cs]

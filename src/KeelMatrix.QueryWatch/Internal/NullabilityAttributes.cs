@@ -7,6 +7,8 @@ namespace System.Diagnostics.CodeAnalysis {
         System.AttributeTargets.Property |
         System.AttributeTargets.ReturnValue,
         Inherited = false)]
+#pragma warning disable RCS1251 // Remove unnecessary braces
     internal sealed class AllowNullAttribute : System.Attribute { }
+#pragma warning restore  RCS1251
 }
 #endif

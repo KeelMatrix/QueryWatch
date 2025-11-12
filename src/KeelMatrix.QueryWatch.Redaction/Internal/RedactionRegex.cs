@@ -1,4 +1,3 @@
-#nullable enable
 using System.Text.RegularExpressions;
 
 namespace KeelMatrix.QueryWatch.Redaction.Internal {
@@ -13,8 +12,8 @@ namespace KeelMatrix.QueryWatch.Redaction.Internal {
     internal static class RedactionRegex {
         /// <summary>Create a configured <see cref="Regex"/> with NonBacktracking where supported, with safe fallback.</summary>
         public static Regex Create(string pattern, RegexOptions options = RegexOptions.None, int timeoutMs = 100) {
-            var baseOptions = RegexOptions.Compiled | RegexOptions.CultureInvariant | options;
-            var timeout = TimeSpan.FromMilliseconds(timeoutMs);
+            RegexOptions baseOptions = RegexOptions.Compiled | RegexOptions.CultureInvariant | options;
+            TimeSpan timeout = TimeSpan.FromMilliseconds(timeoutMs);
 
 #if NET8_0_OR_GREATER
             // Proactively avoid NonBacktracking for constructs it does not support.
@@ -46,10 +45,7 @@ namespace KeelMatrix.QueryWatch.Redaction.Internal {
             }
 
             // Balancing groups / conditionals (rare in our codebase, but be safe)
-            if (pattern.Contains("(?<-")) return false;
-            if (pattern.Contains("(?>")) return false;
-
-            return true;
+            return !pattern.Contains("(?<-") && !pattern.Contains("(?>");
         }
 #endif
     }

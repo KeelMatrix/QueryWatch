@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
@@ -11,107 +12,107 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class AdoParameterMetadataCaptureTests {
         [Fact]
         public void QueryWatchCommand_Captures_Ado_Parameter_Shapes_When_Enabled() {
-            var opts = new QueryWatchOptions { CaptureParameterShape = true };
-            using var session = QueryWatcher.Start(opts);
+            QueryWatchOptions opts = new() { CaptureParameterShape = true };
+            using QueryWatchSession session = QueryWatcher.Start(opts);
 
-            var inner = new FakeDbCommand { CommandText = "SELECT 1" };
+            FakeDbCommand inner = new() { CommandText = "SELECT 1" };
 
-            var p1 = inner.CreateParameter();
+            DbParameter p1 = inner.CreateParameter();
             p1.ParameterName = "@id";
             p1.DbType = DbType.Int32;
             p1.Direction = ParameterDirection.Input;
-            inner.Parameters.Add(p1);
+            _ = inner.Parameters.Add(p1);
 
-            var p2 = inner.CreateParameter();
+            DbParameter p2 = inner.CreateParameter();
             p2.ParameterName = "@name";
             p2.DbType = DbType.String;
             p2.Direction = ParameterDirection.Input;
-            inner.Parameters.Add(p2);
+            _ = inner.Parameters.Add(p2);
 
-            using var cmd = new QueryWatchCommand(inner, session);
-            cmd.ExecuteNonQuery();
+            using QueryWatchCommand cmd = new(inner, session);
+            _ = cmd.ExecuteNonQuery();
 
-            var report = session.Stop();
-            report.TotalQueries.Should().Be(1);
-            var ev = report.Events[0];
-            ev.Meta.Should().NotBeNull("metadata should be present when capture is enabled");
-            ev.Meta!.Should().ContainKey("parameters");
+            QueryWatchReport report = session.Stop();
+            _ = report.TotalQueries.Should().Be(1);
+            QueryEvent ev = report.Events[0];
+            _ = ev.Meta.Should().NotBeNull("metadata should be present when capture is enabled");
+            _ = ev.Meta!.Should().ContainKey("parameters");
 
             var obj = ev.Meta!["parameters"];
-            obj.Should().NotBeNull();
+            _ = obj.Should().NotBeNull();
 
             // We reflect over the internal AdoParameterShape to assert its properties without exposing it.
-            var seq = obj as System.Collections.IEnumerable;
-            seq.Should().NotBeNull("parameters should be an enumerable");
-            var list = seq!.Cast<object>().ToList();
-            list.Should().HaveCount(2);
+            IEnumerable? seq = obj as System.Collections.IEnumerable;
+            _ = seq.Should().NotBeNull("parameters should be an enumerable");
+            List<object> list = [.. seq!.Cast<object>()];
+            _ = list.Should().HaveCount(2);
 
             static string? Get(object o, string name) => o.GetType().GetProperty(name)!.GetValue(o)?.ToString();
 
-            Get(list[0], "Name").Should().Be("@id");
-            Get(list[0], "DbType").Should().Be("Int32");
-            Get(list[0], "ClrType").Should().Be(typeof(int).FullName);
-            Get(list[0], "Direction").Should().Be("Input");
+            _ = Get(list[0], "Name").Should().Be("@id");
+            _ = Get(list[0], "DbType").Should().Be("Int32");
+            _ = Get(list[0], "ClrType").Should().Be(typeof(int).FullName);
+            _ = Get(list[0], "Direction").Should().Be("Input");
 
-            Get(list[1], "Name").Should().Be("@name");
-            Get(list[1], "DbType").Should().Be("String");
-            Get(list[1], "ClrType").Should().Be(typeof(string).FullName);
-            Get(list[1], "Direction").Should().Be("Input");
+            _ = Get(list[1], "Name").Should().Be("@name");
+            _ = Get(list[1], "DbType").Should().Be("String");
+            _ = Get(list[1], "ClrType").Should().Be(typeof(string).FullName);
+            _ = Get(list[1], "Direction").Should().Be("Input");
         }
 
         [Fact]
         public void QueryWatchCommand_Does_Not_Capture_Parameter_Metadata_When_Disabled() {
-            var opts = new QueryWatchOptions { CaptureParameterShape = false };
-            using var session = QueryWatcher.Start(opts); // explicitly disabled
+            QueryWatchOptions opts = new() { CaptureParameterShape = false };
+            using QueryWatchSession session = QueryWatcher.Start(opts); // explicitly disabled
 
-            var inner = new FakeDbCommand { CommandText = "SELECT 1" };
-            var p = inner.CreateParameter();
+            FakeDbCommand inner = new() { CommandText = "SELECT 1" };
+            DbParameter p = inner.CreateParameter();
             p.ParameterName = "@id";
             p.DbType = DbType.Int32;
-            inner.Parameters.Add(p);
+            _ = inner.Parameters.Add(p);
 
-            using var cmd = new QueryWatchCommand(inner, session);
-            cmd.ExecuteNonQuery();
+            using QueryWatchCommand cmd = new(inner, session);
+            _ = cmd.ExecuteNonQuery();
 
-            var report = session.Stop();
-            report.Events.Should().HaveCount(1);
-            report.Events[0].Meta.Should().BeNull("metadata capture is disabled");
+            QueryWatchReport report = session.Stop();
+            _ = report.Events.Should().HaveCount(1);
+            _ = report.Events[0].Meta.Should().BeNull("metadata capture is disabled");
         }
 
         [Fact]
         public void Exported_Json_Includes_Event_Meta_Parameters() {
-            var opts = new QueryWatchOptions { CaptureParameterShape = true };
-            using var session = QueryWatcher.Start(opts);
+            QueryWatchOptions opts = new() { CaptureParameterShape = true };
+            using QueryWatchSession session = QueryWatcher.Start(opts);
 
-            var inner = new FakeDbCommand { CommandText = "SELECT 1" };
-            var p = inner.CreateParameter();
+            FakeDbCommand inner = new() { CommandText = "SELECT 1" };
+            DbParameter p = inner.CreateParameter();
             p.ParameterName = "@when";
             p.DbType = DbType.DateTimeOffset;
             p.Direction = ParameterDirection.Input;
-            inner.Parameters.Add(p);
+            _ = inner.Parameters.Add(p);
 
-            using var cmd = new QueryWatchCommand(inner, session);
-            cmd.ExecuteNonQuery();
+            using QueryWatchCommand cmd = new(inner, session);
+            _ = cmd.ExecuteNonQuery();
 
-            var report = session.Stop();
+            QueryWatchReport report = session.Stop();
 
             var tempRoot = Path.Combine(Path.GetTempPath(), "QueryWatchTests", Guid.NewGuid().ToString("N"));
             var outPath = Path.Combine(tempRoot, "ado-meta.json");
             QueryWatchJson.ExportToFile(report, outPath, sampleTop: 5);
 
-            File.Exists(outPath).Should().BeTrue();
-            using var doc = JsonDocument.Parse(File.ReadAllText(outPath));
-            var root = doc.RootElement;
-            root.GetProperty("events").GetArrayLength().Should().Be(1);
-            var ev0 = root.GetProperty("events")[0];
-            ev0.TryGetProperty("meta", out var metaEl).Should().BeTrue("event-level meta should be present");
-            metaEl.TryGetProperty("parameters", out var pars).Should().BeTrue();
-            pars.GetArrayLength().Should().Be(1);
-            var p0 = pars[0];
-            p0.GetProperty("name").GetString().Should().Be("@when");
-            p0.GetProperty("dbType").GetString().Should().Be("DateTimeOffset");
-            p0.GetProperty("clrType").GetString().Should().Be(typeof(DateTimeOffset).FullName);
-            p0.GetProperty("direction").GetString().Should().Be("Input");
+            _ = File.Exists(outPath).Should().BeTrue();
+            using JsonDocument doc = JsonDocument.Parse(File.ReadAllText(outPath));
+            JsonElement root = doc.RootElement;
+            _ = root.GetProperty("events").GetArrayLength().Should().Be(1);
+            JsonElement ev0 = root.GetProperty("events")[0];
+            _ = ev0.TryGetProperty("meta", out JsonElement metaEl).Should().BeTrue("event-level meta should be present");
+            _ = metaEl.TryGetProperty("parameters", out JsonElement pars).Should().BeTrue();
+            _ = pars.GetArrayLength().Should().Be(1);
+            JsonElement p0 = pars[0];
+            _ = p0.GetProperty("name").GetString().Should().Be("@when");
+            _ = p0.GetProperty("dbType").GetString().Should().Be("DateTimeOffset");
+            _ = p0.GetProperty("clrType").GetString().Should().Be(typeof(DateTimeOffset).FullName);
+            _ = p0.GetProperty("direction").GetString().Should().Be("Input");
         }
 
         // Minimal fakes suitable for the ADO wrapper tests.
@@ -136,9 +137,9 @@ namespace KeelMatrix.QueryWatch.Tests {
             protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) => throw new NotSupportedException();
 
             private sealed class FakeDbParameterCollection : DbParameterCollection {
-                private readonly System.Collections.ArrayList _list = new();
-                public override int Add(object value) { _list.Add(value); return _list.Count - 1; }
-                public override void AddRange(Array values) { foreach (var v in values) _list.Add(v); }
+                private readonly System.Collections.ArrayList _list = [];
+                public override int Add(object value) { _ = _list.Add(value); return _list.Count - 1; }
+                public override void AddRange(Array values) { foreach (var v in values) _ = _list.Add(v); }
                 public override void Clear() => _list.Clear();
                 public override bool Contains(object value) => _list.Contains(value);
                 public override bool Contains(string value) => IndexOf(value) >= 0;

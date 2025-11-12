@@ -1,4 +1,3 @@
-#nullable enable
 using System.Data;
 
 namespace KeelMatrix.QueryWatch.Dapper {
@@ -6,7 +5,6 @@ namespace KeelMatrix.QueryWatch.Dapper {
     /// Delegating <see cref="IDbTransaction"/> that preserves the wrapper connection.
     /// </summary>
     public sealed class DapperQueryWatchTransaction : IDbTransaction {
-        private readonly IDbTransaction _inner;
         private readonly DapperQueryWatchConnection _owner;
 
         /// <summary>
@@ -16,28 +14,28 @@ namespace KeelMatrix.QueryWatch.Dapper {
         /// <param name="owner">Wrapper connection that owns this transaction.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="inner"/> or <paramref name="owner"/> is null.</exception>
         public DapperQueryWatchTransaction(IDbTransaction inner, DapperQueryWatchConnection owner) {
-            _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+            Inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
 
         /// <summary>
         /// Gets the inner provider transaction.
         /// </summary>
-        public IDbTransaction Inner => _inner;
+        public IDbTransaction Inner { get; }
 
         /// <inheritdoc />
         public IDbConnection Connection => _owner;
 
         /// <inheritdoc />
-        public IsolationLevel IsolationLevel => _inner.IsolationLevel;
+        public IsolationLevel IsolationLevel => Inner.IsolationLevel;
 
         /// <inheritdoc />
-        public void Commit() => _inner.Commit();
+        public void Commit() => Inner.Commit();
 
         /// <inheritdoc />
-        public void Rollback() => _inner.Rollback();
+        public void Rollback() => Inner.Rollback();
 
         /// <inheritdoc />
-        public void Dispose() => _inner.Dispose();
+        public void Dispose() => Inner.Dispose();
     }
 }

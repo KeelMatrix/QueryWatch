@@ -24,9 +24,8 @@ namespace KeelMatrix.QueryWatch.Security {
         /// </remarks>
         public static string Redact(string input) {
             if (string.IsNullOrEmpty(input)) return input;
-            var redacted = EmailRegex.Replace(input, "&lt;REDACTED_EMAIL&gt;");
-            redacted = TokenRegex.Replace(redacted, "&lt;REDACTED_TOKEN&gt;");
-            return redacted;
+            string redacted = EmailRegex.Replace(input, "&lt;REDACTED_EMAIL&gt;");
+            return TokenRegex.Replace(redacted, "&lt;REDACTED_TOKEN&gt;");
         }
     }
 }

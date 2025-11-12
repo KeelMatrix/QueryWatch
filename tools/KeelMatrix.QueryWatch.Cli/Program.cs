@@ -3,8 +3,8 @@ using KeelMatrix.QueryWatch.Cli.Core;
 using KeelMatrix.QueryWatch.Cli.Options;
 
 namespace KeelMatrix.QueryWatch.Cli {
-    static class Program {
-        static async Task<int> Main(string[] args) {
+    internal static class Program {
+        private static async Task<int> Main(string[] args) {
             // 0) No arguments → show help
             if (args.Length == 0) {
                 Console.WriteLine(CommandLineOptions.HelpText);
@@ -17,7 +17,7 @@ namespace KeelMatrix.QueryWatch.Cli {
                 return ExitCodes.Ok;
             }
 
-            var parsed = CommandLineOptions.Parse(args);
+            ParseResult parsed = CommandLineOptions.Parse(args);
 
             // 2) If the caller asked for help, always print it and return:
             //    - 0 when parse succeeded (pure help)

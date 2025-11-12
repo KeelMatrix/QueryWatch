@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using KeelMatrix.QueryWatch.Contracts;
 
 namespace KeelMatrix.QueryWatch.Cli.Core {
     public sealed class PatternBudget {
@@ -21,12 +20,12 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
             if (sep < 0) sep = s.LastIndexOf('|');
             if (sep <= 0 || sep >= s.Length - 1) { error = $"Invalid --budget value '{input}'"; return false; }
 
-            string left = s.Substring(0, sep);
-            string right = s.Substring(sep + 1);
+            string left = s[..sep];
+            string right = s[(sep + 1)..];
             if (!int.TryParse(right, out int max) || max < 0) { error = $"Invalid max in --budget '{input}'"; return false; }
 
             if (left.StartsWith("regex:", StringComparison.OrdinalIgnoreCase)) {
-                var pattern = left.Substring("regex:".Length);
+                string pattern = left["regex:".Length..];
                 try {
                     _ = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
                 }
@@ -43,9 +42,9 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
         }
 
         public int CountMatches(IEnumerable<string> corpus) {
-            var rx = new Regex(Pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            Regex rx = new(Pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             int count = 0;
-            foreach (var s in corpus) {
+            foreach (string? s in corpus) {
                 if (s is null) continue;
                 if (rx.IsMatch(s)) count++;
             }

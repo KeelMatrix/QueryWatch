@@ -4,25 +4,25 @@ using KeelMatrix.QueryWatch.Testing;
 using Microsoft.EntityFrameworkCore;
 
 // EF Core + SQLite sample
-var artifacts = Path.Combine(AppContext.BaseDirectory, "artifacts");
+string artifacts = Path.Combine(AppContext.BaseDirectory, "artifacts");
 Directory.CreateDirectory(artifacts);
-var outJson = Path.Combine(artifacts, "qwatch.ef.json");
+string outJson = Path.Combine(artifacts, "qwatch.ef.json");
 
-using var q = QueryWatchScope.Start(
+using QueryWatchScope q = QueryWatchScope.Start(
     maxQueries: 50,                             // keep generous to avoid failing demo runs
     maxAverage: TimeSpan.FromMilliseconds(200), // tweak to experiment
     exportJsonPath: outJson,
     sampleTop: 50);
 
-var dbPath = Path.Combine(AppContext.BaseDirectory, "app.db");
-var options = (DbContextOptions<AppDbContext>)new DbContextOptionsBuilder<AppDbContext>()
+string dbPath = Path.Combine(AppContext.BaseDirectory, "app.db");
+DbContextOptions<AppDbContext> options = (DbContextOptions<AppDbContext>)new DbContextOptionsBuilder<AppDbContext>()
     .UseSqlite($"Data Source={dbPath}")
     .UseQueryWatch(q.Session) // wires the EF Core interceptor
     .Options;
 
-using (var db = new AppDbContext(options)) {
-    await db.Database.EnsureDeletedAsync();
-    await db.Database.EnsureCreatedAsync();
+using (AppDbContext db = new(options)) {
+    _ = await db.Database.EnsureDeletedAsync();
+    _ = await db.Database.EnsureCreatedAsync();
 
     // seed a bit of data
     db.Users.AddRange(
@@ -31,7 +31,7 @@ using (var db = new AppDbContext(options)) {
         new User { Name = "Charlie" },
         new User { Name = "Diana" }
     );
-    await db.SaveChangesAsync();
+    _ = await db.SaveChangesAsync();
 
     // We purposefully run one raw SQL that starts with "SELECT * FROM Users"
     // so CLI pattern budgets like --budget "SELECT * FROM Users*=1" match predictably.
@@ -42,7 +42,7 @@ using (var db = new AppDbContext(options)) {
     Console.WriteLine($"Pattern budget demo rows (Name LIKE 'A%'): {predictable.Count}");
 
     // a few queries
-    var total = await db.Users.CountAsync();
+    int total = await db.Users.CountAsync();
     var likeA = await db.Users.Where(u => EF.Functions.Like(u.Name, "%a%")).ToListAsync();
     var first = await db.Users.OrderBy(u => u.Id).FirstAsync();
 

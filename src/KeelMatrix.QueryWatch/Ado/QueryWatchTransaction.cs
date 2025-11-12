@@ -1,7 +1,4 @@
 // Copyright (c) KeelMatrix
-#nullable enable
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
@@ -11,12 +8,11 @@ namespace KeelMatrix.QueryWatch.Ado {
     /// and ensures multi-result <see cref="DbDataReader"/>s are closed before commit.
     /// </summary>
     public sealed class QueryWatchTransaction : DbTransaction {
-        private readonly DbTransaction _inner;
         private readonly QueryWatchConnection _owner;
 
         // Track active readers created under this transaction so Commit can safely proceed
         // on providers that require no active results (e.g., SQL Server, MySqlConnector, Npgsql).
-        private readonly Dictionary<int, WeakReference<DbDataReader>> _activeReaders = new();
+        private readonly Dictionary<int, WeakReference<DbDataReader>> _activeReaders = [];
 
         /// <summary>
         /// Initializes a new wrapper over an inner <see cref="DbTransaction"/>.
@@ -25,18 +21,18 @@ namespace KeelMatrix.QueryWatch.Ado {
         /// <param name="owner">Wrapper connection that owns this transaction.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="inner"/> or <paramref name="owner"/> is null.</exception>
         public QueryWatchTransaction(DbTransaction inner, QueryWatchConnection owner) {
-            _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+            Inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
 
         /// <summary>Gets the inner provider transaction.</summary>
-        public DbTransaction Inner => _inner;
+        public DbTransaction Inner { get; }
 
         /// <summary>Return the wrapping connection so Dapper/ADO code can pass it back.</summary>
         protected override DbConnection DbConnection => _owner;
 
         /// <inheritdoc />
-        public override IsolationLevel IsolationLevel => _inner.IsolationLevel;
+        public override IsolationLevel IsolationLevel => Inner.IsolationLevel;
 
         // ---- Reader tracking API (called by QueryWatchCommand/QueryWatchDataReader) ----
         internal void TrackReader(DbDataReader reader) {
@@ -49,7 +45,7 @@ namespace KeelMatrix.QueryWatch.Ado {
         internal void UntrackReader(DbDataReader reader) {
             if (reader is null) return;
             lock (_activeReaders) {
-                _activeReaders.Remove(reader.GetHashCode());
+                _ = _activeReaders.Remove(reader.GetHashCode());
             }
         }
 
@@ -57,10 +53,10 @@ namespace KeelMatrix.QueryWatch.Ado {
             try {
                 if (r is null) return;
                 // Consume all remaining rows & result sets, then close.
-                while (true) {
+                do {
                     while (r.Read()) { /* drain */ }
-                    if (!r.NextResult()) break;
                 }
+                while (r.NextResult());
                 r.Close();
             }
             catch {
@@ -72,8 +68,8 @@ namespace KeelMatrix.QueryWatch.Ado {
             // Fast path
             if (_activeReaders.Count == 0) return;
 
-            foreach (var kv in _activeReaders.ToArray()) {
-                if (kv.Value.TryGetTarget(out var r)) {
+            foreach (KeyValuePair<int, WeakReference<DbDataReader>> kv in _activeReaders.ToArray()) {
+                if (kv.Value.TryGetTarget(out DbDataReader? r)) {
                     TryDrain(r);
                 }
             }
@@ -84,15 +80,15 @@ namespace KeelMatrix.QueryWatch.Ado {
         public override void Commit() {
             // Ensure all multi-result readers are closed before committing.
             EnsureNoActiveReaders();
-            _inner.Commit();
+            Inner.Commit();
         }
 
         /// <inheritdoc />
-        public override void Rollback() => _inner.Rollback();
+        public override void Rollback() => Inner.Rollback();
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing) {
-            if (disposing) _inner.Dispose();
+            if (disposing) Inner.Dispose();
             base.Dispose(disposing);
         }
     }

@@ -1,4 +1,3 @@
-#nullable enable
 using System.Data;
 using System.Data.Common;
 
@@ -16,9 +15,15 @@ namespace KeelMatrix.QueryWatch {
         /// <returns>A wrapper connection that instruments commands.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="connection"/> or <paramref name="session"/> is null.</exception>
         public static DbConnection WithQueryWatch(this DbConnection connection, QueryWatchSession session) {
-            if (connection is null) throw new ArgumentNullException(nameof(connection));
-            if (session is null) throw new ArgumentNullException(nameof(session));
-            return new Ado.QueryWatchConnection(connection, session);
+            if (connection is null) {
+                throw new ArgumentNullException(nameof(connection));
+            }
+            else if (session is null) {
+                throw new ArgumentNullException(nameof(session));
+            }
+            else {
+                return new Ado.QueryWatchConnection(connection, session);
+            }
         }
 
         /// <summary>
@@ -32,10 +37,15 @@ namespace KeelMatrix.QueryWatch {
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="connection"/> or <paramref name="session"/> is null.</exception>
         public static IDbConnection WithQueryWatch(this IDbConnection connection, QueryWatchSession session) {
             if (connection is null) throw new ArgumentNullException(nameof(connection));
-            if (session is null) throw new ArgumentNullException(nameof(session));
-
-            if (connection is DbConnection db) return new Ado.QueryWatchConnection(db, session);
-            return new Dapper.DapperQueryWatchConnection(connection, session);
+            if (session is null) {
+                throw new ArgumentNullException(nameof(session));
+            }
+            else if (connection is DbConnection db) {
+                return new Ado.QueryWatchConnection(db, session);
+            }
+            else {
+                return new Dapper.DapperQueryWatchConnection(connection, session);
+            }
         }
     }
 }

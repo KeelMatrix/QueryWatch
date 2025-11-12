@@ -47,7 +47,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.SqlClient {
 
             IEnumerable? enumerable = parsObj as System.Collections.IEnumerable;
             _ = enumerable.Should().NotBeNull("parameters should be an enumerable");
-            List<object> shapes = enumerable!.Cast<object>().ToList();
+            List<object> shapes = [.. enumerable!.Cast<object>()];
             _ = shapes.Should().HaveCountGreaterThanOrEqualTo(2);
 
             static string? Get(object o, string name) => o.GetType().GetProperty(name)!.GetValue(o)?.ToString();

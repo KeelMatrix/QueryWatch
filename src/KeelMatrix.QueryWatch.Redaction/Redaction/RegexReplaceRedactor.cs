@@ -12,9 +12,15 @@ namespace KeelMatrix.QueryWatch.Redaction {
     /// <see cref="System.Text.RegularExpressions.RegexOptions.IgnoreCase"/> to reduce noise from casing and locales.
     /// Instances are immutable and thread‑safe.
     /// </remarks>
-    public sealed class RegexReplaceRedactor : IQueryTextRedactor {
-        private readonly Regex _regex;
-        private readonly string _replacement;
+    /// <remarks>Creates a redactor using a precompiled <see cref="System.Text.RegularExpressions.Regex"/>.</remarks>
+    /// <param name="regex">The regular expression to apply.</param>
+    /// <param name="replacement">
+    /// The replacement to use. If <c>null</c>, an empty string is used.
+    /// </param>
+    /// <exception cref="ArgumentNullException"><paramref name="regex"/> is <c>null</c>.</exception>
+    public sealed class RegexReplaceRedactor(Regex regex, string replacement) : IQueryTextRedactor {
+        private readonly Regex _regex = regex ?? throw new ArgumentNullException(nameof(regex));
+        private readonly string _replacement = replacement ?? string.Empty;
 
         /// <summary>Creates a redactor that replaces matches of <paramref name="pattern"/>.</summary>
         /// <param name="pattern">
@@ -30,17 +36,6 @@ namespace KeelMatrix.QueryWatch.Redaction {
         /// <exception cref="ArgumentException">The pattern is not a valid regular expression.</exception>
         public RegexReplaceRedactor(string pattern, string replacement)
             : this(RedactionRegex.Create(pattern, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase), replacement) { }
-
-        /// <summary>Creates a redactor using a precompiled <see cref="System.Text.RegularExpressions.Regex"/>.</summary>
-        /// <param name="regex">The regular expression to apply.</param>
-        /// <param name="replacement">
-        /// The replacement to use. If <c>null</c>, an empty string is used.
-        /// </param>
-        /// <exception cref="ArgumentNullException"><paramref name="regex"/> is <c>null</c>.</exception>
-        public RegexReplaceRedactor(Regex regex, string replacement) {
-            _regex = regex ?? throw new ArgumentNullException(nameof(regex));
-            _replacement = replacement ?? string.Empty;
-        }
 
         /// <inheritdoc />
         public string Redact(string input) => string.IsNullOrEmpty(input) ? string.Empty : _regex.Replace(input, _replacement);

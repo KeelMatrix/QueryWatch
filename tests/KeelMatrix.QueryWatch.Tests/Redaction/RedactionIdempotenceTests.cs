@@ -7,7 +7,7 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
         [Fact]
         public void Each_Redactor_Is_Idempotent_On_Common_Sample() {
             // A single string that contains many shapes; any unknown shapes will stay as-is.
-            var sample = @"
+            string sample = @"
                 X-Api-Key: SECRET
                 Authorization: Bearer aaaBBBBBBBBB.cccDDDDDDDDD.eeeEEEEEEEEE
                 Cookie: a=1; b=2
@@ -25,7 +25,7 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
                 +1 (555) 012-3456
                 ";
 
-            IQueryTextRedactor[] redactors = new IQueryTextRedactor[] {
+            IQueryTextRedactor[] redactors = [
                 new ApiKeyRedactor(),
                 new AuthorizationRedactor(),
                 new CookieRedactor(),
@@ -41,12 +41,12 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
                 new PhoneRedactor(),
                 new UuidNoDashRedactor(),
                 new WhitespaceNormalizerRedactor(),
-            };
+            ];
 
-            foreach (var r in redactors) {
-                var once = r.Redact(sample);
-                var twice = r.Redact(once);
-                twice.Should().Be(once, $"{r.GetType().Name} should be idempotent");
+            foreach (IQueryTextRedactor r in redactors) {
+                string once = r.Redact(sample);
+                string twice = r.Redact(once);
+                _ = twice.Should().Be(once, $"{r.GetType().Name} should be idempotent");
             }
         }
     }

@@ -1,21 +1,25 @@
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Redaction;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests.Redaction {
-    public class RegexReplaceRedactorTests {
+    public partial class RegexReplaceRedactorTests {
         [Fact]
         public void Replaces_Matches_Using_Pattern() {
-            var r = new RegexReplaceRedactor(@"\d+", "***");
-            r.Redact("Id=123; Name='A'").Should().Be("Id=***; Name='A'");
+            RegexReplaceRedactor r = new(@"\d+", "***");
+            _ = r.Redact("Id=123; Name='A'").Should().Be("Id=***; Name='A'");
         }
 
         [Fact]
         public void Supports_Precompiled_Regex_And_Handles_Null_Input() {
-            var compiled = new System.Text.RegularExpressions.Regex("foo", System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            var r = new RegexReplaceRedactor(compiled, "***");
-            r.Redact("FOO bar").Should().Be("*** bar");
-            r.Redact(null!).Should().Be(string.Empty);
+            Regex compiled = FooRegex();
+            RegexReplaceRedactor r = new(compiled, "***");
+            _ = r.Redact("FOO bar").Should().Be("*** bar");
+            _ = r.Redact(null!).Should().Be(string.Empty);
         }
+
+        [GeneratedRegex("foo", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
+        private static partial Regex FooRegex();
     }
 }

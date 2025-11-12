@@ -1,10 +1,10 @@
 // Copyright (c) KeelMatrix
 
-#nullable enable
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace KeelMatrix.QueryWatch.Ado {
     /// <summary>
@@ -83,9 +83,9 @@ namespace KeelMatrix.QueryWatch.Ado {
         protected override DbTransaction? DbTransaction {
             get {
                 // Prefer the wrapper if we have it and it still matches the inner transaction.
-                if (_wrapperTransaction is not null && ReferenceEquals(_inner.Transaction, _wrapperTransaction.Inner))
-                    return _wrapperTransaction;
-                return _inner.Transaction;
+                return _wrapperTransaction is not null && ReferenceEquals(_inner.Transaction, _wrapperTransaction.Inner)
+                    ? _wrapperTransaction
+                    : _inner.Transaction;
             }
             set {
                 if (value is QueryWatchTransaction wrapped) {
@@ -117,8 +117,7 @@ namespace KeelMatrix.QueryWatch.Ado {
 
         private string ResolveTextForRecording() {
             // Adapter-specific fast disable gate.
-            if (_session.Options.DisableAdoTextCapture) return string.Empty;
-            return _inner.CommandText ?? string.Empty;
+            return _session.Options.DisableAdoTextCapture ? string.Empty : _inner.CommandText ?? string.Empty;
         }
 
         private IReadOnlyDictionary<string, object?>? CaptureParameterShapeIfEnabled() {
@@ -128,13 +127,13 @@ namespace KeelMatrix.QueryWatch.Ado {
         }
 
         private void RecordSuccess(TimeSpan elapsed) {
-            var text = ResolveTextForRecording();
-            var meta = CaptureParameterShapeIfEnabled();
+            string text = ResolveTextForRecording();
+            IReadOnlyDictionary<string, object?>? meta = CaptureParameterShapeIfEnabled();
             _session.Record(text, elapsed, meta);
         }
 
         private void RecordFailure(TimeSpan elapsed, Exception ex) {
-            var text = ResolveTextForRecording();
+            string text = ResolveTextForRecording();
 
             // Always include normalized failure envelope.
             var meta = new Dictionary<string, object?>(StringComparer.Ordinal) {
@@ -144,9 +143,9 @@ namespace KeelMatrix.QueryWatch.Ado {
             };
 
             // Optionally append parameter shapes.
-            var shapes = CaptureParameterShapeIfEnabled();
+            IReadOnlyDictionary<string, object?>? shapes = CaptureParameterShapeIfEnabled();
             if (shapes is not null) {
-                foreach (var kv in shapes) meta[kv.Key] = kv.Value;
+                foreach (KeyValuePair<string, object?> kv in shapes) meta[kv.Key] = kv.Value;
             }
 
             _session.Record(text, elapsed, meta);
@@ -156,16 +155,16 @@ namespace KeelMatrix.QueryWatch.Ado {
             if (!token.IsCancellationRequested) return ex;
 
             // SQL Server
-            var full = ex.GetType()?.FullName ?? string.Empty;
+            string full = ex.GetType()?.FullName ?? string.Empty;
             if (full.IndexOf("SqlClient.SqlException", StringComparison.OrdinalIgnoreCase) >= 0)
                 return new OperationCanceledException("Command was cancelled.", ex, token);
 
             // Npgsql: PostgresException with SqlState 57014 (query_canceled)
-            var typeName = ex.GetType().FullName ?? "";
+            string? typeName = ex.GetType().FullName ?? "";
             if ((typeName ?? string.Empty).IndexOf("Npgsql.PostgresException", StringComparison.OrdinalIgnoreCase) >= 0) {
                 try {
-                    var sqlStateProp = ex.GetType().GetProperty("SqlState");
-                    var sqlState = sqlStateProp?.GetValue(ex) as string;
+                    PropertyInfo? sqlStateProp = ex.GetType().GetProperty("SqlState");
+                    string? sqlState = sqlStateProp?.GetValue(ex) as string;
                     if (string.Equals(sqlState, "57014", StringComparison.Ordinal))
                         return new OperationCanceledException("Command was cancelled.", ex, token);
                 }
@@ -206,7 +205,7 @@ namespace KeelMatrix.QueryWatch.Ado {
                 if (seconds <= 0)
                     return null;                // 0 == infinite
                 var cts = new CancellationTokenSource(TimeSpan.FromSeconds(seconds));
-                var reg = cts.Token.Register(static state => {
+                CancellationTokenRegistration reg = cts.Token.Register(static state => {
                     try { ((DbCommand)state!).Cancel(); } catch { /* best-effort */ }
                 }, cmd);
                 return new CompositeDisposer(cts, reg);
@@ -223,10 +222,10 @@ namespace KeelMatrix.QueryWatch.Ado {
             var sw = Stopwatch.StartNew();
             IDisposable? tmo = BeginTimeoutCancelIfNeeded(_inner);
             try {
-                var result = _inner.ExecuteNonQuery();
-                if (tmo is CompositeDisposer s && s.IsCancelled)
-                    throw new TimeoutException("CommandTimeout elapsed and the command was cancelled.");
-                return result;
+                int result = _inner.ExecuteNonQuery();
+                return tmo is CompositeDisposer s && s.IsCancelled
+                    ? throw new TimeoutException("CommandTimeout elapsed and the command was cancelled.")
+                    : result;
             }
             catch (Exception ex) {
                 sw.Stop();
@@ -244,10 +243,10 @@ namespace KeelMatrix.QueryWatch.Ado {
             var sw = Stopwatch.StartNew();
             IDisposable? tmo = BeginTimeoutCancelIfNeeded(_inner);
             try {
-                var result = _inner.ExecuteScalar();
-                if (tmo is CompositeDisposer s && s.IsCancelled)
-                    throw new TimeoutException("CommandTimeout elapsed and the command was cancelled.");
-                return result;
+                object? result = _inner.ExecuteScalar();
+                return tmo is CompositeDisposer s && s.IsCancelled
+                    ? throw new TimeoutException("CommandTimeout elapsed and the command was cancelled.")
+                    : result;
             }
             catch (Exception ex) {
                 sw.Stop();
@@ -265,12 +264,12 @@ namespace KeelMatrix.QueryWatch.Ado {
             var sw = Stopwatch.StartNew();
             IDisposable? tmo = BeginTimeoutCancelIfNeeded(_inner);
             try {
-                var r = _inner.ExecuteReader(behavior);
+                DbDataReader r = _inner.ExecuteReader(behavior);
                 if (tmo is CompositeDisposer s && s.IsCancelled) {
                     r.Dispose();
                     throw new TimeoutException("CommandTimeout elapsed and the command was cancelled.");
                 }
-                var tx = _wrapperTransaction;
+                QueryWatchTransaction? tx = _wrapperTransaction;
                 tx?.TrackReader(r);
                 return new QueryWatchDataReader(r, tx);
             }
@@ -299,10 +298,10 @@ namespace KeelMatrix.QueryWatch.Ado {
             CancellationTokenRegistration reg = default;
             try {
                 reg = RegisterCancelOnToken(_inner, token);
-                var result = await _inner.ExecuteNonQueryAsync(token).ConfigureAwait(false);
-                if (IsMySql(_inner) && token.IsCancellationRequested)
-                    throw new OperationCanceledException("Command was cancelled.", token);
-                return result;
+                int result = await _inner.ExecuteNonQueryAsync(token).ConfigureAwait(false);
+                return IsMySql(_inner) && token.IsCancellationRequested
+                    ? throw new OperationCanceledException("Command was cancelled.", token)
+                    : result;
             }
             catch (Exception ex) {
                 sw.Stop();
@@ -329,10 +328,10 @@ namespace KeelMatrix.QueryWatch.Ado {
             CancellationTokenRegistration reg = default;
             try {
                 reg = RegisterCancelOnToken(_inner, token);
-                var obj = await _inner.ExecuteScalarAsync(token).ConfigureAwait(false);
-                if (IsMySql(_inner) && token.IsCancellationRequested)
-                    throw new OperationCanceledException("Command was cancelled.", token);
-                return obj;
+                object? obj = await _inner.ExecuteScalarAsync(token).ConfigureAwait(false);
+                return IsMySql(_inner) && token.IsCancellationRequested
+                    ? throw new OperationCanceledException("Command was cancelled.", token)
+                    : obj;
             }
             catch (Exception ex) {
                 sw.Stop();
@@ -355,7 +354,7 @@ namespace KeelMatrix.QueryWatch.Ado {
             CancellationTokenRegistration reg = default;
             try {
                 reg = RegisterCancelOnToken(_inner, cancellationToken);
-                var r = await _inner.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
+                DbDataReader r = await _inner.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
                 if (IsMySql(_inner) && cancellationToken.IsCancellationRequested) {
 #if NET8_0_OR_GREATER
                     await r.DisposeAsync();
@@ -364,7 +363,7 @@ namespace KeelMatrix.QueryWatch.Ado {
 #endif
                     throw new OperationCanceledException("Command was cancelled.", cancellationToken);
                 }
-                var tx = _wrapperTransaction;
+                QueryWatchTransaction? tx = _wrapperTransaction;
                 tx?.TrackReader(r);
                 return new QueryWatchDataReader(r, tx);
             }
