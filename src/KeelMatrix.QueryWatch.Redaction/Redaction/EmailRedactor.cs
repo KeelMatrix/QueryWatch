@@ -16,5 +16,3 @@ namespace KeelMatrix.QueryWatch.Redaction {
         public string Redact(string input) => string.IsNullOrEmpty(input) ? string.Empty : Email.Replace(input, "***");
     }
 }
-
-

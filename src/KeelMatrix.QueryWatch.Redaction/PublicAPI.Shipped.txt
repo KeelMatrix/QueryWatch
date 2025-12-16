@@ -59,5 +59,3 @@ KeelMatrix.QueryWatch.Redaction.UuidNoDashRedactor.UuidNoDashRedactor() -> void
 KeelMatrix.QueryWatch.Redaction.WhitespaceNormalizerRedactor
 KeelMatrix.QueryWatch.Redaction.WhitespaceNormalizerRedactor.Redact(string! input) -> string!
 KeelMatrix.QueryWatch.Redaction.WhitespaceNormalizerRedactor.WhitespaceNormalizerRedactor() -> void
-KeelMatrix.QueryWatch.Security.RedactionHelper
-static KeelMatrix.QueryWatch.Security.RedactionHelper.Redact(string! input) -> string!

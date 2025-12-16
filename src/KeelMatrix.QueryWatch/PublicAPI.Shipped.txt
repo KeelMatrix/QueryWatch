@@ -54,7 +54,6 @@ KeelMatrix.QueryWatch.Dapper.DapperQueryWatchTransaction.Dispose() -> void
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchTransaction.Inner.get -> System.Data.IDbTransaction!
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchTransaction.IsolationLevel.get -> System.Data.IsolationLevel
 KeelMatrix.QueryWatch.Dapper.DapperQueryWatchTransaction.Rollback() -> void
-KeelMatrix.QueryWatch.IO.PathUtils
 KeelMatrix.QueryWatch.Licensing.ILicenseValidator
 KeelMatrix.QueryWatch.Licensing.ILicenseValidator.IsValid(string! licenseKey) -> bool
 KeelMatrix.QueryWatch.Licensing.NoopLicenseValidator
@@ -175,7 +174,6 @@ override KeelMatrix.QueryWatch.Ado.QueryWatchConnection.State.get -> System.Data
 override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.Commit() -> void
 override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.IsolationLevel.get -> System.Data.IsolationLevel
 override KeelMatrix.QueryWatch.Ado.QueryWatchTransaction.Rollback() -> void
-static KeelMatrix.QueryWatch.IO.PathUtils.Combine(params string![]! segments) -> string!
 static KeelMatrix.QueryWatch.QueryWatcher.Start(KeelMatrix.QueryWatch.QueryWatchOptions? options = null) -> KeelMatrix.QueryWatch.QueryWatchSession!
 static KeelMatrix.QueryWatch.QueryWatchReport.CreateSnapshot(System.Collections.Generic.IReadOnlyList<KeelMatrix.QueryWatch.QueryEvent!>! events, KeelMatrix.QueryWatch.QueryWatchOptions! options, System.DateTimeOffset startedAt, System.DateTimeOffset stoppedAt) -> KeelMatrix.QueryWatch.QueryWatchReport!
 static KeelMatrix.QueryWatch.QueryWatchSession.Start(KeelMatrix.QueryWatch.QueryWatchOptions? options = null) -> KeelMatrix.QueryWatch.QueryWatchSession!
