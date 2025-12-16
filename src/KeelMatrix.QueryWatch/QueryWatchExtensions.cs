@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using System.Data;
 using System.Data.Common;
 

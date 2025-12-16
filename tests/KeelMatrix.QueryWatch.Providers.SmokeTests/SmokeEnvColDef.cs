@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Providers.SmokeTests {

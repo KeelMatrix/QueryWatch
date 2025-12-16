@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Exporters.Json;
 

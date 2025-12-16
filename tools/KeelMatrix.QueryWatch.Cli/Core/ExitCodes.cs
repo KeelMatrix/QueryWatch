@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 namespace KeelMatrix.QueryWatch.Cli.Core {
     public static class ExitCodes {
         public const int Ok = 0;

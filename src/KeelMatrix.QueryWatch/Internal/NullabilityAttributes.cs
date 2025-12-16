@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 #if NETSTANDARD2_0
 // Minimal shim so we can use [AllowNull] in multi-targeted libraries.
 namespace System.Diagnostics.CodeAnalysis {

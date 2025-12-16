@@ -1,4 +1,5 @@
 // Copyright (c) KeelMatrix
+
 using System.Data.Common;
 using KeelMatrix.QueryWatch.Ado;
 using Microsoft.EntityFrameworkCore.Diagnostics;

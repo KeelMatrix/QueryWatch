@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using System.Globalization;
 
 namespace KeelMatrix.QueryWatch.Cli.Options {

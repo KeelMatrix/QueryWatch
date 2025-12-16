@@ -1,4 +1,5 @@
 // Copyright (c) KeelMatrix
+
 using System.Data;
 using FluentAssertions;
 using Npgsql;

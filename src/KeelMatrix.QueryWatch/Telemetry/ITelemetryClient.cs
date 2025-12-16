@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 namespace KeelMatrix.QueryWatch.Telemetry {
     /// <summary>
     /// Defines a minimal interface for emitting anonymous telemetry events. The default implementation is a no‑op.

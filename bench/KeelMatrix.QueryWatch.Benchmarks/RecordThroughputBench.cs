@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 // Microbenchmarks for write-path contention in QueryWatchSession.
 // Compares production "lock + copy-on-stop" vs an alternative "ConcurrentQueue + snapshot".
 using System.Collections.Concurrent;

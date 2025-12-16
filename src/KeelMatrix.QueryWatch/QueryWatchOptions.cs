@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Options for a monitoring session.

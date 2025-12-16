@@ -1,4 +1,5 @@
 // Copyright (c) KeelMatrix
+
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Ado;
 using Npgsql;

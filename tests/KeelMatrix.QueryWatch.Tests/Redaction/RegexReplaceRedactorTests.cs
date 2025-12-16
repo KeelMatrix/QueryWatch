@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Redaction;

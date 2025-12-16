@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using FluentAssertions;

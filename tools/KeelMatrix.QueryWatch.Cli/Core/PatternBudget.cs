@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using System.Text.RegularExpressions;
 
 namespace KeelMatrix.QueryWatch.Cli.Core {

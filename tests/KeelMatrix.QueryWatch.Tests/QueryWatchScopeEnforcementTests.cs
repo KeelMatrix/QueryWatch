@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Testing;
 using Xunit;

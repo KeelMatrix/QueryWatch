@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using System.Text.Json;
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Contracts;

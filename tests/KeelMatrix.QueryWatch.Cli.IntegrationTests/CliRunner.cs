@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using System.Diagnostics;
 using System.Text;
 

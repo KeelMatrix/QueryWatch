@@ -1,4 +1,5 @@
 // Copyright (c) KeelMatrix
+
 using KeelMatrix.QueryWatch.Cli.Core;
 using KeelMatrix.QueryWatch.Cli.Options;
 

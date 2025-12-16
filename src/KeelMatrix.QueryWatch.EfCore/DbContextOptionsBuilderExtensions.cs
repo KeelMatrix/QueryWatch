@@ -1,4 +1,5 @@
 // Copyright (c) KeelMatrix
+
 using Microsoft.EntityFrameworkCore;
 
 namespace KeelMatrix.QueryWatch.EfCore {

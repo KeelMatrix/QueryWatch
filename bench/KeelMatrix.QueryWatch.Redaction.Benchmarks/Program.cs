@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 

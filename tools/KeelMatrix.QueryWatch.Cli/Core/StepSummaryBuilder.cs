@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using System.Globalization;
 using System.Text;
 using KeelMatrix.QueryWatch.Contracts;

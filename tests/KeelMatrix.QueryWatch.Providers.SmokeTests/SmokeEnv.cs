@@ -1,9 +1,13 @@
+// Copyright (c) KeelMatrix
+
 using System.Diagnostics;
 using System.Net.Sockets;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Providers.SmokeTests {
-    // Ensures env vars exist for all tests in this assembly.
+    /// <summary>
+    /// Ensures env vars exist for all tests in this assembly.
+    /// </summary>
     public sealed class SmokeEnv : ICollectionFixture<SmokeEnv.Setup> {
         public sealed class Setup : IDisposable {
             private readonly bool _startedCompose;

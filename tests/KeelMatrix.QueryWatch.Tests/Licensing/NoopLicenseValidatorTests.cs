@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Licensing;
 using Xunit;

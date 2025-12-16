@@ -1,5 +1,6 @@
-using System.Text.RegularExpressions;
+// Copyright (c) KeelMatrix
 
+using System.Text.RegularExpressions;
 using KeelMatrix.QueryWatch.Redaction.Internal;
 
 namespace KeelMatrix.QueryWatch.Redaction {

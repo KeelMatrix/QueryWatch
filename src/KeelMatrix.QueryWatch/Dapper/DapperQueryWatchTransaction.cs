@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using System.Data;
 
 namespace KeelMatrix.QueryWatch.Dapper {

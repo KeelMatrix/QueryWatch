@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Providers.SmokeTests {
@@ -8,12 +10,12 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests {
     public static class SmokePlaceholder {
 #pragma warning disable xUnit1004 // Test methods should not be skipped
         [Fact(Skip = "Local run: placeholder to suppress 'No test matches' warnings.")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+#pragma warning restore xUnit1004
 
 #pragma warning disable S1186 // Methods should not be empty
 #pragma warning disable IDE1006 // Naming Styles
         public static void __smoke_placeholder__() { }
-#pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore S1186 // Methods should not be empty
+#pragma warning restore IDE1006
+#pragma warning restore S1186
     }
 }

@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using KeelMatrix.QueryWatch.Reporting;
 using Xunit;
 

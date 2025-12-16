@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 namespace KeelMatrix.QueryWatch.Licensing {
     /// <summary>
     /// Represents a mechanism to validate license keys for premium features.

@@ -1,4 +1,5 @@
 // Copyright (c) KeelMatrix
+
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Collects query events for the lifetime of a session. Thread‑safe for recording.

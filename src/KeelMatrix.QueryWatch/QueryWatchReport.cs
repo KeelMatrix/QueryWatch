@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Immutable snapshot of a session used for assertions and inspection.

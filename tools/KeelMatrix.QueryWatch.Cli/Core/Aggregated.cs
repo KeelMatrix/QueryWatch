@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using KeelMatrix.QueryWatch.Contracts;
 
 namespace KeelMatrix.QueryWatch.Cli.Core {
