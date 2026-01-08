@@ -15,7 +15,6 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests {
 #pragma warning disable S1186 // Methods should not be empty
 #pragma warning disable IDE1006 // Naming Styles
         public static void __smoke_placeholder__() { }
-#pragma warning restore IDE1006
-#pragma warning restore S1186
+#pragma warning restore IDE1006, S1186
     }
 }

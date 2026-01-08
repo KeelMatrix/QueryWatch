@@ -2,28 +2,20 @@
 
 namespace KeelMatrix.QueryWatch.Telemetry {
     /// <summary>
-    /// Defines a minimal interface for emitting anonymous telemetry events. The default implementation is a no‑op.
+    /// Defines a minimal internal interface for emitting anonymous telemetry events.
+    /// Implementations must never throw or block the calling thread.
     /// </summary>
-    public interface ITelemetryClient {
+    internal interface ITelemetryClient {
         /// <summary>
-        /// Called once to indicate that the library has been successfully activated.
+        /// Attempts to emit an activation event if telemetry is enabled
+        /// and activation has not yet been recorded.
         /// </summary>
         void TrackActivation();
 
         /// <summary>
-        /// Called periodically (e.g., weekly) to indicate ongoing use.
+        /// Attempts to emit a heartbeat event if telemetry is enabled
+        /// and a heartbeat has not yet been recorded for the current week.
         /// </summary>
         void TrackHeartbeat();
-    }
-
-    /// <summary>
-    /// No‑op implementation of <see cref="ITelemetryClient"/>.
-    /// </summary>
-    public sealed class NoopTelemetryClient : ITelemetryClient {
-        /// <inheritdoc />
-        public void TrackActivation() { }
-
-        /// <inheritdoc />
-        public void TrackHeartbeat() { }
     }
 }

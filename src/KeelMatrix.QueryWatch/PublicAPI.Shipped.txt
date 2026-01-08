@@ -130,13 +130,6 @@ KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalDurationMs.get -> do
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalDurationMs.init -> void
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalQueries.get -> int
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalQueries.init -> void
-KeelMatrix.QueryWatch.Telemetry.ITelemetryClient
-KeelMatrix.QueryWatch.Telemetry.ITelemetryClient.TrackActivation() -> void
-KeelMatrix.QueryWatch.Telemetry.ITelemetryClient.TrackHeartbeat() -> void
-KeelMatrix.QueryWatch.Telemetry.NoopTelemetryClient
-KeelMatrix.QueryWatch.Telemetry.NoopTelemetryClient.NoopTelemetryClient() -> void
-KeelMatrix.QueryWatch.Telemetry.NoopTelemetryClient.TrackActivation() -> void
-KeelMatrix.QueryWatch.Telemetry.NoopTelemetryClient.TrackHeartbeat() -> void
 KeelMatrix.QueryWatch.Testing.QueryWatchScope
 KeelMatrix.QueryWatch.Testing.QueryWatchScope.Dispose() -> void
 KeelMatrix.QueryWatch.Testing.QueryWatchScope.ExportJsonPath.get -> string?
