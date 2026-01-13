@@ -1,25 +1,31 @@
+// Copyright (c) KeelMatrix
+
 using Ado.Sqlite;
+using KeelMatrix.QueryWatch;
 using KeelMatrix.QueryWatch.Ado;
-using KeelMatrix.QueryWatch.Testing;
+using KeelMatrix.QueryWatch.Reporting;
 using Microsoft.Data.Sqlite;
 
-// Plain ADO.NET + SQLite sample
+// Plain ADO.NET + SQLite
 string artifacts = Path.Combine(AppContext.BaseDirectory, "artifacts");
 Directory.CreateDirectory(artifacts);
 string outJson = Path.Combine(artifacts, "qwatch.ado.json");
 
-using QueryWatchScope q = QueryWatchScope.Start(
-    maxQueries: 50,
-    maxAverage: TimeSpan.FromMilliseconds(200),
-    exportJsonPath: outJson,
-    sampleTop: 50);
+// Configure session options
+QueryWatchOptions options = new() {
+    MaxQueries = 50,
+    MaxAverageDuration = TimeSpan.FromMilliseconds(200)
+};
+
+// Start a QueryWatch session
+using QueryWatchSession session = QueryWatcher.Start(options);
 
 // In-memory SQLite needs the connection to stay open for the DB to persist.
 using SqliteConnection raw = new("Data Source=:memory:");
 await raw.OpenAsync();
 
 // Wrap the provider connection so all commands record into the QueryWatch session.
-using QueryWatchConnection conn = new(raw, q.Session);
+using QueryWatchConnection conn = new(raw, session);
 
 // Create schema (we include a harmless SQL comment with an email to show masking)
 using (var cmd = conn.CreateCommand()) {
@@ -47,6 +53,15 @@ using (var select = conn.CreateCommand()) {
     int count = Convert.ToInt32(await select.ExecuteScalarAsync(), System.Globalization.CultureInfo.InvariantCulture);
     Console.WriteLine($"Users in DB: {count}");
 }
+
+// Stop session and produce report
+QueryWatchReport report = session.Stop();
+
+// Export JSON
+QueryWatchJson.ExportToFile(report, outJson, sampleTop: 50);
+
+// Enforce budgets
+report.ThrowIfViolations();
 
 Console.WriteLine($"QueryWatch JSON written to: {outJson}");
 Console.WriteLine("Try the CLI gate:");

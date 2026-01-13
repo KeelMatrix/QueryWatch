@@ -3,7 +3,6 @@
 using System.Text.Json;
 using FluentAssertions;
 using KeelMatrix.QueryWatch.Reporting;
-using KeelMatrix.QueryWatch.Testing;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
@@ -14,7 +13,9 @@ namespace KeelMatrix.QueryWatch.Tests {
             string path = Path.Combine(root, "artifacts", "qwatch.report.json");
 
             Action act = () => {
-                using QueryWatchScope scope = QueryWatchScope.Start(
+                using var session = QueryWatchSession.Start();
+                using TestQueryWatchScope scope = new(
+                    session,
                     maxQueries: 1,
                     exportJsonPath: path,
                     sampleTop: 2);

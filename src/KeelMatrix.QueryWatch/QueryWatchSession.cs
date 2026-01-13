@@ -19,6 +19,8 @@ namespace KeelMatrix.QueryWatch {
         public QueryWatchSession(QueryWatchOptions? options = null) {
             Options = options ?? new QueryWatchOptions();
             StartedAt = DateTimeOffset.UtcNow;
+
+            Telemetry.QueryWatchTelemetry.TrackActivation();
         }
 
         /// <summary>Options for this session.</summary>
@@ -74,6 +76,8 @@ namespace KeelMatrix.QueryWatch {
                 // Enforce single-stop semantics
                 throw new InvalidOperationException("Session has already been stopped.");
             }
+
+            Telemetry.QueryWatchTelemetry.TrackHeartbeat();
 
             // Snapshot under the same lock that protects writes to maintain no-post-stop recording guarantee.
             List<QueryEvent> snapshot;

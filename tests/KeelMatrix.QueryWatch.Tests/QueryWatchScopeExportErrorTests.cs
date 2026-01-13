@@ -1,7 +1,6 @@
 // Copyright (c) KeelMatrix
 
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Testing;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
@@ -18,7 +17,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             string path = Path.Combine(fakeDir, "qwatch.report.json");
 
             using QueryWatchSession session = QueryWatcher.Start();
-            var scope = new QueryWatchScope(session, maxQueries: 1, exportJsonPath: path, sampleTop: 2);
+            using var scope = new TestQueryWatchScope(session, maxQueries: 1, exportJsonPath: path, sampleTop: 2);
 
             session.Record("SELECT 1", TimeSpan.FromMilliseconds(1));
             session.Record("SELECT 2", TimeSpan.FromMilliseconds(2));

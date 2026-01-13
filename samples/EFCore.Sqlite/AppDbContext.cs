@@ -1,3 +1,5 @@
+// Copyright (c) KeelMatrix
+
 using Microsoft.EntityFrameworkCore;
 
 namespace EFCore.Sqlite {

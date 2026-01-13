@@ -130,15 +130,6 @@ KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalDurationMs.get -> do
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalDurationMs.init -> void
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalQueries.get -> int
 KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary.TotalQueries.init -> void
-KeelMatrix.QueryWatch.Testing.QueryWatchScope
-KeelMatrix.QueryWatch.Testing.QueryWatchScope.Dispose() -> void
-KeelMatrix.QueryWatch.Testing.QueryWatchScope.ExportJsonPath.get -> string?
-KeelMatrix.QueryWatch.Testing.QueryWatchScope.MaxAverage.get -> System.TimeSpan?
-KeelMatrix.QueryWatch.Testing.QueryWatchScope.MaxQueries.get -> int?
-KeelMatrix.QueryWatch.Testing.QueryWatchScope.MaxTotal.get -> System.TimeSpan?
-KeelMatrix.QueryWatch.Testing.QueryWatchScope.QueryWatchScope(KeelMatrix.QueryWatch.QueryWatchSession! session, int? maxQueries = null, System.TimeSpan? maxAverage = null, System.TimeSpan? maxTotal = null, string? exportJsonPath = null, int sampleTop = 5) -> void
-KeelMatrix.QueryWatch.Testing.QueryWatchScope.SampleTop.get -> int
-KeelMatrix.QueryWatch.Testing.QueryWatchScope.Session.get -> KeelMatrix.QueryWatch.QueryWatchSession!
 override KeelMatrix.QueryWatch.Ado.QueryWatchCommand.Cancel() -> void
 override KeelMatrix.QueryWatch.Ado.QueryWatchCommand.CommandText.get -> string!
 override KeelMatrix.QueryWatch.Ado.QueryWatchCommand.CommandText.set -> void
@@ -174,7 +165,6 @@ static KeelMatrix.QueryWatch.Redaction.QueryWatchOptionsExtensions.AddRegexRedac
 static KeelMatrix.QueryWatch.Redaction.QueryWatchOptionsExtensions.UseRecommendedRedactors(this KeelMatrix.QueryWatch.QueryWatchOptions! options, bool includeWhitespaceNormalizer = true, bool includeEmails = true, bool includeLongHex = true, bool includeJwt = true, bool includeAuthorization = true, bool includeConnStringPwd = true, bool includeGuid = true, bool includeUrlTokens = true, bool includeAwsAccessKey = true, bool includeAzureKeys = true, bool includeGuidLikeHex = true, bool includeTimestamps = false, bool includeIpAddresses = false, bool includePhone = false) -> KeelMatrix.QueryWatch.QueryWatchOptions!
 static KeelMatrix.QueryWatch.Reporting.QueryWatchJson.ExportToFile(KeelMatrix.QueryWatch.QueryWatchReport! report, string! path, int sampleTop = 5) -> void
 static KeelMatrix.QueryWatch.Reporting.QueryWatchJson.ToSummary(KeelMatrix.QueryWatch.QueryWatchReport! report, int sampleTop = 5) -> KeelMatrix.QueryWatch.Reporting.QueryWatchJson.Summary!
-static KeelMatrix.QueryWatch.Testing.QueryWatchScope.Start(int? maxQueries = null, System.TimeSpan? maxAverage = null, System.TimeSpan? maxTotal = null, KeelMatrix.QueryWatch.QueryWatchOptions? options = null, string? exportJsonPath = null, int sampleTop = 5) -> KeelMatrix.QueryWatch.Testing.QueryWatchScope!
 KeelMatrix.QueryWatch.QueryWatchOptions.CaptureParameterShape.get -> bool
 KeelMatrix.QueryWatch.QueryWatchOptions.CaptureParameterShape.set -> void
 KeelMatrix.QueryWatch.QueryWatchOptions.DisableAdoTextCapture.get -> bool

@@ -1,6 +1,9 @@
+// Copyright (c) KeelMatrix
+
 using EFCore.Sqlite;
+using KeelMatrix.QueryWatch;
 using KeelMatrix.QueryWatch.EfCore;
-using KeelMatrix.QueryWatch.Testing;
+using KeelMatrix.QueryWatch.Reporting;
 using Microsoft.EntityFrameworkCore;
 
 // EF Core + SQLite sample
@@ -8,19 +11,22 @@ string artifacts = Path.Combine(AppContext.BaseDirectory, "artifacts");
 Directory.CreateDirectory(artifacts);
 string outJson = Path.Combine(artifacts, "qwatch.ef.json");
 
-using QueryWatchScope q = QueryWatchScope.Start(
-    maxQueries: 50,                             // keep generous to avoid failing demo runs
-    maxAverage: TimeSpan.FromMilliseconds(200), // tweak to experiment
-    exportJsonPath: outJson,
-    sampleTop: 50);
+// Configure session options
+QueryWatchOptions options = new() {
+    MaxQueries = 50, // keep generous to avoid failing demo runs
+    MaxAverageDuration = TimeSpan.FromMilliseconds(200)
+};
+
+// Start a QueryWatch session
+using QueryWatchSession session = QueryWatcher.Start(options);
 
 string dbPath = Path.Combine(AppContext.BaseDirectory, "app.db");
-DbContextOptions<AppDbContext> options = (DbContextOptions<AppDbContext>)new DbContextOptionsBuilder<AppDbContext>()
+DbContextOptions<AppDbContext> dbOptions = (DbContextOptions<AppDbContext>)new DbContextOptionsBuilder<AppDbContext>()
     .UseSqlite($"Data Source={dbPath}")
-    .UseQueryWatch(q.Session) // wires the EF Core interceptor
+    .UseQueryWatch(session) // wires the EF Core interceptor
     .Options;
 
-using (AppDbContext db = new(options)) {
+using (AppDbContext db = new(dbOptions)) {
     _ = await db.Database.EnsureDeletedAsync();
     _ = await db.Database.EnsureCreatedAsync();
 
@@ -48,6 +54,15 @@ using (AppDbContext db = new(options)) {
 
     Console.WriteLine($"Users: {total}, Like 'a': {likeA.Count}, First: {first.Name}");
 }
+
+// Stop session and produce report
+QueryWatchReport report = session.Stop();
+
+// Export JSON
+QueryWatchJson.ExportToFile(report, outJson, sampleTop: 50);
+
+// Enforce budgets
+report.ThrowIfViolations();
 
 Console.WriteLine($"QueryWatch JSON written to: {outJson}");
 Console.WriteLine("Try the CLI gate:");
