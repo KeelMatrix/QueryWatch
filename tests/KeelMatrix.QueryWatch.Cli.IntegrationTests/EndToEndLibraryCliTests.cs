@@ -23,7 +23,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
                 session.Record("SELECT 1", TimeSpan.FromMilliseconds(1));
             }
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
 
             var path = Path.Combine(Path.GetTempPath(), "qwatch-e2e-" + Guid.NewGuid().ToString("N") + ".json");
             QueryWatchJson.ExportToFile(report, path, sampleTop: sampleTop);

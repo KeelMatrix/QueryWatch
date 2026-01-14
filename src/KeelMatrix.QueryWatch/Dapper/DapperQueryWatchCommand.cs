@@ -29,7 +29,9 @@ namespace KeelMatrix.QueryWatch.Dapper {
         #region Helper plumbing
 
         private string ResolveTextForRecording() {
-            return _session.Options.DisableDapperTextCapture ? string.Empty : _inner.CommandText ?? string.Empty;
+            return _session.Options.CaptureSqlText
+                ? _inner.CommandText ?? string.Empty
+                : string.Empty;
         }
 
         private void RecordSuccess(TimeSpan elapsed) {

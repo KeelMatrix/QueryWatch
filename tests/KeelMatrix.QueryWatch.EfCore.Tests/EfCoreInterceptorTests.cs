@@ -26,7 +26,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
                 _ = ctx.Things.Where(t => t.Id > 0).ToList();
             }
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().BeGreaterThan(0);
 
             // We expect at least one SELECT against the Things table
@@ -51,7 +51,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
                 _ = await ctx.Things.Where(t => t.Id >= 0).ToListAsync();
             }
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().BeGreaterThan(0);
             _ = report.Events.Should().Contain(e =>
                 e.CommandText.Contains("FROM", StringComparison.OrdinalIgnoreCase) &&
@@ -75,7 +75,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
                 _ = affected.Should().BeGreaterThanOrEqualTo(0);
             }
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().BeGreaterThan(0);
             _ = report.Events.Should().Contain(e =>
                 e.CommandText.StartsWith("UPDATE", StringComparison.OrdinalIgnoreCase));
@@ -110,7 +110,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
                 _ = result.Should().NotBeNull();
             }
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().BeGreaterThan(0);
             _ = report.Events.Should().Contain(e =>
                 e.CommandText.Contains("SELECT", StringComparison.OrdinalIgnoreCase));

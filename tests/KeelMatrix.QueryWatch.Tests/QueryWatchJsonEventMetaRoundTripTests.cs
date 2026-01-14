@@ -9,7 +9,7 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class QueryWatchJsonEventMetaRoundTripTests {
         [Fact]
         public void Event_Meta_Parameters_RoundTrip_Serialize_Deserialize() {
-            using QueryWatchSession session = QueryWatcher.Start();
+            using QueryWatchSession session = new();
 
             Dictionary<string, object?> meta = new() {
                 ["parameters"] = new object?[] {
@@ -34,7 +34,7 @@ namespace KeelMatrix.QueryWatch.Tests {
                 meta
             );
 
-            QueryWatchJson.Summary summary = QueryWatchJson.ToSummary(session.Stop(), sampleTop: 1);
+            QueryWatchJson.Summary summary = QueryWatchJson.ToSummary(session.Complete(), sampleTop: 1);
 
             var json = JsonSerializer.Serialize(summary);
             QueryWatchJson.Summary? roundtripped = JsonSerializer.Deserialize<QueryWatchJson.Summary>(json);

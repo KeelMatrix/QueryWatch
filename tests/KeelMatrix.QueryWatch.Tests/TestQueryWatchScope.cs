@@ -1,5 +1,6 @@
 // Copyright (c) KeelMatrix
 
+using KeelMatrix.QueryWatch.Assertions;
 using KeelMatrix.QueryWatch.Reporting;
 
 namespace KeelMatrix.QueryWatch.Tests;
@@ -38,7 +39,7 @@ internal sealed class TestQueryWatchScope : IDisposable {
         if (_disposed) return;
         _disposed = true;
 
-        QueryWatchReport report = Session.Stop();
+        QueryWatchReport report = Session.Complete();
 
         if (!string.IsNullOrWhiteSpace(ExportJsonPath)) {
             try {

@@ -24,10 +24,10 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
                 includeIpAddresses: false,
                 includePhone: false);
 
-            using QueryWatchSession session = QueryWatcher.Start(opts);
+            using QueryWatchSession session = new(opts);
             const string input = "  SELECT 1  /* url=https://ex.com?a=1&token=abc123 */  ";
             session.Record(input, TimeSpan.FromMilliseconds(1));
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
 
             string txt = report.Events[0].CommandText;
             _ = txt.Should().Be("SELECT 1 /* url=https://ex.com?a=1&token=*** */");
@@ -36,9 +36,9 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
         [Fact]
         public void AddRegexRedactor_Adds_Rule_With_Default_Replacement() {
             QueryWatchOptions opts = new QueryWatchOptions().AddRegexRedactor("foo");
-            using QueryWatchSession session = QueryWatcher.Start(opts);
+            using QueryWatchSession session = new(opts);
             session.Record("Foo BAR", TimeSpan.FromMilliseconds(1));
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.Events[0].CommandText.Should().Contain("***");
             _ = report.Events[0].CommandText.Should().NotContain("Foo");
         }

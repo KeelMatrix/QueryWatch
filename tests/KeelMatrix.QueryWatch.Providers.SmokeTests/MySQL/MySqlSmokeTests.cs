@@ -32,7 +32,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.MySQL {
             object? scalar = cmd.ExecuteScalar();
             _ = scalar.Should().Be(123);
 
-            _ = session.Stop().TotalQueries.Should().Be(1);
+            _ = session.Complete().TotalQueries.Should().Be(1);
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.MySQL {
             var act = async () => await cmd.ExecuteNonQueryAsync(cts.Token);
             _ = await act.Should().ThrowAsync<OperationCanceledException>();
 
-            _ = session.Stop().Events[^1].Meta!["failed"].Should().Be(true);
+            _ = session.Complete().Events[^1].Meta!["failed"].Should().Be(true);
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.MySQL {
             _ = sets.Should().Be(2);
             tx.Commit();
 
-            _ = session.Stop().TotalQueries.Should().Be(1);
+            _ = session.Complete().TotalQueries.Should().Be(1);
         }
 
         [Fact]
@@ -95,7 +95,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.MySQL {
             Action act = () => cmd.ExecuteNonQuery();
             _ = act.Should().Throw<Exception>();
 
-            _ = session.Stop().Events[^1].Meta!["failed"].Should().Be(true);
+            _ = session.Complete().Events[^1].Meta!["failed"].Should().Be(true);
         }
     }
 }

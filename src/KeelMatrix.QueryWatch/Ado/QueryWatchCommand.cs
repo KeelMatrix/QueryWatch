@@ -116,8 +116,9 @@ namespace KeelMatrix.QueryWatch.Ado {
         #region Core helpers
 
         private string ResolveTextForRecording() {
-            // Adapter-specific fast disable gate.
-            return _session.Options.DisableAdoTextCapture ? string.Empty : _inner.CommandText ?? string.Empty;
+            return _session.Options.CaptureSqlText
+                ? _inner.CommandText ?? string.Empty
+                : string.Empty;
         }
 
         private IReadOnlyDictionary<string, object?>? CaptureParameterShapeIfEnabled() {

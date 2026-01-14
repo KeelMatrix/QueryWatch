@@ -19,9 +19,9 @@ namespace KeelMatrix.QueryWatch.Tests {
             options.Redactors.Add(new ReplaceFooWithBar());
             options.Redactors.Add(new ReplaceBarWithBaz());
 
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start(options);
+            using QueryWatchSession session = new(options);
             session.Record("select * from foo", TimeSpan.FromMilliseconds(1));
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
 
             _ = report.Events[0].CommandText.Should().Contain("baz");
             _ = report.Events[0].CommandText.Should().NotContain("foo");

@@ -11,7 +11,7 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class AdoConnectionAssignTests {
         [Fact]
         public void DbConnection_Setter_Unwraps_QueryWatchConnection() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             FakeDbConnection providerConn = new();
             FakeDbCommand innerCmd = new();
             QueryWatchConnection wrapped = new(providerConn, session);
@@ -25,7 +25,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void DbConnection_Setter_With_Raw_Provider_Clears_Wrapper() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             FakeDbConnection providerA = new();
             FakeDbConnection providerB = new();
             FakeDbCommand innerCmd = new();
@@ -40,7 +40,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void CreateDbCommand_From_Wrapped_Connection_Returns_Command_With_Wrapper_Connection() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             using FakeDbConnection provider = new();
             using QueryWatchConnection wrapped = new(provider, session);
 

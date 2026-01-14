@@ -35,7 +35,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
                 _ = act.Should().Throw<Exception>();
             }
 
-            var report = session.Stop();
+            var report = session.Complete();
             _ = report.Events.Should().NotBeEmpty();
             var last = report.Events[^1];
             _ = last.Meta.Should().NotBeNull();
@@ -58,7 +58,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             var act = async () => await cmd.ExecuteNonQueryAsync(cts.Token);
             _ = await act.Should().ThrowAsync<OperationCanceledException>();
 
-            var last = session.Stop().Events[^1];
+            var last = session.Complete().Events[^1];
             _ = last.Meta!["failed"].Should().Be(true);
         }
 
@@ -78,7 +78,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             _ = cmd.Parameters.Add(p);
             object? scalar = cmd.ExecuteScalar();
             _ = scalar.Should().Be(42);
-            _ = session.Stop().TotalQueries.Should().Be(1);
+            _ = session.Complete().TotalQueries.Should().Be(1);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             _ = sets.Should().Be(2);
             tx.Commit();
 
-            _ = session.Stop().TotalQueries.Should().Be(1);
+            _ = session.Complete().TotalQueries.Should().Be(1);
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             Action act = () => cmd.ExecuteNonQuery();
             _ = act.Should().Throw<Exception>();
 
-            _ = session.Stop().Events[^1].Meta!["failed"].Should().Be(true);
+            _ = session.Complete().Events[^1].Meta!["failed"].Should().Be(true);
         }
     }
 }

@@ -9,10 +9,10 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class QueryWatchJsonEdgeTests {
         [Fact]
         public void ToSummary_Clamps_Negative_SampleTop_To_Zero() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             session.Record("a", TimeSpan.FromMilliseconds(1));
             session.Record("b", TimeSpan.FromMilliseconds(2));
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
 
             QueryWatchJson.Summary summary = QueryWatchJson.ToSummary(report, sampleTop: -5);
             _ = summary.Should().NotBeNull();
@@ -23,9 +23,9 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void Export_Omits_Event_Meta_Property_When_Null() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             session.Record("query", TimeSpan.FromMilliseconds(1), meta: null);
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
 
             var tempRoot = Path.Combine(Path.GetTempPath(), "qwatch-json-edge-" + Guid.NewGuid().ToString("N"));
             var path = Path.Combine(tempRoot, "out", "summary.json");

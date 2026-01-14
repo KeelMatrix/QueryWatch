@@ -29,11 +29,11 @@ namespace KeelMatrix.QueryWatch.Benchmarks {
             };
         }
 
-        [Benchmark(Baseline = true, Description = "lock[List] + copy-on-stop (production)")]
+        [Benchmark(Baseline = true, Description = "lock[List] + copy-on-complete (production)")]
         public QueryWatchReport LockList() {
-            QueryWatchSession session = new(_optsNoText);
+            using QueryWatchSession session = new(_optsNoText);
             RunWorkers(Threads, EventsPerThread, () => session.Record("SELECT 1", TimeSpan.FromMilliseconds(1)));
-            return session.Stop();
+            return session.Complete();
         }
 
         [Benchmark(Description = "ConcurrentQueue + snapshot (alternative)")]

@@ -7,16 +7,16 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class SessionLifecycleTests {
         [Fact]
         public void Dispose_Sets_StoppedAt_Automatically() {
-            QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             session.Dispose();
             _ = session.StoppedAt.Should().NotBeNull("disposing the session should finalize it");
         }
 
         [Fact]
         public void Stop_Twice_Throws() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
-            _ = session.Stop();
-            Action again = () => session.Stop();
+            using QueryWatchSession session = new();
+            _ = session.Complete();
+            Action again = () => session.Complete();
             _ = again.Should().Throw<InvalidOperationException>();
         }
     }

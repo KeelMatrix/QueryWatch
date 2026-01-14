@@ -21,7 +21,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
                 using TestDbContext ctx = new(options);
                 _ = ctx.Things.ToList();
 
-                QueryWatchReport report = sessionNone.Stop();
+                QueryWatchReport report = sessionNone.Complete();
                 _ = report.TotalQueries.Should().Be(0);
             }
 
@@ -35,7 +35,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
                 using TestDbContext ctx = new(options);
                 _ = ctx.Things.ToList();
 
-                QueryWatchReport report = sessionSome.Stop();
+                QueryWatchReport report = sessionSome.Complete();
                 _ = report.TotalQueries.Should().BeGreaterThan(0);
             }
         }

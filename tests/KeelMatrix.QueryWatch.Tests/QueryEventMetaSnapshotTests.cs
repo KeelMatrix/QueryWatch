@@ -7,7 +7,7 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class QueryEventMetaSnapshotTests {
         [Fact]
         public void Json_Summary_Includes_Event_Parameters_Meta_Snapshot() {
-            using QueryWatchSession session = QueryWatcher.Start();
+            using QueryWatchSession session = new();
 
             Dictionary<string, object?> meta = new() {
                 ["parameters"] = new object?[] {
@@ -32,7 +32,7 @@ namespace KeelMatrix.QueryWatch.Tests {
                 meta
             );
 
-            QueryWatchJson.Summary summary = QueryWatchJson.ToSummary(session.Stop(), sampleTop: 1);
+            QueryWatchJson.Summary summary = QueryWatchJson.ToSummary(session.Complete(), sampleTop: 1);
 
             // Snapshot only the stable shape we care about (event-level meta)
             var projection = new {

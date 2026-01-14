@@ -1,1 +1,7 @@
 #nullable enable
+KeelMatrix.QueryWatch.Assertions.QueryWatchReportAssertions
+KeelMatrix.QueryWatch.QueryWatchSession.Complete() -> KeelMatrix.QueryWatch.QueryWatchReport!
+KeelMatrix.QueryWatch.QueryWatchSession.StoppedAt.get -> System.DateTimeOffset?
+static KeelMatrix.QueryWatch.Assertions.QueryWatchReportAssertions.ShouldHaveExecutedAtMost(this KeelMatrix.QueryWatch.QueryWatchReport! report, int maxQueries) -> KeelMatrix.QueryWatch.QueryWatchReport!
+static KeelMatrix.QueryWatch.Assertions.QueryWatchReportAssertions.ShouldHaveMaxAverageTime(this KeelMatrix.QueryWatch.QueryWatchReport! report, System.TimeSpan maxAverage) -> KeelMatrix.QueryWatch.QueryWatchReport!
+static KeelMatrix.QueryWatch.Assertions.QueryWatchReportAssertions.ShouldHaveMaxTotalTime(this KeelMatrix.QueryWatch.QueryWatchReport! report, System.TimeSpan maxTotal) -> KeelMatrix.QueryWatch.QueryWatchReport!

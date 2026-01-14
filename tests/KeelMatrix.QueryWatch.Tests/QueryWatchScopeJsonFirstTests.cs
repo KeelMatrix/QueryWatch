@@ -13,7 +13,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             string path = Path.Combine(root, "artifacts", "qwatch.report.json");
 
             Action act = () => {
-                using var session = QueryWatchSession.Start();
+                using QueryWatchSession session = new();
                 using TestQueryWatchScope scope = new(
                     session,
                     maxQueries: 1,

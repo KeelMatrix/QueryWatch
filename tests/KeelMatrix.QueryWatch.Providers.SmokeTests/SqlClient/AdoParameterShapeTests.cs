@@ -40,7 +40,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.SqlClient {
             object? scalar = cmd.ExecuteScalar();
             _ = scalar.Should().NotBeNull();
 
-            var ev = session.Stop().Events[^1];
+            var ev = session.Complete().Events[^1];
             _ = ev.Meta.Should().NotBeNull("parameter metadata should be attached when enabled");
             _ = ev.Meta.Should().ContainKey("parameters");
             object? parsObj = ev.Meta!["parameters"];

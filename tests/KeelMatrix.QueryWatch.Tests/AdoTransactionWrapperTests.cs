@@ -11,7 +11,7 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class AdoTransactionWrapperTests {
         [Fact]
         public void BeginTransaction_Returns_Wrapper_With_WrapperConnection_And_Exposes_Inner() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             TxFakeDbConnection provider = new();
             using QueryWatchConnection wrapped = new(provider, session);
 
@@ -26,7 +26,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void Transaction_Lifecycle_Delegates_Commit_Rollback_Dispose_To_Inner() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             TxFakeDbConnection provider = new();
             using QueryWatchConnection wrapped = new(provider, session);
 
@@ -48,7 +48,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void Command_Transaction_Setter_Unwraps_Wrapper_To_Inner() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             TxFakeDbConnection provider = new();
             using QueryWatchConnection wrapped = new(provider, session);
 

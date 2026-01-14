@@ -12,9 +12,7 @@ namespace KeelMatrix.QueryWatch.Dapper.Tests {
         public void WithQueryWatch_Returns_Ado_Wrapper_For_DbConnection() {
             using QueryWatchSession session = new();
             IDbConnection raw = new MiniDbConnection();
-
             IDbConnection wrapped = raw.WithQueryWatch(session);
-
             _ = wrapped.Should().BeOfType<QueryWatchConnection>();
         }
 

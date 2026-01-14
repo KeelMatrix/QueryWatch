@@ -31,7 +31,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.MySQL {
             int count = db.Items.Count(i => i.Name != null);
             _ = count.Should().BeGreaterThan(0);
 
-            _ = session.Stop().TotalQueries.Should().BeGreaterThan(0);
+            _ = session.Complete().TotalQueries.Should().BeGreaterThan(0);
         }
     }
 }

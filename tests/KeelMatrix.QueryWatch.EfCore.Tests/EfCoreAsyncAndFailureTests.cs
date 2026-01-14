@@ -23,7 +23,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
                 _ = affected.Should().Be(1);
             }
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().BeGreaterThan(0);
             _ = report.Events.Should().Contain(e => e.CommandText.Contains("INSERT", System.StringComparison.OrdinalIgnoreCase));
         }
@@ -45,7 +45,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
                 _ = count.Should().BeGreaterThanOrEqualTo(0);
             }
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().BeGreaterThan(0);
             _ = report.Events.Should().Contain(e => e.CommandText.Contains("COUNT", System.StringComparison.OrdinalIgnoreCase));
         }
@@ -67,7 +67,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
                 _ = await ctx.Database.ExecuteSqlRawAsync("INSERT INTO __NoSuchTable__(X) VALUES (1)");
             });
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().BeGreaterThan(0, "failed commands should still be recorded");
 
             QueryEvent? failed = report.Events.FirstOrDefault(e => e.CommandText.Contains("__NoSuchTable__", System.StringComparison.OrdinalIgnoreCase));

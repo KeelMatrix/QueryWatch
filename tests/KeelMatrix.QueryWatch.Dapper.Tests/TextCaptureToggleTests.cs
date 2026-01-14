@@ -11,42 +11,35 @@ namespace KeelMatrix.QueryWatch.Dapper.Tests {
     public class TextCaptureToggleTests {
 
         [Fact]
-        public void DisableDapperTextCapture_Overrides_Global_Capture() {
+        public void CaptureSqlText_False_Disables_Text_For_All_Wrappers() {
             QueryWatchOptions opts = new() {
-                CaptureSqlText = true,
-                DisableDapperTextCapture = true // per-adapter fast gate
+                CaptureSqlText = false
             };
-            using QueryWatchSession session = new(opts);
 
-            using DapperQueryWatchConnection conn = new(new OnlyIdbConnection(), session);
-            using IDbCommand cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT 1";
-            var n = cmd.ExecuteNonQuery();
-            _ = n.Should().Be(1);
+            // --- Dapper wrapper ---
+            using (QueryWatchSession session = new(opts)) {
+                using DapperQueryWatchConnection conn = new(new OnlyIdbConnection(), session);
+                using IDbCommand cmd = conn.CreateCommand();
+                cmd.CommandText = "SELECT 1";
+                _ = cmd.ExecuteNonQuery();
 
-            QueryWatchReport report = session.Stop();
-            _ = report.Events.Should().HaveCount(1);
-            _ = report.Events[0].CommandText.Should().BeEmpty("Dapper text capture is disabled");
-        }
+                QueryWatchReport report = session.Complete();
+                report.Events.Should().HaveCount(1);
+                report.Events[0].CommandText.Should().BeEmpty("text capture is globally disabled");
+            }
 
-        [Fact]
-        public void DisableDapperTextCapture_Does_Not_Affect_Ado_Wrapper() {
-            QueryWatchOptions opts = new() {
-                CaptureSqlText = true,
-                DisableDapperTextCapture = true // only Dapper should be affected
-            };
-            using QueryWatchSession session = new(opts);
+            // --- ADO wrapper ---
+            using (QueryWatchSession session = new(opts)) {
+                using MiniDbConnection raw = new();
+                using QueryWatchConnection ado = new(raw, session);
+                using DbCommand cmd = ado.CreateCommand();
+                cmd.CommandText = "SELECT 42";
+                _ = cmd.ExecuteNonQuery();
 
-            using MiniDbConnection raw = new();
-            using QueryWatchConnection ado = new(raw, session);
-            using DbCommand cmd = ado.CreateCommand();
-            cmd.CommandText = "SELECT 42";
-            var n = cmd.ExecuteNonQuery();
-            _ = n.Should().Be(1);
-
-            QueryWatchReport report = session.Stop();
-            _ = report.Events.Should().HaveCount(1);
-            _ = report.Events[0].CommandText.Should().Be("SELECT 42");
+                QueryWatchReport report = session.Complete();
+                report.Events.Should().HaveCount(1);
+                report.Events[0].CommandText.Should().BeEmpty("text capture is globally disabled");
+            }
         }
 
         #region Minimal fakes

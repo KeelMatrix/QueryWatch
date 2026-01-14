@@ -12,11 +12,11 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void ToSummary_Respects_SampleTop_And_Sorts_Descending() {
-            using QueryWatchSession session = QueryWatcher.Start();
+            using QueryWatchSession session = new();
             session.Record("fast", TimeSpan.FromMilliseconds(5));
             session.Record("slow", TimeSpan.FromMilliseconds(12));
             session.Record("medium", TimeSpan.FromMilliseconds(7));
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
 
             QueryWatchJson.Summary summary = QueryWatchJson.ToSummary(report, sampleTop: 2);
 
@@ -29,10 +29,10 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void ExportToFile_Writes_File_With_Meta_SampleTop_And_Creates_Directory() {
-            using QueryWatchSession session = QueryWatcher.Start();
+            using QueryWatchSession session = new();
             session.Record("a", TimeSpan.FromMilliseconds(3));
             session.Record("b", TimeSpan.FromMilliseconds(9));
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
 
             var tempRoot = Path.Combine(Path.GetTempPath(), "QueryWatchTests", Guid.NewGuid().ToString("N"));
             var path = Path.Combine(tempRoot, "out", "qwatch.json");

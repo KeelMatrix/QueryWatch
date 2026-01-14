@@ -23,7 +23,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
                 _ = ex.Should().NotBeNull();
             }
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.Events.Should().NotBeEmpty();
             QueryEvent ev = report.Events[^1];
             _ = ev.Meta.Should().NotBeNull();
@@ -53,7 +53,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
 
             // Export to JSON to validate serialized shape
             var tmp = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "QueryWatchTests", System.Guid.NewGuid().ToString("N"), "ef-meta.json");
-            KeelMatrix.QueryWatch.Reporting.QueryWatchJson.ExportToFile(session.Stop(), tmp, 5);
+            KeelMatrix.QueryWatch.Reporting.QueryWatchJson.ExportToFile(session.Complete(), tmp, 5);
             _ = System.IO.File.Exists(tmp).Should().BeTrue();
             using JsonDocument doc = JsonDocument.Parse(System.IO.File.ReadAllText(tmp));
             JsonElement root = doc.RootElement;
@@ -64,13 +64,12 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
         }
 
         [Fact]
-        public void PerAdapter_Disable_Text_Capture_Works_For_EF() {
+        public void CaptureSqlText_False_Disables_Text_For_EF_Wrapper() {
             using SqliteConnection connection = SqliteTestUtils.CreateOpenConnection();
             SqliteTestUtils.EnsureCreated(connection);
 
             QueryWatchOptions opts = new() {
-                CaptureSqlText = true,
-                DisableEfCoreTextCapture = true
+                CaptureSqlText = false
             };
             using QueryWatchSession session = new(opts);
             DbContextOptions<TestDbContext> options = (DbContextOptions<TestDbContext>)new DbContextOptionsBuilder<TestDbContext>()
@@ -83,7 +82,7 @@ namespace KeelMatrix.QueryWatch.EfCore.Tests {
                 _ = ctx.SaveChanges();
             }
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.Events.Should().NotBeEmpty();
             _ = report.Events.All(e => string.IsNullOrEmpty(e.CommandText)).Should().BeTrue();
         }

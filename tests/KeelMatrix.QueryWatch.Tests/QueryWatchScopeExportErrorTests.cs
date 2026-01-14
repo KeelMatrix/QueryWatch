@@ -16,7 +16,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
             string path = Path.Combine(fakeDir, "qwatch.report.json");
 
-            using QueryWatchSession session = QueryWatcher.Start();
+            using QueryWatchSession session = new();
             using var scope = new TestQueryWatchScope(session, maxQueries: 1, exportJsonPath: path, sampleTop: 2);
 
             session.Record("SELECT 1", TimeSpan.FromMilliseconds(1));

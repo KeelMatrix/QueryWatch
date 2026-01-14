@@ -25,7 +25,7 @@ namespace KeelMatrix.QueryWatch.Ado {
         /// <summary>
         /// Gets the inner provider connection.
         /// </summary>
-        public DbConnection Inner { get; }
+        internal DbConnection Inner { get; }
 
         /// <inheritdoc />
         [AllowNull]

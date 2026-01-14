@@ -11,21 +11,21 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class AdoWrapperTests {
         [Fact]
         public void QueryWatchCommand_ExecuteNonQuery_Records_One_Event_With_Text() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             FakeDbCommand inner = new() { CommandText = "SELECT 1" };
             using QueryWatchCommand cmd = new(inner, session);
 
             var result = cmd.ExecuteNonQuery();
             _ = result.Should().Be(1);
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().Be(1);
             _ = report.Events[0].CommandText.Should().Be("SELECT 1");
         }
 
         [Fact]
         public void QueryWatchConnection_CreateDbCommand_Wraps_Inner_Command() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             using FakeDbConnection innerConn = new();
             using QueryWatchConnection wrapped = new(innerConn, session);
 
@@ -35,7 +35,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             cmd.CommandText = "UPDATE X";
             _ = cmd.ExecuteNonQuery();
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().Be(1);
             _ = report.Events[0].CommandText.Should().Be("UPDATE X");
         }

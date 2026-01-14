@@ -32,7 +32,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.SqlClient {
             int count = db.Items.Count(i => i.Name != null);
             _ = count.Should().BeGreaterThan(0);
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().BeGreaterThan(0);
         }
     }

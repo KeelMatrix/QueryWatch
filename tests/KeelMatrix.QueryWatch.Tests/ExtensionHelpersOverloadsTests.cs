@@ -11,7 +11,7 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class ExtensionHelpersOverloadsTests {
         [Fact]
         public void Ado_Extensions_WithQueryWatch_Overloads_Work_For_DbConnection_And_IDbConnection() {
-            using QueryWatchSession session = QueryWatcher.Start();
+            using QueryWatchSession session = new();
             FakeDbConnection provider = new();
 
             // DbConnection overload
@@ -25,7 +25,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void Ado_Extension_WithQueryWatch_On_NonDbConnection_Uses_DapperWrapper_And_Records() {
-            using QueryWatchSession session = QueryWatcher.Start();
+            using QueryWatchSession session = new();
             IDbConnection onlyIdb = new OnlyIdbConnection();
             IDbConnection wrapped = onlyIdb.WithQueryWatch(session);
 
@@ -38,13 +38,13 @@ namespace KeelMatrix.QueryWatch.Tests {
                 _ = cmd.ExecuteNonQuery();
             }
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.Events.Count.Should().BeGreaterThan(0, "executing a command via the Dapper wrapper must be recorded");
         }
 
         [Fact]
         public void Dapper_Extension_Prefers_Ado_Wrapper_For_DbDerived() {
-            using QueryWatchSession session = QueryWatcher.Start();
+            using QueryWatchSession session = new();
             IDbConnection provider = new FakeDbConnection();
 
             IDbConnection wrapped = provider.WithQueryWatch(session);

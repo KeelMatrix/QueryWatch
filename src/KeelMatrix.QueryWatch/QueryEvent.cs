@@ -49,6 +49,6 @@ namespace KeelMatrix.QueryWatch {
         /// <summary>
         /// Optional metadata with additive, non‑breaking details about the event (e.g., parameter shapes).
         /// </summary>
-        public IReadOnlyDictionary<string, object?>? Meta { get; }
+        internal IReadOnlyDictionary<string, object?>? Meta { get; }
     }
 }

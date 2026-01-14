@@ -32,7 +32,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.SqlClient {
             var list = db.Items.FromSqlRaw("SELECT TOP 1 * FROM dbo.QW_Items WHERE Name = @name", param).ToList();
             _ = list.Should().NotBeEmpty();
 
-            QueryEvent ev = session.Stop().Events[^1];
+            QueryEvent ev = session.Complete().Events[^1];
             _ = ev.Meta.Should().NotBeNull();
             _ = ev.Meta.Should().ContainKey("parameters");
 

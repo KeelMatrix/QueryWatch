@@ -11,42 +11,42 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class AdoAsyncWrapperTests {
         [Fact]
         public async Task ExecuteNonQueryAsync_Records_Event() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             FakeAsyncDbCommand inner = new() { CommandText = "UPDATE T" };
             await using QueryWatchCommand cmd = new(inner, session);
 
             var n = await cmd.ExecuteNonQueryAsync(CancellationToken.None);
             _ = n.Should().Be(1);
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().Be(1);
             _ = report.Events[0].CommandText.Should().Be("UPDATE T");
         }
 
         [Fact]
         public async Task ExecuteScalarAsync_Records_Event() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             FakeAsyncDbCommand inner = new() { CommandText = "SELECT 42" };
             await using QueryWatchCommand cmd = new(inner, session);
 
             var v = await cmd.ExecuteScalarAsync(CancellationToken.None);
             _ = v.Should().Be(42);
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().Be(1);
             _ = report.Events[0].CommandText.Should().Be("SELECT 42");
         }
 
         [Fact]
         public async Task ExecuteReaderAsync_Records_Event() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             FakeAsyncDbCommand inner = new() { CommandText = "SELECT * FROM T" };
             await using QueryWatchCommand cmd = new(inner, session);
 
             await using DbDataReader reader = await cmd.ExecuteReaderAsync(CommandBehavior.Default, CancellationToken.None);
             _ = reader.Should().NotBeNull();
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().Be(1);
             _ = report.Events[0].CommandText.Should().Be("SELECT * FROM T");
         }

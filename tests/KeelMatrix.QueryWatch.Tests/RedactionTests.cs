@@ -19,9 +19,9 @@ namespace KeelMatrix.QueryWatch.Tests {
             };
             options.Redactors.Add(new DigitsToAsterisks());
 
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start(options);
+            using QueryWatchSession session = new(options);
             session.Record("SELECT * FROM Users WHERE Id=123", TimeSpan.FromMilliseconds(5));
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
 
             _ = report.Events.Should().HaveCount(1);
             var recorded = report.Events[0].CommandText;

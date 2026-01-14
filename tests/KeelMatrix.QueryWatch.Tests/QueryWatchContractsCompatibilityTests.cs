@@ -44,10 +44,10 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void Library_Summary_Serializes_Equivalent_Shape() {
-            using var session = QueryWatcher.Start();
+            using QueryWatchSession session = new();
             session.Record("fast", TimeSpan.FromMilliseconds(4));
             session.Record("slow", TimeSpan.FromMilliseconds(12));
-            var rep = session.Stop();
+            var rep = session.Complete();
 
             QueryWatchJson.Summary libSummary = QueryWatchJson.ToSummary(rep, sampleTop: 1);
             // Convert library event meta (Dictionary<string, object?>?) to JsonElement values for the contract model.

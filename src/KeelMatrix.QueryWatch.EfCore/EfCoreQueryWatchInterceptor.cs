@@ -1,6 +1,7 @@
 // Copyright (c) KeelMatrix
 
 using System.Data.Common;
+using System.Reflection;
 using KeelMatrix.QueryWatch.Ado;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
@@ -18,7 +19,9 @@ namespace KeelMatrix.QueryWatch.EfCore {
         private readonly QueryWatchSession _session = session ?? throw new ArgumentNullException(nameof(session));
 
         private string ResolveTextForRecording(DbCommand command) {
-            return _session.Options.DisableEfCoreTextCapture ? string.Empty : command.CommandText ?? string.Empty;
+            return _session.Options.CaptureSqlText
+                ? command.CommandText ?? string.Empty
+                : string.Empty;
         }
 
         private IReadOnlyDictionary<string, object?>? CaptureParameterShapeIfEnabled(DbCommand command) {

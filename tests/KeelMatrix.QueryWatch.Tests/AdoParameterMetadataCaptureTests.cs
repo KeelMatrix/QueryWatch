@@ -15,7 +15,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         [Fact]
         public void QueryWatchCommand_Captures_Ado_Parameter_Shapes_When_Enabled() {
             QueryWatchOptions opts = new() { CaptureParameterShape = true };
-            using QueryWatchSession session = QueryWatcher.Start(opts);
+            using QueryWatchSession session = new(opts);
 
             FakeDbCommand inner = new() { CommandText = "SELECT 1" };
 
@@ -34,7 +34,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             using QueryWatchCommand cmd = new(inner, session);
             _ = cmd.ExecuteNonQuery();
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.TotalQueries.Should().Be(1);
             QueryEvent ev = report.Events[0];
             _ = ev.Meta.Should().NotBeNull("metadata should be present when capture is enabled");
@@ -65,7 +65,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         [Fact]
         public void QueryWatchCommand_Does_Not_Capture_Parameter_Metadata_When_Disabled() {
             QueryWatchOptions opts = new() { CaptureParameterShape = false };
-            using QueryWatchSession session = QueryWatcher.Start(opts); // explicitly disabled
+            using QueryWatchSession session = new(opts); // explicitly disabled
 
             FakeDbCommand inner = new() { CommandText = "SELECT 1" };
             DbParameter p = inner.CreateParameter();
@@ -76,7 +76,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             using QueryWatchCommand cmd = new(inner, session);
             _ = cmd.ExecuteNonQuery();
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
             _ = report.Events.Should().HaveCount(1);
             _ = report.Events[0].Meta.Should().BeNull("metadata capture is disabled");
         }
@@ -84,7 +84,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         [Fact]
         public void Exported_Json_Includes_Event_Meta_Parameters() {
             QueryWatchOptions opts = new() { CaptureParameterShape = true };
-            using QueryWatchSession session = QueryWatcher.Start(opts);
+            using QueryWatchSession session = new(opts);
 
             FakeDbCommand inner = new() { CommandText = "SELECT 1" };
             DbParameter p = inner.CreateParameter();
@@ -96,7 +96,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             using QueryWatchCommand cmd = new(inner, session);
             _ = cmd.ExecuteNonQuery();
 
-            QueryWatchReport report = session.Stop();
+            QueryWatchReport report = session.Complete();
 
             var tempRoot = Path.Combine(Path.GetTempPath(), "QueryWatchTests", Guid.NewGuid().ToString("N"));
             var outPath = Path.Combine(tempRoot, "ado-meta.json");

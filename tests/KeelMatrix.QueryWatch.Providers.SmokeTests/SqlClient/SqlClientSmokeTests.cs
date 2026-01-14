@@ -35,7 +35,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.SqlClient {
                 _ = act.Should().Throw<Exception>();
             }
 
-            var report = session.Stop();
+            var report = session.Complete();
             _ = report.Events.Should().NotBeEmpty();
             var last = report.Events[^1];
             _ = last.Meta.Should().NotBeNull();
@@ -59,7 +59,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.SqlClient {
             var act = async () => await cmd.ExecuteNonQueryAsync(cts.Token);
             _ = await act.Should().ThrowAsync<OperationCanceledException>();
 
-            var report = session.Stop();
+            var report = session.Complete();
             _ = report.Events.Should().NotBeEmpty();
             _ = report.Events[^1].Meta!["failed"].Should().Be(true);
         }
@@ -81,7 +81,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.SqlClient {
             object? scalar = cmd.ExecuteScalar();
             _ = scalar.Should().Be(42);
 
-            var report = session.Stop();
+            var report = session.Complete();
             _ = report.TotalQueries.Should().Be(1);
         }
 
@@ -111,7 +111,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.SqlClient {
             _ = sets.Should().Be(2);
             tx.Commit();
 
-            var report = session.Stop();
+            var report = session.Complete();
             _ = report.TotalQueries.Should().Be(1, "one command with two result sets should be a single event");
         }
 
@@ -129,7 +129,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.SqlClient {
             Action act = () => cmd.ExecuteNonQuery();
             _ = act.Should().Throw<Exception>();
 
-            var last = session.Stop().Events[^1];
+            var last = session.Complete().Events[^1];
             _ = last.Meta.Should().NotBeNull();
             _ = last.Meta!["failed"].Should().Be(true);
         }

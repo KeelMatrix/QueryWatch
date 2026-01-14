@@ -11,7 +11,7 @@ namespace KeelMatrix.QueryWatch.Tests {
     public class DapperTransactionParityExpandedTests {
         [Fact]
         public void Reassign_Transaction_After_Execute_RoundTrips_Inner_Correctly() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             OnlyIdbConnection provider = new();
             using DapperQueryWatchConnection wrapped = new(provider, session);
 
@@ -35,7 +35,7 @@ namespace KeelMatrix.QueryWatch.Tests {
 
         [Fact]
         public void Reassign_Connection_After_Execute_RoundTrips_Inner_Correctly() {
-            using QueryWatchSession session = KeelMatrix.QueryWatch.QueryWatcher.Start();
+            using QueryWatchSession session = new();
             OnlyIdbConnection provider = new();
             using DapperQueryWatchConnection wrapped = new(provider, session);
 

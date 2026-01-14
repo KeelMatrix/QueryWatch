@@ -38,7 +38,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             object? scalar = cmd.ExecuteScalar();
             _ = scalar.Should().NotBeNull();
 
-            var ev = session.Stop().Events[^1];
+            var ev = session.Complete().Events[^1];
             _ = ev.Meta.Should().NotBeNull();
             _ = ev.Meta.Should().ContainKey("parameters");
 
