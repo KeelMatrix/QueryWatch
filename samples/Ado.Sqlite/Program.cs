@@ -3,6 +3,7 @@
 using Ado.Sqlite;
 using KeelMatrix.QueryWatch;
 using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Assertions;
 using KeelMatrix.QueryWatch.Reporting;
 using Microsoft.Data.Sqlite;
 
@@ -11,14 +12,8 @@ string artifacts = Path.Combine(AppContext.BaseDirectory, "artifacts");
 Directory.CreateDirectory(artifacts);
 string outJson = Path.Combine(artifacts, "qwatch.ado.json");
 
-// Configure session options
-QueryWatchOptions options = new() {
-    MaxQueries = 50,
-    MaxAverageDuration = TimeSpan.FromMilliseconds(200)
-};
-
 // Start a QueryWatch session
-using QueryWatchSession session = QueryWatcher.Start(options);
+using QueryWatchSession session = new();
 
 // In-memory SQLite needs the connection to stay open for the DB to persist.
 using SqliteConnection raw = new("Data Source=:memory:");
@@ -55,13 +50,14 @@ using (var select = conn.CreateCommand()) {
 }
 
 // Stop session and produce report
-QueryWatchReport report = session.Stop();
+QueryWatchReport report = session.Complete();
 
 // Export JSON
 QueryWatchJson.ExportToFile(report, outJson, sampleTop: 50);
 
 // Enforce budgets
-report.ThrowIfViolations();
+report.ShouldHaveExecutedAtMost(50);
+report.ShouldHaveMaxAverageTime(TimeSpan.FromMilliseconds(200));
 
 Console.WriteLine($"QueryWatch JSON written to: {outJson}");
 Console.WriteLine("Try the CLI gate:");

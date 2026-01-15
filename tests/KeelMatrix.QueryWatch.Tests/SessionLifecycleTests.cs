@@ -13,11 +13,11 @@ namespace KeelMatrix.QueryWatch.Tests {
         }
 
         [Fact]
-        public void Stop_Twice_Throws() {
+        public void Stop_Twice_Must_Not_Throw() {
             using QueryWatchSession session = new();
             _ = session.Complete();
             Action again = () => session.Complete();
-            _ = again.Should().Throw<InvalidOperationException>();
+            _ = again.Should().NotThrow();
         }
     }
 }

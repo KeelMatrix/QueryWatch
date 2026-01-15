@@ -2,6 +2,7 @@
 
 using EFCore.Sqlite;
 using KeelMatrix.QueryWatch;
+using KeelMatrix.QueryWatch.Assertions;
 using KeelMatrix.QueryWatch.EfCore;
 using KeelMatrix.QueryWatch.Reporting;
 using Microsoft.EntityFrameworkCore;
@@ -11,14 +12,8 @@ string artifacts = Path.Combine(AppContext.BaseDirectory, "artifacts");
 Directory.CreateDirectory(artifacts);
 string outJson = Path.Combine(artifacts, "qwatch.ef.json");
 
-// Configure session options
-QueryWatchOptions options = new() {
-    MaxQueries = 50, // keep generous to avoid failing demo runs
-    MaxAverageDuration = TimeSpan.FromMilliseconds(200)
-};
-
 // Start a QueryWatch session
-using QueryWatchSession session = QueryWatcher.Start(options);
+using QueryWatchSession session = new();
 
 string dbPath = Path.Combine(AppContext.BaseDirectory, "app.db");
 DbContextOptions<AppDbContext> dbOptions = (DbContextOptions<AppDbContext>)new DbContextOptionsBuilder<AppDbContext>()
@@ -56,13 +51,14 @@ using (AppDbContext db = new(dbOptions)) {
 }
 
 // Stop session and produce report
-QueryWatchReport report = session.Stop();
+QueryWatchReport report = session.Complete();
 
 // Export JSON
 QueryWatchJson.ExportToFile(report, outJson, sampleTop: 50);
 
 // Enforce budgets
-report.ThrowIfViolations();
+report.ShouldHaveExecutedAtMost(50);
+report.ShouldHaveMaxAverageTime(TimeSpan.FromMilliseconds(200));
 
 Console.WriteLine($"QueryWatch JSON written to: {outJson}");
 Console.WriteLine("Try the CLI gate:");

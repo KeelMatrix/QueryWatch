@@ -10,4 +10,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [0.1.0] - 2025-09-08
 
-- First release of the template. Provides library, test and sample projects; shared build configuration; CI/CD workflows; documentation stubs; licensing and telemetry scaffolding.
+- First release of the template. Provides library, test and sample projects; shared build configuration; CI/CD workflows; documentation stubs; telemetry scaffolding.

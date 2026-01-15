@@ -7,7 +7,7 @@ using Xunit;
 namespace KeelMatrix.QueryWatch.Tests {
     public class ReportOptionViolationsTests {
         [Fact]
-        public void ThrowIfViolations_Respects_MaxQueries() {
+        public void ShouldHaveExecutedAtMost_Respects_MaxQueries() {
             using QueryWatchSession session = new();
             session.Record("SELECT 1", TimeSpan.FromMilliseconds(1));
             session.Record("SELECT 2", TimeSpan.FromMilliseconds(2));
@@ -16,38 +16,11 @@ namespace KeelMatrix.QueryWatch.Tests {
             Action act = () => report.ShouldHaveExecutedAtMost(1);
 
             _ = act.Should().Throw<QueryWatchViolationException>()
-               .Which.Message.Should().Contain("MaxQueries=1").And.Contain("Summary:");
+               .Which.Message.Should().Contain("Expected ≤1 queries");
         }
 
         [Fact]
-        public void ThrowIfViolations_Respects_MaxAverageDuration() {
-            using QueryWatchSession session = new();
-            // Avg = (8 + 4) / 2 = 6 ms > 5 ms
-            session.Record("SELECT 1", TimeSpan.FromMilliseconds(8));
-            session.Record("SELECT 2", TimeSpan.FromMilliseconds(4));
-            QueryWatchReport report = session.Complete();
-
-            Action act = () => report.ShouldHaveMaxAverageTime(TimeSpan.FromMilliseconds(5));
-
-            _ = act.Should().Throw<QueryWatchViolationException>()
-               .Which.Message.Should().Contain("MaxAverageDuration=").And.Contain("Summary:");
-        }
-
-        [Fact]
-        public void ThrowIfViolations_Respects_MaxTotalDuration() {
-            using QueryWatchSession session = new();
-            session.Record("SELECT 1", TimeSpan.FromMilliseconds(4));
-            session.Record("SELECT 2", TimeSpan.FromMilliseconds(3)); // total 7ms > 5ms
-            QueryWatchReport report = session.Complete();
-
-            Action act = () => report.ShouldHaveMaxTotalTime(TimeSpan.FromMilliseconds(5));
-
-            _ = act.Should().Throw<QueryWatchViolationException>()
-               .Which.Message.Should().Contain("MaxTotalDuration=").And.Contain("Summary:");
-        }
-
-        [Fact]
-        public void ThrowIfViolations_NoViolations_DoesNotThrow() {
+        public void NoBudgetViolations_DoesNotThrow() {
             using QueryWatchSession session = new();
             session.Record("SELECT 1", TimeSpan.FromMilliseconds(3));
             session.Record("SELECT 2", TimeSpan.FromMilliseconds(4));

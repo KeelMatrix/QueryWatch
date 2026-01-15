@@ -7,7 +7,7 @@ using Xunit;
 namespace KeelMatrix.QueryWatch.Tests {
     public class QueryWatchReportMessageTests {
         [Fact]
-        public void ThrowIfViolations_Aggregates_All_Problems_And_Prefixes_With_Summary_Header() {
+        public void Assertions_Throw_On_First_Violation() {
             using QueryWatchSession session = new();
 
             // Two slow queries → violate all three
@@ -15,17 +15,14 @@ namespace KeelMatrix.QueryWatch.Tests {
             session.Record("SELECT 2", TimeSpan.FromMilliseconds(2));
             QueryWatchReport report = session.Complete();
 
-            Action act = () => {
-                report.ShouldHaveExecutedAtMost(1);
-                report.ShouldHaveMaxAverageTime(TimeSpan.FromMilliseconds(1));
-                report.ShouldHaveMaxTotalTime(TimeSpan.FromMilliseconds(1));
-            };
+            Action act = () => report.ShouldHaveExecutedAtMost(1);
+            act.Should().Throw<QueryWatchViolationException>();
 
-            _ = act.Should().Throw<KeelMatrix.QueryWatch.QueryWatchViolationException>()
-               .Which.Message.Should().Contain("Summary:")
-                               .And.Contain("MaxQueries=")
-                               .And.Contain("MaxAverageDuration=")
-                               .And.Contain("MaxTotalDuration=");
+            Action act2 = () => report.ShouldHaveMaxAverageTime(TimeSpan.FromMilliseconds(1));
+            act2.Should().Throw<QueryWatchViolationException>();
+
+            Action act3 = () => report.ShouldHaveMaxTotalTime(TimeSpan.FromMilliseconds(1));
+            act3.Should().Throw<QueryWatchViolationException>();
         }
     }
 }
