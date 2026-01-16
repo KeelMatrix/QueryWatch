@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
@@ -14,8 +14,8 @@ namespace KeelMatrix.QueryWatch.Tests {
             using QueryWatchSession session = new();
             FakeDbConnection providerConn = new();
             FakeDbCommand innerCmd = new();
-            QueryWatchConnection wrapped = new(providerConn, session);
-            using QueryWatchCommand cmd = new(innerCmd, session);
+            InstrumentedDbConnection wrapped = new(providerConn, session);
+            using InstrumentedDbCommand cmd = new(innerCmd, session);
 
             // Assign wrapper into the command; inner command should receive provider "unwrapped".
             cmd.Connection = wrapped;
@@ -29,8 +29,8 @@ namespace KeelMatrix.QueryWatch.Tests {
             FakeDbConnection providerA = new();
             FakeDbConnection providerB = new();
             FakeDbCommand innerCmd = new();
-            QueryWatchConnection wrapped = new(providerA, session);
-            using QueryWatchCommand cmd = new(innerCmd, session, wrapped);
+            InstrumentedDbConnection wrapped = new(providerA, session);
+            using InstrumentedDbCommand cmd = new(innerCmd, session, wrapped);
 
             // Reassign to raw provider B → wrapper should be cleared and reflected by getter.
             cmd.Connection = providerB;
@@ -42,10 +42,10 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void CreateDbCommand_From_Wrapped_Connection_Returns_Command_With_Wrapper_Connection() {
             using QueryWatchSession session = new();
             using FakeDbConnection provider = new();
-            using QueryWatchConnection wrapped = new(provider, session);
+            using InstrumentedDbConnection wrapped = new(provider, session);
 
             using DbCommand cmd = wrapped.CreateCommand();
-            _ = cmd.Should().BeOfType<QueryWatchCommand>();
+            _ = cmd.Should().BeOfType<InstrumentedDbCommand>();
             _ = cmd.Connection.Should().Be(wrapped, "command.Connection should present the wrapper so caller keeps using it");
         }
 

@@ -2,7 +2,6 @@
 
 using Ado.Sqlite;
 using KeelMatrix.QueryWatch;
-using KeelMatrix.QueryWatch.Ado;
 using KeelMatrix.QueryWatch.Assertions;
 using KeelMatrix.QueryWatch.Reporting;
 using Microsoft.Data.Sqlite;
@@ -20,7 +19,7 @@ using SqliteConnection raw = new("Data Source=:memory:");
 await raw.OpenAsync();
 
 // Wrap the provider connection so all commands record into the QueryWatch session.
-using QueryWatchConnection conn = new(raw, session);
+using var conn = raw.WithQueryWatch(session);
 
 // Create schema (we include a harmless SQL comment with an email to show masking)
 using (var cmd = conn.CreateCommand()) {

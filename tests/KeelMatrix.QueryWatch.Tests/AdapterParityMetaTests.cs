@@ -4,8 +4,8 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
-using KeelMatrix.QueryWatch.Dapper;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Dapper;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
@@ -14,7 +14,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void Ado_Failure_Emits_Normalized_Failure_Meta() {
             using QueryWatchSession session = new();
             ThrowingDbCommand inner = new() { CommandText = "SELECT 1" };
-            using QueryWatchCommand cmd = new(inner, session);
+            using InstrumentedDbCommand cmd = new(inner, session);
 
             Action act = () => cmd.ExecuteNonQuery();
             _ = act.Should().Throw<InvalidOperationException>();
@@ -30,8 +30,8 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void Dapper_Failure_Emits_Normalized_Failure_Meta() {
             using QueryWatchSession session = new();
             ThrowingIdbCommand inner = new() { CommandText = "UPDATE T SET X=1" };
-            using DapperQueryWatchConnection conn = new(new OnlyIdbConnection(), session);
-            using DapperQueryWatchCommand cmd = new(inner, session, conn);
+            using InstrumentedIdbConnection conn = new(new OnlyIdbConnection(), session);
+            using InstrumentedIdbCommand cmd = new(inner, session, conn);
 
             Action act = () => cmd.ExecuteNonQuery();
             _ = act.Should().Throw<InvalidOperationException>();

@@ -1,7 +1,7 @@
 // Copyright (c) KeelMatrix
 
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
 using MySqlConnector;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,7 +21,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.MySQL {
             using MySqlConnection raw = new(cs);
             using QueryWatchSession session = new();
             raw.Open();
-            using QueryWatchConnection conn = new(raw, session);
+            using InstrumentedDbConnection conn = new(raw, session);
 
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT @p";
@@ -41,7 +41,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.MySQL {
             await using MySqlConnection raw = new(cs);
             await raw.OpenAsync();
             using QueryWatchSession session = new();
-            await using QueryWatchConnection conn = new(raw, session);
+            await using InstrumentedDbConnection conn = new(raw, session);
 
             await using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT SLEEP(5)";
@@ -58,7 +58,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.MySQL {
             using MySqlConnection raw = new(cs);
             using QueryWatchSession session = new();
             raw.Open();
-            using QueryWatchConnection conn = new(raw, session);
+            using InstrumentedDbConnection conn = new(raw, session);
 
             using var tx = conn.BeginTransaction();
             using var cmd = conn.CreateCommand();
@@ -87,7 +87,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.MySQL {
             using MySqlConnection raw = new(cs);
             using QueryWatchSession session = new();
             raw.Open();
-            using QueryWatchConnection conn = new(raw, session);
+            using InstrumentedDbConnection conn = new(raw, session);
 
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT SLEEP(5)";

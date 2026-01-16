@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
@@ -13,13 +13,13 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void BeginTransaction_Returns_Wrapper_With_WrapperConnection_And_Exposes_Inner() {
             using QueryWatchSession session = new();
             TxFakeDbConnection provider = new();
-            using QueryWatchConnection wrapped = new(provider, session);
+            using InstrumentedDbConnection wrapped = new(provider, session);
 
             using DbTransaction tx = wrapped.BeginTransaction();
-            _ = tx.Should().BeOfType<QueryWatchTransaction>();
+            _ = tx.Should().BeOfType<InstrumentedDbTransaction>();
 
             _ = ((IDbTransaction)tx).Connection.Should().BeSameAs(wrapped);
-            DbTransaction inner = ((QueryWatchTransaction)tx).Inner;
+            DbTransaction inner = ((InstrumentedDbTransaction)tx).Inner;
             _ = inner.Should().BeOfType<TxFakeDbTransaction>();
             _ = ((IDbTransaction)inner).Connection.Should().BeSameAs(provider);
         }
@@ -28,19 +28,19 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void Transaction_Lifecycle_Delegates_Commit_Rollback_Dispose_To_Inner() {
             using QueryWatchSession session = new();
             TxFakeDbConnection provider = new();
-            using QueryWatchConnection wrapped = new(provider, session);
+            using InstrumentedDbConnection wrapped = new(provider, session);
 
-            QueryWatchTransaction tx1 = (QueryWatchTransaction)wrapped.BeginTransaction();
+            InstrumentedDbTransaction tx1 = (InstrumentedDbTransaction)wrapped.BeginTransaction();
             TxFakeDbTransaction inner1 = (TxFakeDbTransaction)tx1.Inner;
             tx1.Commit();
             _ = inner1.Committed.Should().BeTrue();
 
-            QueryWatchTransaction tx2 = (QueryWatchTransaction)wrapped.BeginTransaction();
+            InstrumentedDbTransaction tx2 = (InstrumentedDbTransaction)wrapped.BeginTransaction();
             TxFakeDbTransaction inner2 = (TxFakeDbTransaction)tx2.Inner;
             tx2.Rollback();
             _ = inner2.RolledBack.Should().BeTrue();
 
-            QueryWatchTransaction tx3 = (QueryWatchTransaction)wrapped.BeginTransaction();
+            InstrumentedDbTransaction tx3 = (InstrumentedDbTransaction)wrapped.BeginTransaction();
             TxFakeDbTransaction inner3 = (TxFakeDbTransaction)tx3.Inner;
             tx3.Dispose();
             _ = inner3.Disposed.Should().BeTrue();
@@ -50,12 +50,12 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void Command_Transaction_Setter_Unwraps_Wrapper_To_Inner() {
             using QueryWatchSession session = new();
             TxFakeDbConnection provider = new();
-            using QueryWatchConnection wrapped = new(provider, session);
+            using InstrumentedDbConnection wrapped = new(provider, session);
 
             CapturingDbCommand innerCmd = new();
-            using QueryWatchCommand cmd = new(innerCmd, session, wrapped);
+            using InstrumentedDbCommand cmd = new(innerCmd, session, wrapped);
 
-            QueryWatchTransaction wtx = (QueryWatchTransaction)wrapped.BeginTransaction();
+            InstrumentedDbTransaction wtx = (InstrumentedDbTransaction)wrapped.BeginTransaction();
             cmd.Transaction = wtx;
 
             _ = innerCmd.LastAssignedTransaction.Should().BeSameAs(wtx.Inner);

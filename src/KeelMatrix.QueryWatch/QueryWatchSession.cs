@@ -58,7 +58,7 @@ namespace KeelMatrix.QueryWatch {
         /// <param name="meta">Optional metadata associated with the event.</param>
         /// <exception cref="ObjectDisposedException">The session has been disposed.</exception>
         /// <exception cref="InvalidOperationException">The session has already been completed.</exception>
-        public void Record(string commandText, TimeSpan duration, IReadOnlyDictionary<string, object?>? meta) {
+        internal void Record(string commandText, TimeSpan duration, IReadOnlyDictionary<string, object?>? meta) {
             if (_disposed) throw new ObjectDisposedException(nameof(QueryWatchSession));
 
             // Fast path: if already stopped, throw as tests expect.

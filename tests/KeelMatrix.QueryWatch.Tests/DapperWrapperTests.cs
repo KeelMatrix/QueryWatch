@@ -5,8 +5,8 @@ using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
-using KeelMatrix.QueryWatch.Dapper;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Dapper;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
@@ -15,10 +15,10 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void CreateCommand_Wraps_And_Records_On_ExecuteNonQuery() {
             using QueryWatchSession session = new();
             OnlyIdbConnection inner = new();
-            using DapperQueryWatchConnection wrapped = new(inner, session);
+            using InstrumentedIdbConnection wrapped = new(inner, session);
 
             using IDbCommand cmd = wrapped.CreateCommand();
-            _ = cmd.Should().BeOfType<DapperQueryWatchCommand>();
+            _ = cmd.Should().BeOfType<InstrumentedIdbCommand>();
 
             cmd.CommandText = "DELETE FROM T";
             var n = cmd.ExecuteNonQuery();
@@ -32,7 +32,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         [Fact]
         public void ExecuteScalar_And_Reader_Record_Events() {
             using QueryWatchSession session = new();
-            using DapperQueryWatchConnection wrapped = new(new OnlyIdbConnection(), session);
+            using InstrumentedIdbConnection wrapped = new(new OnlyIdbConnection(), session);
 
             using (IDbCommand cmd = wrapped.CreateCommand()) {
                 cmd.CommandText = "SELECT 42";
@@ -52,13 +52,13 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void BeginTransaction_Preserves_Wrapper_Connection_And_Unwraps_Inner_On_Command_Setter() {
             using QueryWatchSession session = new();
             OnlyIdbConnection inner = new();
-            using DapperQueryWatchConnection wrapped = new(inner, session);
+            using InstrumentedIdbConnection wrapped = new(inner, session);
 
-            using DapperQueryWatchTransaction tx = (DapperQueryWatchTransaction)wrapped.BeginTransaction();
+            using InstrumentedIdbTransaction tx = (InstrumentedIdbTransaction)wrapped.BeginTransaction();
             _ = tx.Connection.Should().Be(wrapped, "transaction.Connection must be the wrapper");
 
-            using OnlyIdbCommand cmd = (OnlyIdbCommand)((DapperQueryWatchCommand)wrapped.CreateCommand()).GetInnerForTest();
-            _ = new DapperQueryWatchCommand(cmd, session, wrapped) {
+            using OnlyIdbCommand cmd = (OnlyIdbCommand)((InstrumentedIdbCommand)wrapped.CreateCommand()).GetInnerForTest();
+            _ = new InstrumentedIdbCommand(cmd, session, wrapped) {
                 // Assign the wrapped transaction to the command; inner command should receive the *inner* tx object.
                 Transaction = tx
             };
@@ -69,9 +69,9 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void Command_Connection_Getter_Is_Wrapper_And_Setter_Unwraps() {
             using QueryWatchSession session = new();
             OnlyIdbConnection inner = new();
-            using DapperQueryWatchConnection wrapped = new(inner, session);
+            using InstrumentedIdbConnection wrapped = new(inner, session);
 
-            using DapperQueryWatchCommand dapperCmd = (DapperQueryWatchCommand)wrapped.CreateCommand();
+            using InstrumentedIdbCommand dapperCmd = (InstrumentedIdbCommand)wrapped.CreateCommand();
             _ = dapperCmd.Connection.Should().Be(wrapped);
 
             // Set the connection to the wrapper again; inner command should receive inner.
@@ -87,12 +87,12 @@ namespace KeelMatrix.QueryWatch.Tests {
             // 1) If provider derives from DbConnection, we should get ADO wrapper (supports async).
             DbDerivedConnection dbDerived = new();
             DbConnection wrapped1 = dbDerived.WithQueryWatch(session);
-            _ = wrapped1.Should().BeOfType<QueryWatchConnection>();
+            _ = wrapped1.Should().BeOfType<InstrumentedDbConnection>();
 
             // 2) If provider does not derive from DbConnection, we should get the Dapper-only wrapper.
             IDbConnection onlyIdb = new OnlyIdbConnection();
             IDbConnection wrapped2 = onlyIdb.WithQueryWatch(session);
-            _ = wrapped2.Should().BeOfType<DapperQueryWatchConnection>();
+            _ = wrapped2.Should().BeOfType<InstrumentedIdbConnection>();
         }
 
         // ---- Fakes ----
@@ -293,10 +293,10 @@ namespace KeelMatrix.QueryWatch.Tests {
     }
 
     internal static class DapperCommandIntrospectionExtensions {
-        public static IDbCommand GetInnerForTest(this DapperQueryWatchCommand cmd) {
+        public static IDbCommand GetInnerForTest(this InstrumentedIdbCommand cmd) {
             // We can't access private fields; but we know DapperQueryWatchCommand wraps an inner IDbCommand,
             // and returns it via CreateCommand(); here we downcast the field via reflection for testing.
-            FieldInfo? f = typeof(DapperQueryWatchCommand).GetField("_inner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            FieldInfo? f = typeof(InstrumentedIdbCommand).GetField("_inner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             return (IDbCommand)f!.GetValue(cmd)!;
         }
     }

@@ -6,18 +6,18 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace KeelMatrix.QueryWatch.Ado {
+namespace KeelMatrix.QueryWatch.Infrastructure.Ado {
     /// <summary>
     /// Delegating <see cref="DbCommand"/> that measures execution and records into a session.
     /// </summary>
-    public sealed class QueryWatchCommand : DbCommand {
+    internal sealed class InstrumentedDbCommand : DbCommand {
         private readonly DbCommand _inner;
         private readonly QueryWatchSession _session;
 
         // Keep track of the wrapper connection (so getters surface the wrapper instance).
-        private QueryWatchConnection? _wrapperConnection;
+        private InstrumentedDbConnection? _wrapperConnection;
         // Keep track of a wrapper transaction so we can track readers for draining before Commit().
-        private QueryWatchTransaction? _wrapperTransaction;
+        private InstrumentedDbTransaction? _wrapperTransaction;
 
         /// <summary>
         /// Initializes a new wrapper over an inner <see cref="DbCommand"/>.
@@ -26,10 +26,10 @@ namespace KeelMatrix.QueryWatch.Ado {
         /// <param name="session">Session to record into.</param>
         /// <param name="wrapperConnection">Optional wrapper connection to surface via <see cref="DbCommand.Connection"/>.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="inner"/> or <paramref name="session"/> is null.</exception>
-        public QueryWatchCommand(DbCommand inner, QueryWatchSession session, DbConnection? wrapperConnection = null) {
+        public InstrumentedDbCommand(DbCommand inner, QueryWatchSession session, DbConnection? wrapperConnection = null) {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _session = session ?? throw new ArgumentNullException(nameof(session));
-            _wrapperConnection = wrapperConnection as QueryWatchConnection;
+            _wrapperConnection = wrapperConnection as InstrumentedDbConnection;
         }
 
         private sealed class CompositeDisposer : IDisposable {
@@ -65,7 +65,7 @@ namespace KeelMatrix.QueryWatch.Ado {
         protected override DbConnection? DbConnection {
             get => _wrapperConnection ?? _inner.Connection;
             set {
-                if (value is QueryWatchConnection wrapped) {
+                if (value is InstrumentedDbConnection wrapped) {
                     _inner.Connection = wrapped.Inner;
                     _wrapperConnection = wrapped;
                 }
@@ -88,7 +88,7 @@ namespace KeelMatrix.QueryWatch.Ado {
                     : _inner.Transaction;
             }
             set {
-                if (value is QueryWatchTransaction wrapped) {
+                if (value is InstrumentedDbTransaction wrapped) {
                     _inner.Transaction = wrapped.Inner;
                     _wrapperTransaction = wrapped;
                 }
@@ -270,9 +270,9 @@ namespace KeelMatrix.QueryWatch.Ado {
                     r.Dispose();
                     throw new TimeoutException("CommandTimeout elapsed and the command was cancelled.");
                 }
-                QueryWatchTransaction? tx = _wrapperTransaction;
+                InstrumentedDbTransaction? tx = _wrapperTransaction;
                 tx?.TrackReader(r);
-                return new QueryWatchDataReader(r, tx);
+                return new InstrumentedDbDataReader(r, tx);
             }
             catch (Exception ex) {
                 sw.Stop();
@@ -364,9 +364,9 @@ namespace KeelMatrix.QueryWatch.Ado {
 #endif
                     throw new OperationCanceledException("Command was cancelled.", cancellationToken);
                 }
-                QueryWatchTransaction? tx = _wrapperTransaction;
+                InstrumentedDbTransaction? tx = _wrapperTransaction;
                 tx?.TrackReader(r);
-                return new QueryWatchDataReader(r, tx);
+                return new InstrumentedDbDataReader(r, tx);
             }
             catch (Exception ex) {
                 sw.Stop();

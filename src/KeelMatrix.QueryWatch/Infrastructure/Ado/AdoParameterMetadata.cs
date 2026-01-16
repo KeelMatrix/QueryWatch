@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Text.Json.Serialization;
 
-namespace KeelMatrix.QueryWatch.Ado {
+namespace KeelMatrix.QueryWatch.Infrastructure.Ado {
     /// <summary>
     /// Internal value object describing a single ADO parameter shape.
     /// Serialized as part of event metadata when capture policy is enabled.

@@ -4,7 +4,7 @@ using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Dapper;
+using KeelMatrix.QueryWatch.Infrastructure.Dapper;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
@@ -13,19 +13,19 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void Reassign_Transaction_After_Execute_RoundTrips_Inner_Correctly() {
             using QueryWatchSession session = new();
             OnlyIdbConnection provider = new();
-            using DapperQueryWatchConnection wrapped = new(provider, session);
+            using InstrumentedIdbConnection wrapped = new(provider, session);
 
-            DapperQueryWatchCommand dcmd = (DapperQueryWatchCommand)wrapped.CreateCommand();
+            InstrumentedIdbCommand dcmd = (InstrumentedIdbCommand)wrapped.CreateCommand();
             dcmd.CommandText = "UPDATE T SET X=1";
             OnlyIdbCommand inner = (OnlyIdbCommand)DapperCommandIntrospectionExtensions.GetInnerForTest(dcmd);
 
             _ = dcmd.ExecuteNonQuery();
 
-            DapperQueryWatchTransaction tx1 = (DapperQueryWatchTransaction)wrapped.BeginTransaction();
+            InstrumentedIdbTransaction tx1 = (InstrumentedIdbTransaction)wrapped.BeginTransaction();
             dcmd.Transaction = tx1;
             _ = inner.LastAssignedTransaction.Should().BeSameAs(tx1.Inner);
 
-            DapperQueryWatchTransaction tx2 = (DapperQueryWatchTransaction)wrapped.BeginTransaction();
+            InstrumentedIdbTransaction tx2 = (InstrumentedIdbTransaction)wrapped.BeginTransaction();
             dcmd.Transaction = tx2;
             _ = inner.LastAssignedTransaction.Should().BeSameAs(tx2.Inner);
 
@@ -37,9 +37,9 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void Reassign_Connection_After_Execute_RoundTrips_Inner_Correctly() {
             using QueryWatchSession session = new();
             OnlyIdbConnection provider = new();
-            using DapperQueryWatchConnection wrapped = new(provider, session);
+            using InstrumentedIdbConnection wrapped = new(provider, session);
 
-            DapperQueryWatchCommand dcmd = (DapperQueryWatchCommand)wrapped.CreateCommand();
+            InstrumentedIdbCommand dcmd = (InstrumentedIdbCommand)wrapped.CreateCommand();
             OnlyIdbCommand inner = (OnlyIdbCommand)DapperCommandIntrospectionExtensions.GetInnerForTest(dcmd);
 
             dcmd.CommandText = "SELECT 1";
@@ -165,8 +165,8 @@ namespace KeelMatrix.QueryWatch.Tests {
         }
 
         internal static class DapperCommandIntrospectionExtensions {
-            public static IDbCommand GetInnerForTest(DapperQueryWatchCommand cmd) {
-                FieldInfo? f = typeof(DapperQueryWatchCommand).GetField("_inner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            public static IDbCommand GetInnerForTest(InstrumentedIdbCommand cmd) {
+                FieldInfo? f = typeof(InstrumentedIdbCommand).GetField("_inner", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 return (IDbCommand)f!.GetValue(cmd)!;
             }
         }

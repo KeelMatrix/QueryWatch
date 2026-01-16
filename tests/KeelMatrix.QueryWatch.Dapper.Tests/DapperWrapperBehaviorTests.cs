@@ -3,7 +3,7 @@
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Dapper.Tests {
@@ -13,7 +13,7 @@ namespace KeelMatrix.QueryWatch.Dapper.Tests {
             using QueryWatchSession session = new();
             IDbConnection raw = new MiniDbConnection();
             IDbConnection wrapped = raw.WithQueryWatch(session);
-            _ = wrapped.Should().BeOfType<QueryWatchConnection>();
+            _ = wrapped.Should().BeOfType<InstrumentedDbConnection>();
         }
 
         // Minimal DbConnection just for this test

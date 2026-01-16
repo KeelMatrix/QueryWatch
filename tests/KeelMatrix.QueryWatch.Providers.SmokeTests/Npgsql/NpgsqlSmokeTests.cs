@@ -1,7 +1,7 @@
 // Copyright (c) KeelMatrix
 
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
 using Npgsql;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,7 +21,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             using NpgsqlConnection raw = new(cs);
             using QueryWatchSession session = new();
             raw!.Open();
-            using QueryWatchConnection conn = new(raw, session);
+            using InstrumentedDbConnection conn = new(raw, session);
 
             using (var ok = conn.CreateCommand()) {
                 ok.CommandText = "SELECT 1";
@@ -50,7 +50,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             await using NpgsqlConnection raw = new(cs);
             await raw.OpenAsync();
             using QueryWatchSession session = new();
-            await using QueryWatchConnection conn = new(raw, session);
+            await using InstrumentedDbConnection conn = new(raw, session);
 
             await using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT pg_sleep(5)";
@@ -68,7 +68,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             using NpgsqlConnection raw = new(cs);
             using QueryWatchSession session = new();
             raw.Open();
-            using QueryWatchConnection conn = new(raw, session);
+            using InstrumentedDbConnection conn = new(raw, session);
 
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT @p";
@@ -87,7 +87,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             using NpgsqlConnection raw = new(cs);
             using QueryWatchSession session = new();
             raw.Open();
-            using QueryWatchConnection conn = new(raw, session);
+            using InstrumentedDbConnection conn = new(raw, session);
 
             using var tx = conn.BeginTransaction();
             using var cmd = conn.CreateCommand();
@@ -116,7 +116,7 @@ namespace KeelMatrix.QueryWatch.Providers.SmokeTests.Npgsql {
             using NpgsqlConnection raw = new(cs);
             using QueryWatchSession session = new();
             raw.Open();
-            using QueryWatchConnection conn = new(raw, session);
+            using InstrumentedDbConnection conn = new(raw, session);
 
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT pg_sleep(5)";

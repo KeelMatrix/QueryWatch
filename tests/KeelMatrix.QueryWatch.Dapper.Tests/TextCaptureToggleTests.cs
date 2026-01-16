@@ -4,7 +4,8 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Dapper;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Dapper.Tests {
@@ -18,7 +19,7 @@ namespace KeelMatrix.QueryWatch.Dapper.Tests {
 
             // --- Dapper wrapper ---
             using (QueryWatchSession session = new(opts)) {
-                using DapperQueryWatchConnection conn = new(new OnlyIdbConnection(), session);
+                using InstrumentedIdbConnection conn = new(new OnlyIdbConnection(), session);
                 using IDbCommand cmd = conn.CreateCommand();
                 cmd.CommandText = "SELECT 1";
                 _ = cmd.ExecuteNonQuery();
@@ -31,7 +32,7 @@ namespace KeelMatrix.QueryWatch.Dapper.Tests {
             // --- ADO wrapper ---
             using (QueryWatchSession session = new(opts)) {
                 using MiniDbConnection raw = new();
-                using QueryWatchConnection ado = new(raw, session);
+                using InstrumentedDbConnection ado = new(raw, session);
                 using DbCommand cmd = ado.CreateCommand();
                 cmd.CommandText = "SELECT 42";
                 _ = cmd.ExecuteNonQuery();

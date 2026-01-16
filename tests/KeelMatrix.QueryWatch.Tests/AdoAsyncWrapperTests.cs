@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
@@ -13,7 +13,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         public async Task ExecuteNonQueryAsync_Records_Event() {
             using QueryWatchSession session = new();
             FakeAsyncDbCommand inner = new() { CommandText = "UPDATE T" };
-            await using QueryWatchCommand cmd = new(inner, session);
+            await using InstrumentedDbCommand cmd = new(inner, session);
 
             var n = await cmd.ExecuteNonQueryAsync(CancellationToken.None);
             _ = n.Should().Be(1);
@@ -27,7 +27,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         public async Task ExecuteScalarAsync_Records_Event() {
             using QueryWatchSession session = new();
             FakeAsyncDbCommand inner = new() { CommandText = "SELECT 42" };
-            await using QueryWatchCommand cmd = new(inner, session);
+            await using InstrumentedDbCommand cmd = new(inner, session);
 
             var v = await cmd.ExecuteScalarAsync(CancellationToken.None);
             _ = v.Should().Be(42);
@@ -41,7 +41,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         public async Task ExecuteReaderAsync_Records_Event() {
             using QueryWatchSession session = new();
             FakeAsyncDbCommand inner = new() { CommandText = "SELECT * FROM T" };
-            await using QueryWatchCommand cmd = new(inner, session);
+            await using InstrumentedDbCommand cmd = new(inner, session);
 
             await using DbDataReader reader = await cmd.ExecuteReaderAsync(CommandBehavior.Default, CancellationToken.None);
             _ = reader.Should().NotBeNull();

@@ -2,7 +2,7 @@
 
 using System.Data.Common;
 using System.Reflection;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace KeelMatrix.QueryWatch.EfCore {

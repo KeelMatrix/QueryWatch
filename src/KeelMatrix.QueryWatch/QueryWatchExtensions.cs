@@ -2,6 +2,8 @@
 
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
+using KeelMatrix.QueryWatch.Infrastructure;
 
 namespace KeelMatrix.QueryWatch {
     /// <summary>
@@ -9,6 +11,10 @@ namespace KeelMatrix.QueryWatch {
     /// are recorded into a <see cref="QueryWatchSession"/>.
     /// </summary>
     public static class QueryWatchExtensions {
+        [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance")]
+        private static readonly IConnectionInstrumenter _instrumenter
+            = new DefaultConnectionInstrumenter();
+
         /// <summary>
         /// Wrap a <see cref="DbConnection"/> so commands are recorded into <see cref="QueryWatchSession"/>.
         /// </summary>
@@ -17,15 +23,7 @@ namespace KeelMatrix.QueryWatch {
         /// <returns>A wrapper connection that instruments commands.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="connection"/> or <paramref name="session"/> is null.</exception>
         public static DbConnection WithQueryWatch(this DbConnection connection, QueryWatchSession session) {
-            if (connection is null) {
-                throw new ArgumentNullException(nameof(connection));
-            }
-            else if (session is null) {
-                throw new ArgumentNullException(nameof(session));
-            }
-            else {
-                return new Ado.QueryWatchConnection(connection, session);
-            }
+            return _instrumenter.Wrap(connection, session);
         }
 
         /// <summary>
@@ -38,16 +36,7 @@ namespace KeelMatrix.QueryWatch {
         /// <returns>A wrapper connection that instruments commands.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="connection"/> or <paramref name="session"/> is null.</exception>
         public static IDbConnection WithQueryWatch(this IDbConnection connection, QueryWatchSession session) {
-            if (connection is null) throw new ArgumentNullException(nameof(connection));
-            if (session is null) {
-                throw new ArgumentNullException(nameof(session));
-            }
-            else if (connection is DbConnection db) {
-                return new Ado.QueryWatchConnection(db, session);
-            }
-            else {
-                return new Dapper.DapperQueryWatchConnection(connection, session);
-            }
+            return _instrumenter.Wrap(connection, session);
         }
     }
 }

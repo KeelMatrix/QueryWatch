@@ -32,12 +32,10 @@ On exceptions, all adapters emit the same, minimal keys:
 
 This envelope is additive: adapters may add more keys in the future, but these three are stable.
 
-## Per-adapter text capture toggles (fast path)
+## Text capture control
 
-In addition to `QueryWatchOptions.CaptureSqlText` (global), you can turn off text capture per adapter:
+Text capture is controlled exclusively via:
 
-- `DisableAdoTextCapture`
-- `DisableDapperTextCapture`
-- `DisableEfCoreTextCapture`
+- `QueryWatchOptions.CaptureSqlText` (default: true)
 
-When disabled, the adapter records an empty `CommandText` regardless of the global flag, avoiding redaction work on hot paths.
+When set to `false`, all adapters (ADO.NET, Dapper, EF Core) record empty command text. There are no per-adapter overrides.

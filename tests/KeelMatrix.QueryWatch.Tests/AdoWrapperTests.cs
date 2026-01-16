@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
@@ -13,7 +13,7 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void QueryWatchCommand_ExecuteNonQuery_Records_One_Event_With_Text() {
             using QueryWatchSession session = new();
             FakeDbCommand inner = new() { CommandText = "SELECT 1" };
-            using QueryWatchCommand cmd = new(inner, session);
+            using InstrumentedDbCommand cmd = new(inner, session);
 
             var result = cmd.ExecuteNonQuery();
             _ = result.Should().Be(1);
@@ -27,10 +27,10 @@ namespace KeelMatrix.QueryWatch.Tests {
         public void QueryWatchConnection_CreateDbCommand_Wraps_Inner_Command() {
             using QueryWatchSession session = new();
             using FakeDbConnection innerConn = new();
-            using QueryWatchConnection wrapped = new(innerConn, session);
+            using InstrumentedDbConnection wrapped = new(innerConn, session);
 
             using DbCommand cmd = wrapped.CreateCommand();
-            _ = cmd.Should().BeOfType<QueryWatchCommand>();
+            _ = cmd.Should().BeOfType<InstrumentedDbCommand>();
 
             cmd.CommandText = "UPDATE X";
             _ = cmd.ExecuteNonQuery();

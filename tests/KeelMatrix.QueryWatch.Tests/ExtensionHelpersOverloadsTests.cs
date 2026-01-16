@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
@@ -16,11 +16,11 @@ namespace KeelMatrix.QueryWatch.Tests {
 
             // DbConnection overload
             DbConnection w1 = provider.WithQueryWatch(session);
-            _ = w1.Should().BeOfType<QueryWatchConnection>();
+            _ = w1.Should().BeOfType<InstrumentedDbConnection>();
 
             // IDbConnection overload with Db-derived type must also return QueryWatchConnection
             IDbConnection w2 = ((IDbConnection)provider).WithQueryWatch(session);
-            _ = w2.Should().BeOfType<QueryWatchConnection>();
+            _ = w2.Should().BeOfType<InstrumentedDbConnection>();
         }
 
         [Fact]
@@ -30,7 +30,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             IDbConnection wrapped = onlyIdb.WithQueryWatch(session);
 
             _ = wrapped.Should().NotBeSameAs(onlyIdb);
-            _ = wrapped.Should().BeOfType<Dapper.DapperQueryWatchConnection>();
+            _ = wrapped.Should().BeOfType<Infrastructure.Dapper.InstrumentedIdbConnection>();
 
             // Smoke: a command executed through the wrapper should be recorded
             using (IDbCommand cmd = wrapped.CreateCommand()) {
@@ -48,7 +48,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             IDbConnection provider = new FakeDbConnection();
 
             IDbConnection wrapped = provider.WithQueryWatch(session);
-            _ = wrapped.Should().BeOfType<QueryWatchConnection>();
+            _ = wrapped.Should().BeOfType<InstrumentedDbConnection>();
         }
 
         // --- Fakes ---

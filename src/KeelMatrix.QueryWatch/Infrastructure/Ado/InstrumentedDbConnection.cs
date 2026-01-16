@@ -4,11 +4,11 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-namespace KeelMatrix.QueryWatch.Ado {
+namespace KeelMatrix.QueryWatch.Infrastructure.Ado {
     /// <summary>
     /// Wraps a provider <see cref="DbConnection"/> and returns commands that record execution into a <see cref="QueryWatchSession"/>.
     /// </summary>
-    public sealed class QueryWatchConnection : DbConnection {
+    internal sealed class InstrumentedDbConnection : DbConnection {
         private readonly QueryWatchSession _session;
 
         /// <summary>
@@ -17,7 +17,7 @@ namespace KeelMatrix.QueryWatch.Ado {
         /// <param name="inner">Inner provider connection to delegate to.</param>
         /// <param name="session">Session to record into.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="inner"/> or <paramref name="session"/> is null.</exception>
-        public QueryWatchConnection(DbConnection inner, QueryWatchSession session) {
+        public InstrumentedDbConnection(DbConnection inner, QueryWatchSession session) {
             Inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _session = session ?? throw new ArgumentNullException(nameof(session));
         }
@@ -57,11 +57,11 @@ namespace KeelMatrix.QueryWatch.Ado {
 
         /// <inheritdoc />
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
-            => new QueryWatchTransaction(Inner.BeginTransaction(isolationLevel), this);
+            => new InstrumentedDbTransaction(Inner.BeginTransaction(isolationLevel), this);
 
         /// <inheritdoc />
         protected override DbCommand CreateDbCommand()
-            => new QueryWatchCommand(Inner.CreateCommand(), _session, this);
+            => new InstrumentedDbCommand(Inner.CreateCommand(), _session, this);
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing) {

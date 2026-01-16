@@ -9,20 +9,32 @@ Guardrail your **database queries** in tests & CI. Capture executed SQL, enforce
 
 ---
 
-## 5‑minute success (tests)
+## 5-minute success (tests)
 
-Use the disposable scope to **export JSON** and enforce **budgets** in your test or smoke app.
+Use a `QueryWatchSession`, then export JSON and assert budgets directly.
 
-```csharp
-using KeelMatrix.QueryWatch.Testing;
+``` csharp
+using KeelMatrix.QueryWatch;
+using KeelMatrix.QueryWatch.Assertions;
+using KeelMatrix.QueryWatch.Reporting;
 
-using var scope = QueryWatchScope.Start(
-    maxQueries: 50,
-    maxAverage: TimeSpan.FromMilliseconds(25),
-    exportJsonPath: "artifacts/qwatch.report.json",
-    sampleTop: 200);
+using QueryWatchSession session = new();
+
+// Wrap your connection so commands are recorded
+using var conn = rawConnection.WithQueryWatch(session);
 
 // ... run your code that hits the DB ...
+
+// Finalize session
+QueryWatchReport report = session.Complete();
+
+// Export JSON for the CLI
+QueryWatchJson.ExportToFile(report, "artifacts/qwatch.report.json", sampleTop: 200);
+
+// Enforce budgets in tests
+report.ShouldHaveExecutedAtMost(50);
+report.ShouldHaveMaxAverageTime(TimeSpan.FromMilliseconds(25));
+report.ShouldHaveMaxTotalTime(TimeSpan.FromMilliseconds(30));
 ```
 
 The file `artifacts/qwatch.report.json` is now ready for the CLI gate.

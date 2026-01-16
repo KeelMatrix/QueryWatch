@@ -4,14 +4,14 @@ using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-namespace KeelMatrix.QueryWatch.Dapper {
+namespace KeelMatrix.QueryWatch.Infrastructure.Dapper {
     /// <summary>
     /// Delegating <see cref="IDbCommand"/> that measures execution and records into a session.
     /// </summary>
-    public sealed class DapperQueryWatchCommand : IDbCommand {
+    internal sealed class InstrumentedIdbCommand : IDbCommand {
         private readonly IDbCommand _inner;
         private readonly QueryWatchSession _session;
-        private readonly DapperQueryWatchConnection? _ownerConnection;
+        private readonly InstrumentedIdbConnection? _ownerConnection;
 
         /// <summary>
         /// Initializes a new wrapper over an inner <see cref="IDbCommand"/>.
@@ -20,7 +20,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
         /// <param name="session">Session to record into.</param>
         /// <param name="ownerConnection">Optional wrapper connection to surface via <see cref="IDbCommand.Connection"/>.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="inner"/> or <paramref name="session"/> is null.</exception>
-        public DapperQueryWatchCommand(IDbCommand inner, QueryWatchSession session, DapperQueryWatchConnection? ownerConnection = null) {
+        public InstrumentedIdbCommand(IDbCommand inner, QueryWatchSession session, InstrumentedIdbConnection? ownerConnection = null) {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _session = session ?? throw new ArgumentNullException(nameof(session));
             _ownerConnection = ownerConnection;
@@ -76,7 +76,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
         public IDbConnection? Connection {
             get => (IDbConnection?)_ownerConnection ?? _inner.Connection;
             set {
-                _inner.Connection = value is DapperQueryWatchConnection wrapped ? wrapped.Inner : value;
+                _inner.Connection = value is InstrumentedIdbConnection wrapped ? wrapped.Inner : value;
             }
         }
 
@@ -87,7 +87,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
         public IDbTransaction? Transaction {
             get => _inner.Transaction;
             set {
-                _inner.Transaction = value is DapperQueryWatchTransaction tx ? tx.Inner : value;
+                _inner.Transaction = value is InstrumentedIdbTransaction tx ? tx.Inner : value;
             }
         }
 

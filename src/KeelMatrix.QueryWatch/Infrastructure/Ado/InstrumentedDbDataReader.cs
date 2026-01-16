@@ -3,16 +3,16 @@
 using System.Data;
 using System.Data.Common;
 
-namespace KeelMatrix.QueryWatch.Ado {
+namespace KeelMatrix.QueryWatch.Infrastructure.Ado {
     /// <summary>
     /// Thin delegating wrapper over <see cref="DbDataReader"/> so we can observe Close/Dispose
-    /// and untrack it from the owning <see cref="QueryWatchTransaction"/> (if any).
+    /// and untrack it from the owning <see cref="InstrumentedDbTransaction"/> (if any).
     /// </summary>
-    internal sealed class QueryWatchDataReader : DbDataReader {
+    internal sealed class InstrumentedDbDataReader : DbDataReader {
         private readonly DbDataReader _inner;
-        private readonly QueryWatchTransaction? _tracker;
+        private readonly InstrumentedDbTransaction? _tracker;
 
-        public QueryWatchDataReader(DbDataReader inner, QueryWatchTransaction? tracker) {
+        public InstrumentedDbDataReader(DbDataReader inner, InstrumentedDbTransaction? tracker) {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _tracker = tracker;
         }

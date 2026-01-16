@@ -2,12 +2,12 @@
 
 using System.Data;
 
-namespace KeelMatrix.QueryWatch.Dapper {
+namespace KeelMatrix.QueryWatch.Infrastructure.Dapper {
     /// <summary>
     /// Delegating <see cref="IDbTransaction"/> that preserves the wrapper connection.
     /// </summary>
-    public sealed class DapperQueryWatchTransaction : IDbTransaction {
-        private readonly DapperQueryWatchConnection _owner;
+    internal sealed class InstrumentedIdbTransaction : IDbTransaction {
+        private readonly InstrumentedIdbConnection _owner;
 
         /// <summary>
         /// Initializes a new wrapper over an inner <see cref="IDbTransaction"/>.
@@ -15,7 +15,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
         /// <param name="inner">Inner provider transaction.</param>
         /// <param name="owner">Wrapper connection that owns this transaction.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="inner"/> or <paramref name="owner"/> is null.</exception>
-        public DapperQueryWatchTransaction(IDbTransaction inner, DapperQueryWatchConnection owner) {
+        public InstrumentedIdbTransaction(IDbTransaction inner, InstrumentedIdbConnection owner) {
             Inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }

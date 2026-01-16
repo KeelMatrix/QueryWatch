@@ -6,7 +6,7 @@ using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using FluentAssertions;
-using KeelMatrix.QueryWatch.Ado;
+using KeelMatrix.QueryWatch.Infrastructure.Ado;
 using KeelMatrix.QueryWatch.Reporting;
 using Xunit;
 
@@ -31,7 +31,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             p2.Direction = ParameterDirection.Input;
             _ = inner.Parameters.Add(p2);
 
-            using QueryWatchCommand cmd = new(inner, session);
+            using InstrumentedDbCommand cmd = new(inner, session);
             _ = cmd.ExecuteNonQuery();
 
             QueryWatchReport report = session.Complete();
@@ -73,7 +73,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             p.DbType = DbType.Int32;
             _ = inner.Parameters.Add(p);
 
-            using QueryWatchCommand cmd = new(inner, session);
+            using InstrumentedDbCommand cmd = new(inner, session);
             _ = cmd.ExecuteNonQuery();
 
             QueryWatchReport report = session.Complete();
@@ -93,7 +93,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             p.Direction = ParameterDirection.Input;
             _ = inner.Parameters.Add(p);
 
-            using QueryWatchCommand cmd = new(inner, session);
+            using InstrumentedDbCommand cmd = new(inner, session);
             _ = cmd.ExecuteNonQuery();
 
             QueryWatchReport report = session.Complete();

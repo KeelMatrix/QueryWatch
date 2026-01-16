@@ -3,11 +3,11 @@
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 
-namespace KeelMatrix.QueryWatch.Dapper {
+namespace KeelMatrix.QueryWatch.Infrastructure.Dapper {
     /// <summary>
     /// <see cref="IDbConnection"/> wrapper tailored for Dapper scenarios.
     /// </summary>
-    public sealed class DapperQueryWatchConnection : IDbConnection {
+    internal sealed class InstrumentedIdbConnection : IDbConnection {
         private readonly QueryWatchSession _session;
 
         /// <summary>
@@ -16,7 +16,7 @@ namespace KeelMatrix.QueryWatch.Dapper {
         /// <param name="inner">Inner provider connection.</param>
         /// <param name="session">Session to record into.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="inner"/> or <paramref name="session"/> is null.</exception>
-        public DapperQueryWatchConnection(IDbConnection inner, QueryWatchSession session) {
+        public InstrumentedIdbConnection(IDbConnection inner, QueryWatchSession session) {
             Inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _session = session ?? throw new ArgumentNullException(nameof(session));
         }
@@ -52,13 +52,13 @@ namespace KeelMatrix.QueryWatch.Dapper {
         public void ChangeDatabase(string databaseName) => Inner.ChangeDatabase(databaseName);
 
         /// <inheritdoc />
-        public IDbTransaction BeginTransaction() => new DapperQueryWatchTransaction(Inner.BeginTransaction(), this);
+        public IDbTransaction BeginTransaction() => new InstrumentedIdbTransaction(Inner.BeginTransaction(), this);
 
         /// <inheritdoc />
-        public IDbTransaction BeginTransaction(IsolationLevel il) => new DapperQueryWatchTransaction(Inner.BeginTransaction(il), this);
+        public IDbTransaction BeginTransaction(IsolationLevel il) => new InstrumentedIdbTransaction(Inner.BeginTransaction(il), this);
 
         /// <inheritdoc />
-        public IDbCommand CreateCommand() => new DapperQueryWatchCommand(Inner.CreateCommand(), _session, this);
+        public IDbCommand CreateCommand() => new InstrumentedIdbCommand(Inner.CreateCommand(), _session, this);
 
         /// <inheritdoc />
         public void Dispose() => Inner.Dispose();

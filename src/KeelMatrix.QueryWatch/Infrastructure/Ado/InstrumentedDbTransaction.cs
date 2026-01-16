@@ -3,13 +3,13 @@
 using System.Data;
 using System.Data.Common;
 
-namespace KeelMatrix.QueryWatch.Ado {
+namespace KeelMatrix.QueryWatch.Infrastructure.Ado {
     /// <summary>
     /// Delegating <see cref="DbTransaction"/> that preserves the wrapper connection
     /// and ensures multi-result <see cref="DbDataReader"/>s are closed before commit.
     /// </summary>
-    public sealed class QueryWatchTransaction : DbTransaction {
-        private readonly QueryWatchConnection _owner;
+    internal sealed class InstrumentedDbTransaction : DbTransaction {
+        private readonly InstrumentedDbConnection _owner;
 
         // Track active readers created under this transaction so Commit can safely proceed
         // on providers that require no active results (e.g., SQL Server, MySqlConnector, Npgsql).
@@ -21,7 +21,7 @@ namespace KeelMatrix.QueryWatch.Ado {
         /// <param name="inner">Inner provider transaction to delegate to.</param>
         /// <param name="owner">Wrapper connection that owns this transaction.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="inner"/> or <paramref name="owner"/> is null.</exception>
-        public QueryWatchTransaction(DbTransaction inner, QueryWatchConnection owner) {
+        public InstrumentedDbTransaction(DbTransaction inner, InstrumentedDbConnection owner) {
             Inner = inner ?? throw new ArgumentNullException(nameof(inner));
             _owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
