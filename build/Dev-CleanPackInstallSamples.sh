@@ -41,10 +41,11 @@ mkdir -p "$PKG_DIR"
 
 # 0) Clean local ./artifacts/packages (only KeelMatrix.QueryWatch*)
 step "Clean ./artifacts/packages (KeelMatrix.QueryWatch*)"
-find "$PKG_DIR" -maxdepth 1 -type f \( \
-  -name 'KeelMatrix.QueryWatch*.nupkg' -o \
-  -name 'KeelMatrix.QueryWatch*.snupkg' \
-\) -print -delete || true
+for f in "$PKG_DIR"/KeelMatrix.QueryWatch*.nupkg "$PKG_DIR"/KeelMatrix.QueryWatch*.snupkg; do
+  [[ -e "$f" ]] || continue
+  echo "Deleting $f"
+  rm -f "$f"
+done
 
 # 0b) Surgical cleanup: global NuGet cache (only our packages)
 step "Clean global NuGet cache (KeelMatrix.QueryWatch*)"

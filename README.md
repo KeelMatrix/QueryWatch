@@ -70,16 +70,21 @@ This repo ships three tiny sample apps (EF Core, ADO.NET, Dapper) that **consume
 ## EF Core wiring
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
+using KeelMatrix.QueryWatch;
 using KeelMatrix.QueryWatch.EfCore;
-using KeelMatrix.QueryWatch.Testing;
+using KeelMatrix.QueryWatch.Reporting;
 
-using var q = QueryWatchScope.Start(exportJsonPath: "artifacts/ef.json", sampleTop: 200);
+using var session = new QueryWatchSession();
 
 var options = new DbContextOptionsBuilder<MyDbContext>()
     .UseSqlite("Data Source=:memory:")
-    .UseQueryWatch(q.Session)    // adds the interceptor
+    .UseQueryWatch(session)    // adds the interceptor
     .Options;
+
+// ... run workload ...
+
+var report = session.Complete();
+QueryWatchJson.ExportToFile(report, "artifacts/ef.json", sampleTop: 200);
 ```
 > Interceptor only records **executed** commands. Use `QueryWatchOptions` on the session to tune capture (text, parameter shapes, etc.).
 
@@ -88,20 +93,21 @@ var options = new DbContextOptionsBuilder<MyDbContext>()
 ## Dapper wiring
 
 ```csharp
-using Dapper;
-using Microsoft.Data.Sqlite;
 using KeelMatrix.QueryWatch;
-using KeelMatrix.QueryWatch.Testing;
+using KeelMatrix.QueryWatch.Reporting;
 
-using var q = QueryWatchScope.Start(exportJsonPath: "artifacts/dapper.json", sampleTop: 200);
+using var session = new QueryWatchSession();
 
 await using var raw = new SqliteConnection("Data Source=:memory:");
 await raw.OpenAsync();
 
 // Wrap the provider connection so Dapper commands are recorded
-using var conn = raw.WithQueryWatch(q.Session);
+using var conn = raw.WithQueryWatch(session);
 
 var rows = await conn.QueryAsync("SELECT 1");
+
+var report = session.Complete();
+QueryWatchJson.ExportToFile(report, "artifacts/dapper.json", sampleTop: 200);
 ```
 
 > The extension returns the **ADO wrapper** when possible for high‑fidelity recording; otherwise it falls back to a Dapper‑specific wrapper.
@@ -111,18 +117,22 @@ var rows = await conn.QueryAsync("SELECT 1");
 ## ADO.NET wiring
 
 ```csharp
-using Microsoft.Data.Sqlite;
 using KeelMatrix.QueryWatch;
-using KeelMatrix.QueryWatch.Testing;
+using KeelMatrix.QueryWatch.Reporting;
 
-using var q = QueryWatchScope.Start(exportJsonPath: "artifacts/ado.json", sampleTop: 200);
+using var session = new QueryWatchSession();
+
 await using var raw = new SqliteConnection("Data Source=:memory:");
 await raw.OpenAsync();
 
-using var conn = new QueryWatchConnection(raw, q.Session);
+// Wrap the provider connection so ADO.NET commands are recorded
+using var conn = raw.WithQueryWatch(session);
 using var cmd  = conn.CreateCommand();
 cmd.CommandText = "SELECT 1";
 await cmd.ExecuteNonQueryAsync();
+
+var report = session.Complete();
+QueryWatchJson.ExportToFile(report, "artifacts/ado.json", sampleTop: 200);
 ```
 
 ---
@@ -174,7 +184,7 @@ When run inside GitHub Actions, the CLI writes a Markdown table to the **Step Su
 - **“Budget violations:” but no pattern table** → you didn’t pass any `--budget`, or your JSON was **heavily sampled**. Re‑export with higher `sampleTop` (e.g., 200–500).  
 - **Baselines seem too strict** → tolerances are **percent of baseline**. Ensure your baseline is representative; use `--baseline-allow-percent` to allow small drift.  
 - **CLI help in README looks stale** → run `./build/Update-ReadmeFlags.ps1` (or `--print-flags-md`) to refresh the block between markers.  
-- **Hot path text capture** → disable per‑adapter: `QueryWatchOptions.Disable{Ado|Dapper|EfCore}TextCapture=true`.  
+- **Hot path text capture** → disable globally: `QueryWatchOptions.CaptureSqlText = false` (applies to ADO.NET, Dapper, and EF Core).  
 - **Parameter metadata** → **ON by default**. Set `QueryWatchOptions.CaptureParameterShape=false` (emits `event.meta.parameters`), never values.
 
 ---
