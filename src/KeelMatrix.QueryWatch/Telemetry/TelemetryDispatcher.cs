@@ -1,6 +1,8 @@
 // Copyright (c) KeelMatrix
 
+using System.Globalization;
 using KeelMatrix.QueryWatch.Telemetry.Events;
+using KeelMatrix.QueryWatch.Telemetry.Infrastructure;
 
 namespace KeelMatrix.QueryWatch.Telemetry {
     /// <summary>
@@ -8,17 +10,13 @@ namespace KeelMatrix.QueryWatch.Telemetry {
     /// Determines whether telemetry events should be emitted.
     /// </summary>
     internal sealed class TelemetryDispatcher {
+        public static TelemetryDispatcher Instance { get; } = new();
+        private static TelemetryClock Clock { get; } = new();
+        private static string ProjectHash { get; } = ProjectHashProvider.Get();
         private readonly TelemetryState state;
-        private readonly Infrastructure.TelemetryClock clock;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TelemetryDispatcher"/>.
-        /// </summary>
-        public TelemetryDispatcher(
-            TelemetryState state,
-            Infrastructure.TelemetryClock clock) {
-            this.state = state;
-            this.clock = clock;
+        private TelemetryDispatcher() {
+            state = new(ProjectHash);
         }
 
         /// <summary>
@@ -29,21 +27,18 @@ namespace KeelMatrix.QueryWatch.Telemetry {
             if (TelemetryConfig.IsTelemetryDisabled())
                 return null;
 
-            if (state.IsActivationSent)
+            if (!state.ShouldSendActivation())
                 return null;
 
-            var evt = new ActivationEvent(
+            return new ActivationEvent(
                 TelemetryConfig.ToolName,
                 TelemetryConfig.ToolVersion,
                 TelemetryConfig.SchemaVersion,
-                ProjectHashProvider.Get(),
+                ProjectHash,
                 RuntimeInfo.Runtime,
                 RuntimeInfo.Os,
                 RuntimeInfo.IsCi,
-                clock.UtcNow.ToString("O"));
-
-            state.MarkActivationSent();
-            return evt;
+                Clock.UtcNow.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -54,19 +49,19 @@ namespace KeelMatrix.QueryWatch.Telemetry {
             if (TelemetryConfig.IsTelemetryDisabled())
                 return null;
 
-            var week = clock.GetCurrentIsoWeek();
-            if (state.LastHeartbeatWeek == week)
+            var week = Clock.GetCurrentIsoWeek();
+            if (!state.ShouldSendHeartbeat(week))
                 return null;
 
-            var evt = new HeartbeatEvent(
+            return new HeartbeatEvent(
                 TelemetryConfig.ToolName,
                 TelemetryConfig.ToolVersion,
                 TelemetryConfig.SchemaVersion,
-                ProjectHashProvider.Get(),
+                ProjectHash,
                 week);
-
-            state.MarkHeartbeatSent(week);
-            return evt;
         }
+
+        public void CommitActivation() => state.CommitActivation();
+        public void CommitHeartbeat(string week) => state.CommitHeartbeat(week);
     }
 }

@@ -1,5 +1,6 @@
 // Copyright (c) KeelMatrix
 
+using System.Text;
 using System.Text.Json;
 using KeelMatrix.QueryWatch.Telemetry.Events;
 
@@ -7,26 +8,24 @@ namespace KeelMatrix.QueryWatch.Telemetry.Serialization {
     /// <summary>
     /// Serializes telemetry events into compact JSON payloads.
     /// </summary>
-    internal sealed class TelemetrySerializer {
+    internal static class TelemetrySerializer {
         private static readonly JsonSerializerOptions Options = new() {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
             WriteIndented = false
         };
 
         /// <summary>
         /// Serializes the given telemetry event to a JSON string.
         /// </summary>
-#pragma warning disable CA1822 // Mark members as static
-#pragma warning disable S2325 // Methods and properties that don't access instance data should be static
-        public string Serialize(TelemetryEventBase telemetryEvent) {
-            // ERROR (5): CA1822 Member 'Serialize' does not access instance data and can be marked as static
-            // ERROR (6): S2325 Make 'Serialize' a static method.
+        public static string? Serialize(TelemetryEventBase telemetryEvent) {
             if (!TelemetrySchemaValidator.IsValid(telemetryEvent))
-                throw new InvalidOperationException("Invalid telemetry payload.");
+                return null;
 
-            return JsonSerializer.Serialize(telemetryEvent, Options);
+            var json = JsonSerializer.Serialize(telemetryEvent, telemetryEvent.GetType(), Options);
+            if (Encoding.UTF8.GetByteCount(json) > TelemetryConfig.MaxPayloadBytes)
+                return null;
+
+            return json;
         }
-#pragma warning restore S2325 // Methods and properties that don't access instance data should be static
-#pragma warning restore CA1822 // Mark members as static
     }
 }

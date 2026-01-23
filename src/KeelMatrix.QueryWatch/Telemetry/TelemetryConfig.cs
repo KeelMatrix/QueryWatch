@@ -6,8 +6,17 @@ namespace KeelMatrix.QueryWatch.Telemetry {
     /// Acts as the single source of truth for schema values.
     /// </summary>
     internal static class TelemetryConfig {
+        private static string ToolNameUpper { get; } = "QueryWatch";
         /// <summary>The telemetry tool identifier.</summary>
-        public static string ToolName { get; } = "querywatch";
+        public static string ToolName { get; } = ToolNameUpper.ToLowerInvariant();
+
+        private static readonly string RootDirectory = ResolveRootDirectory();
+        public static string GetRootDirectory() => RootDirectory;
+
+        private static string ResolveRootDirectory() {
+            var baseDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            return Path.Combine(baseDir, "KeelMatrix", ToolNameUpper);
+        }
 
         /// <summary>The current tool version.</summary>
         public static string ToolVersion { get; }

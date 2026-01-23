@@ -53,9 +53,9 @@ namespace KeelMatrix.QueryWatch.Telemetry {
         private static string Normalize(string value) {
             // keep it short & schema-safe
 #pragma warning disable IDE0057 // Use range operator
-            return value.Length <= 16
+            return value.Length <= 32
                 ? value
-                : value.Substring(0, 16);
+                : value.Substring(0, 32);
 #pragma warning restore IDE0057 // Use range operator
         }
     }

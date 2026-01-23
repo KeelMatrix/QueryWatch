@@ -1,20 +1,18 @@
 // Copyright (c) KeelMatrix
 
+using KeelMatrix.QueryWatch.Telemetry.Infrastructure;
+
 namespace KeelMatrix.QueryWatch.Telemetry {
     internal static class QueryWatchTelemetry {
         private static readonly ITelemetryClient Client = CreateClient();
 
         private static ITelemetryClient CreateClient() {
             try {
-                return TelemetryConfig.IsTelemetryDisabled()
-                    ? new NullTelemetryClient()
-                    : new TelemetryClient(
-                        new TelemetryDispatcher(
-                            new TelemetryState(),
-                            new Infrastructure.TelemetryClock()),
-                        new Infrastructure.TelemetryHttpSender(
-                            new Infrastructure.TelemetryEndpoint(),
-                            new Serialization.TelemetrySerializer()));
+                if (TelemetryConfig.IsTelemetryDisabled())
+                    return new NullTelemetryClient();
+
+                TelemetryDeliveryWorker.EnsureStarted();
+                return new TelemetryClient();
             }
             catch {
                 // Absolute last line of defense
