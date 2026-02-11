@@ -11,20 +11,25 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
     internal sealed class DurableTelemetryQueue {
         public static readonly DurableTelemetryQueue Instance = new();
         private const int MaxQueueItems = 128;
+        private const int MaxSendAttempts = 12;
 
         private readonly string pendingDir;
         private readonly string processingDir;
+        private readonly string deadLetterDir;
 
         private DurableTelemetryQueue() {
             string root = ResolveQueueRoot();
             pendingDir = Path.Combine(root, "pending");
             processingDir = Path.Combine(root, "processing");
+            deadLetterDir = Path.Combine(root, "dead");
 
             Directory.CreateDirectory(pendingDir);
             Directory.CreateDirectory(processingDir);
+            Directory.CreateDirectory(deadLetterDir);
 
             CleanupTmpFiles(pendingDir);
             CleanupTmpFiles(processingDir);
+            CleanupTmpFiles(deadLetterDir);
 
             CrashRecovery();
         }
@@ -153,11 +158,55 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
         /// </summary>
         public void Abandon(ClaimedItem item) {
             try {
+                var env = item.Envelope;
+
+                if (env.Attempts + 1 >= MaxSendAttempts) {
+                    MoveToDeadLetter(item.Path);
+                    return;
+                }
+
+                var updated = new TelemetryEnvelope(
+                    env.Id,
+                    env.PayloadJson,
+                    env.EnqueuedUtc
+                ) {
+                    Attempts = env.Attempts + 1
+                };
+
                 var target = Path.Combine(pendingDir, Path.GetFileName(item.Path));
-                File.Move(item.Path, target);
+                var tmp = target + ".tmp";
+
+                File.WriteAllText(tmp, updated.Serialize());
+
+#if NET8_0_OR_GREATER
+                File.Move(tmp, target, overwrite: true);
+#else
+                try {
+                    if (File.Exists(target))
+                        File.Delete(target);
+
+                    File.Move(tmp, target);
+                }
+                catch {
+                    try { File.Delete(tmp); } catch { /* swallow */ }
+                }
+#endif
+
+
+                SafeDelete(item.Path);
             }
             catch {
                 // swallow
+            }
+        }
+
+        private void MoveToDeadLetter(string processingPath) {
+            try {
+                var target = Path.Combine(deadLetterDir, Path.GetFileName(processingPath));
+                File.Move(processingPath, target);
+            }
+            catch {
+                SafeDelete(processingPath);
             }
         }
 

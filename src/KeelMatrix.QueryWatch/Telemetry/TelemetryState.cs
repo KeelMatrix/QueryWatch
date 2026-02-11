@@ -1,151 +1,80 @@
 // Copyright (c) KeelMatrix
 
-using System.Text.Json;
-
 namespace KeelMatrix.QueryWatch.Telemetry {
     /// <summary>
-    /// Tracks local telemetry state to enforce idempotency per project.
-    /// State is persisted on disk and guarded by a cross-process file lock.
+    /// Tracks local telemetry idempotency using atomic marker files.
+    /// File existence represents committed state. No locks are used.
     /// </summary>
     internal sealed class TelemetryState {
-        private const int LockTimeoutMs = 5000;
-        private const int MaxProjects = 512;
-        private const int MaxCorruptFiles = 10;
-
-        /// <summary>
-        /// Absolute path to the telemetry state file on the current machine.
-        /// </summary>
-        private static readonly string StateFilePath = ResolveStateFilePath();
-
-        /// <summary>
-        /// Dedicated lock file used for cross-process synchronization.
-        /// </summary>
-        private static readonly string LockFilePath = StateFilePath + ".lock";
-
-        /// <summary>
-        /// The project-scoped identifier used as the state key.
-        /// </summary>
+        private const int MaxFiles = 1024;
+        private static readonly string MarkerDir = Path.Combine(TelemetryConfig.GetRootDirectory(), "markers");
         private readonly string projectHash;
 
         /// <summary>
-        /// In-memory representation of the persisted state.
+        /// Initializes a new instance for the given project hash.
         /// </summary>
-        private StateData data = new();
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TelemetryState"/> class for the given project.
-        /// </summary>
-        /// <param name="projectHash">Stable project identifier.</param>
         public TelemetryState(string projectHash) {
             this.projectHash = projectHash;
-            Load();
-        }
-
-        internal static readonly ThreadLocal<Random> JitterRandom =
-            new(() => new Random(unchecked((Environment.TickCount * 31) + Environment.CurrentManagedThreadId)));
-
-        public bool ShouldSendActivation() {
-            using var _ = AcquireLock();
-            LoadUnsafe();
-            return !data.Activations.ContainsKey(projectHash);
-        }
-
-        public bool ShouldSendHeartbeat(string isoWeek) {
-            using var _ = AcquireLock();
-            LoadUnsafe();
-            return !(data.Heartbeats.TryGetValue(projectHash, out var existing) && existing == isoWeek);
-        }
-
-        public void CommitActivation() {
-            using var _ = AcquireLock();
-            LoadUnsafe();
-            data.Activations[projectHash] = true;
-            PersistUnsafe();
-        }
-
-        public void CommitHeartbeat(string isoWeek) {
-            using var _ = AcquireLock();
-            LoadUnsafe();
-            data.Heartbeats[projectHash] = isoWeek;
-            PersistUnsafe();
+            TryEnsureDirectory();
+            TryCleanup();
         }
 
         /// <summary>
-        /// Loads state from disk into memory using a cross-process lock.
+        /// Returns true if activation has not yet been recorded.
         /// </summary>
-        private void Load() {
+        public bool ShouldSendActivation() {
+            return !File.Exists(GetActivationPath(projectHash));
+        }
+
+        /// <summary>
+        /// Returns true if no heartbeat exists for the given ISO week.
+        /// </summary>
+        public bool ShouldSendHeartbeat(string isoWeek) {
+            return !File.Exists(GetHeartbeatPath(projectHash, isoWeek));
+        }
+
+        /// <summary>
+        /// Atomically records activation using CreateNew semantics.
+        /// </summary>
+        public void CommitActivation() {
+            TryCreateMarker(GetActivationPath(projectHash));
+        }
+
+        /// <summary>
+        /// Atomically records heartbeat for the given ISO week.
+        /// </summary>
+        public void CommitHeartbeat(string isoWeek) {
+            TryCreateMarker(GetHeartbeatPath(projectHash, isoWeek));
+        }
+
+        /// <summary>
+        /// Attempts to create a marker file atomically.
+        /// </summary>
+        private static void TryCreateMarker(string path) {
             try {
-                using var _ = AcquireLock();
-                LoadUnsafe();
+                using var _ = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
             }
             catch {
-                TryRecoverCorruptStateUnsafe();
-                data = new StateData();
+                // already exists or filesystem failure → ignore
             }
         }
 
-        private void LoadUnsafe() {
+        /// <summary>
+        /// Deletes oldest marker files when count exceeds limit.
+        /// </summary>
+        private static void TryCleanup() {
             try {
-                if (!File.Exists(StateFilePath))
-                    return;
+                var files = Directory.EnumerateFiles(MarkerDir, "*.json")
+                                     .Select(p => new FileInfo(p))
+                                     .OrderBy(f => f.CreationTimeUtc)
+                                     .ToList();
 
-                using var stream = new FileStream(
-                    StateFilePath,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read);
-
-                var loaded = JsonSerializer.Deserialize<StateData>(stream);
-                if (loaded != null)
-                    data = loaded;
-            }
-            catch {
-                data = new StateData();
-            }
-        }
-
-        private static void TryRecoverCorruptStateUnsafe() {
-            try {
-                if (File.Exists(StateFilePath)) {
-                    var corruptPath = GetUniqueCorruptPath(StateFilePath);
-
-                    try {
-                        File.Move(StateFilePath, corruptPath);
-                    }
-                    catch {
-                        try {
-                            File.Copy(StateFilePath, corruptPath, overwrite: false);
-                            File.Delete(StateFilePath);
-                        }
-                        catch {
-                            // swallow
-                        }
-                    }
-
-                    EnforceCorruptLimit();
-                }
-            }
-            catch {
-                // swallow
-            }
-        }
-
-        private static void EnforceCorruptLimit() {
-            try {
-                var dir = Path.GetDirectoryName(StateFilePath)!;
-                var file = Path.GetFileName(StateFilePath);
-
-                var corrupt = Directory.EnumerateFiles(dir, $"{file}.corrupt.*")
-                                       .Select(p => new FileInfo(p))
-                                       .OrderBy(f => f.CreationTimeUtc)
-                                       .ToList();
-
-                var excess = corrupt.Count - MaxCorruptFiles;
+                var excess = files.Count - MaxFiles;
                 if (excess <= 0)
                     return;
 
-                foreach (var fi in corrupt.Take(excess)) {
-                    try { fi.Delete(); } catch { /* swallow */ }
+                foreach (var f in files.Take(excess)) {
+                    try { f.Delete(); } catch { /* swallow */ }
                 }
             }
             catch {
@@ -153,142 +82,30 @@ namespace KeelMatrix.QueryWatch.Telemetry {
             }
         }
 
-        private static string GetUniqueCorruptPath(string originalPath) {
-            var dir = Path.GetDirectoryName(originalPath)!;
-            var file = Path.GetFileName(originalPath);
-
-            // Example: telemetry.state.corrupt.20260122T134455Z.3
-            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'", System.Globalization.CultureInfo.InvariantCulture);
-
-            for (int i = 0; i < 1000; i++) {
-                var suffix = i == 0 ? "" : $".{i}";
-                var candidate = Path.Combine(dir, $"{file}.corrupt.{timestamp}{suffix}");
-                if (!File.Exists(candidate))
-                    return candidate;
-            }
-
-            // Extreme fallback (still deterministic, no exceptions)
-            return Path.Combine(dir, $"{file}.corrupt.{Guid.NewGuid():N}");
-        }
-
         /// <summary>
-        /// Persists the current in-memory state to disk using atomic write semantics.
+        /// Ensures marker directory exists.
         /// </summary>
-        private void PersistUnsafe() {
+        private static void TryEnsureDirectory() {
             try {
-                EnforceLimits();
-                Directory.CreateDirectory(Path.GetDirectoryName(StateFilePath)!);
-                var tmpPath = StateFilePath + ".tmp";
-
-                using (var stream = new FileStream(
-                    tmpPath,
-                    FileMode.Create,
-                    FileAccess.Write,
-                    FileShare.None)) {
-
-                    JsonSerializer.Serialize(stream, data);
-                    stream.Flush(true); // ensure durability on supported platforms
-                }
-
-                try {
-                    if (File.Exists(StateFilePath)) {
-                        File.Replace(tmpPath, StateFilePath, null);
-                    }
-                    else {
-                        File.Move(tmpPath, StateFilePath);
-                    }
-                }
-                catch {
-                    try { File.Delete(tmpPath); } catch { /* ignore if missing or locked */ }
-                }
+                Directory.CreateDirectory(MarkerDir);
             }
             catch {
-                // Persistence failure must never affect application behavior
-            }
-        }
-
-        private void EnforceLimits() {
-            if (data.Activations.Count > MaxProjects)
-                data.Activations = data.Activations
-                    .Take(MaxProjects)
-                    .ToDictionary(k => k.Key, v => v.Value);
-
-            if (data.Heartbeats.Count > MaxProjects)
-                data.Heartbeats = data.Heartbeats
-                    .Take(MaxProjects)
-                    .ToDictionary(k => k.Key, v => v.Value);
-        }
-
-        /// <summary>
-        /// Acquires a cross-process exclusive lock using a dedicated lock file.
-        /// </summary>
-        private static FileLockHandle AcquireLock() {
-            Directory.CreateDirectory(Path.GetDirectoryName(StateFilePath)!);
-
-            var start = Environment.TickCount;
-            var delayMs = 5;
-            const int maxDelay = 100;
-
-            while (Environment.TickCount - start <= LockTimeoutMs) {
-                try {
-                    var fs = new FileStream(
-                        LockFilePath,
-                        FileMode.OpenOrCreate,
-                        FileAccess.ReadWrite,
-                        FileShare.None);
-
-                    return new FileLockHandle(fs);
-                }
-                catch {
-                    Thread.Sleep(delayMs);
-                    delayMs = Math.Min(delayMs * 2, maxDelay) + JitterRandom.Value!.Next(0, 5);
-                }
-            }
-
-            throw new TimeoutException("Failed to acquire telemetry state lock.");
-        }
-
-        /// <summary>
-        /// Resolves the absolute path of the telemetry state file in a cross-platform manner.
-        /// </summary>
-        /// <returns>Absolute file path for telemetry state storage.</returns>
-        private static string ResolveStateFilePath() {
-            return Path.Combine(TelemetryConfig.GetRootDirectory(), "telemetry.state");
-        }
-
-        /// <summary>
-        /// Disposable wrapper ensuring proper release of the file lock.
-        /// </summary>
-        private sealed class FileLockHandle : IDisposable {
-            private readonly FileStream stream;
-
-            public FileLockHandle(FileStream stream) {
-                this.stream = stream;
-            }
-
-            public void Dispose() {
-                try {
-                    stream.Dispose();
-                }
-                catch {
-                    // swallow
-                }
+                // swallow
             }
         }
 
         /// <summary>
-        /// Serializable container for persisted telemetry state.
+        /// Resolves activation marker path.
         /// </summary>
-        private sealed class StateData {
-            /// <summary>
-            /// Tracks which project hashes have already emitted activation.
-            /// </summary>
-            public Dictionary<string, bool> Activations { get; set; } = [];
+        private static string GetActivationPath(string projectHash) {
+            return Path.Combine(MarkerDir, $"activation.{projectHash}.json");
+        }
 
-            /// <summary>
-            /// Tracks the last heartbeat ISO week per project hash.
-            /// </summary>
-            public Dictionary<string, string> Heartbeats { get; set; } = [];
+        /// <summary>
+        /// Resolves heartbeat marker path.
+        /// </summary>
+        private static string GetHeartbeatPath(string projectHash, string week) {
+            return Path.Combine(MarkerDir, $"heartbeat.{projectHash}.{week}.json");
         }
     }
 }

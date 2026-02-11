@@ -12,7 +12,7 @@ namespace KeelMatrix.QueryWatch.Telemetry {
             try {
                 return RuntimeInformation.FrameworkDescription switch {
                     string s when s.Contains(".NET", StringComparison.OrdinalIgnoreCase)
-                        => Normalize(s),
+                        => NormalizeRuntimeString(s),
                     _ => "dotnet"
                 };
             }
@@ -50,13 +50,12 @@ namespace KeelMatrix.QueryWatch.Telemetry {
         private static bool HasEnv(string name)
             => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(name));
 
-        private static string Normalize(string value) {
-            // keep it short & schema-safe
+        private static string NormalizeRuntimeString(string value) {
 #pragma warning disable IDE0057 // Use range operator
-            return value.Length <= 32
+            return value.Length <= TelemetryConfig.RuntimeMaxLength
                 ? value
-                : value.Substring(0, 32);
-#pragma warning restore IDE0057 // Use range operator
+                : value.Substring(0, TelemetryConfig.RuntimeMaxLength);
+#pragma warning restore IDE0057
         }
     }
 }

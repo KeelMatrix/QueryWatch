@@ -6,7 +6,7 @@ namespace KeelMatrix.QueryWatch.Telemetry {
     /// Acts as the single source of truth for schema values.
     /// </summary>
     internal static class TelemetryConfig {
-        private static string ToolNameUpper { get; } = "QueryWatch";
+        private const string ToolNameUpper = "QueryWatch";
         /// <summary>The telemetry tool identifier.</summary>
         public static string ToolName { get; } = ToolNameUpper.ToLowerInvariant();
 
@@ -23,10 +23,18 @@ namespace KeelMatrix.QueryWatch.Telemetry {
             = typeof(TelemetryConfig).Assembly.GetName().Version?.ToString() ?? "unknown";
 
         /// <summary>The supported telemetry schema version.</summary>
-        public static int SchemaVersion { get; } = 1;
+        public const int SchemaVersion = 1;
 
         /// <summary>Maximum allowed payload size in bytes.</summary>
-        public static int MaxPayloadBytes { get; } = 512;
+        public const int MaxPayloadBytes = 512;
+
+        public const int RuntimeMaxLength = 32;
+
+        public const int ToolVersionMaxLength = 16;
+
+        public const int ProjectHashMaxLength = 64;
+
+        public const int OsMaxLength = 16;
 
         /// <summary>
         /// Determines whether telemetry is globally disabled via environment variables.

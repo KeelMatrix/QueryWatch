@@ -20,13 +20,13 @@ namespace KeelMatrix.QueryWatch.Telemetry.Serialization {
             if (telemetryEvent.SchemaVersion != TelemetryConfig.SchemaVersion)
                 return false;
 
-            if (telemetryEvent.Tool.Length > 32)
+            if (telemetryEvent.Tool.Length != TelemetryConfig.ToolName.Length)
                 return false;
 
-            if (telemetryEvent.ToolVersion.Length > 16)
+            if (telemetryEvent.ToolVersion.Length > TelemetryConfig.ToolVersionMaxLength)
                 return false;
 
-            if (telemetryEvent.ProjectHash.Length > 64)
+            if (telemetryEvent.ProjectHash.Length > TelemetryConfig.ProjectHashMaxLength)
                 return false;
 
             return telemetryEvent switch {
@@ -37,10 +37,10 @@ namespace KeelMatrix.QueryWatch.Telemetry.Serialization {
         }
 
         private static bool ValidateActivation(ActivationEvent a) {
-            if (a.Runtime.Length > 16)
+            if (a.Runtime.Length > TelemetryConfig.RuntimeMaxLength)
                 return false;
 
-            if (a.Os.Length > 16)
+            if (a.Os.Length > TelemetryConfig.OsMaxLength)
                 return false;
 
             if (!DateTimeOffset.TryParse(a.Timestamp, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out _))

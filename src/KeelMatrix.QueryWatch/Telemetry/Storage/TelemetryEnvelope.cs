@@ -11,12 +11,13 @@ namespace KeelMatrix.QueryWatch.Telemetry.Storage {
         public string Id { get; }
         public string PayloadJson { get; }
         public DateTimeOffset EnqueuedUtc { get; }
+        public int Attempts { get; init; }
 
         public TelemetryEnvelope(string payloadJson)
             : this(Guid.NewGuid().ToString("N"), payloadJson, DateTimeOffset.UtcNow) {
         }
 
-        private TelemetryEnvelope(string id, string payloadJson, DateTimeOffset enqueuedUtc) {
+        public TelemetryEnvelope(string id, string payloadJson, DateTimeOffset enqueuedUtc) {
             Id = id;
             PayloadJson = payloadJson;
             EnqueuedUtc = enqueuedUtc;

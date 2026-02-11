@@ -17,6 +17,9 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
         private static readonly TimeSpan MaxBackoff = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan InitialBackoff = TimeSpan.FromSeconds(1);
 
+        private static readonly ThreadLocal<Random> JitterRandom =
+            new(() => new Random(unchecked((Environment.TickCount * 31) + Environment.CurrentManagedThreadId)));
+
         private TelemetryDeliveryWorker() {
             _ = Task.Run(RunAsync);
 
@@ -110,7 +113,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
                 delay = currentBackoff;
 
                 // Add a jitter to prevent multiple processes from hammering the endpoint at exactly the same time.
-                Random rnd = TelemetryState.JitterRandom.Value!;
+                Random rnd = JitterRandom.Value!;
                 var jitter = TimeSpan.FromMilliseconds(rnd.Next(0, 300));
                 delay += jitter;
             }
