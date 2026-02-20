@@ -20,7 +20,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.Serialization {
             if (telemetryEvent.SchemaVersion != TelemetryConfig.SchemaVersion)
                 return false;
 
-            if (telemetryEvent.Tool.Length != TelemetryConfig.ToolName.Length)
+            if (!string.Equals(telemetryEvent.Tool, TelemetryConfig.ToolName, StringComparison.Ordinal))
                 return false;
 
             if (telemetryEvent.ToolVersion.Length > TelemetryConfig.ToolVersionMaxLength)

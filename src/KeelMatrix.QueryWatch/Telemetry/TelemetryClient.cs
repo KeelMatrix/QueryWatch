@@ -1,48 +1,26 @@
 // Copyright (c) KeelMatrix
 
-using KeelMatrix.QueryWatch.Telemetry.Serialization;
-
 namespace KeelMatrix.QueryWatch.Telemetry {
     /// <summary>
-    /// Facade and entry point for telemetry emission.
-    /// This class orchestrates telemetry flow but does not make policy decisions.
+    /// Non-blocking facade for telemetry emission.
+    /// Must never perform I/O or block the calling thread.
     /// </summary>
     internal sealed class TelemetryClient : ITelemetryClient {
-        /// <inheritdoc />
         public void TrackActivation() {
             try {
-                var evt = TelemetryDispatcher.Instance.TryCreateActivationEvent();
-                if (evt == null)
-                    return;
-
-                var json = TelemetrySerializer.Serialize(evt);
-                if (json == null)
-                    return;
-
-                Infrastructure.QueueWorkerBridge.Enqueue(json);
-                TelemetryDispatcher.Instance.CommitActivation();
+                Infrastructure.TelemetryDeliveryWorker.RequestActivation();
             }
             catch {
-                // telemetry must never affect application behavior
+                // must never throw
             }
         }
 
-        /// <inheritdoc />
         public void TrackHeartbeat() {
             try {
-                var evt = TelemetryDispatcher.Instance.TryCreateHeartbeatEvent();
-                if (evt == null)
-                    return;
-
-                var json = TelemetrySerializer.Serialize(evt);
-                if (json == null)
-                    return;
-
-                Infrastructure.QueueWorkerBridge.Enqueue(json);
-                TelemetryDispatcher.Instance.CommitHeartbeat(evt.Week);
+                Infrastructure.TelemetryDeliveryWorker.RequestHeartbeat();
             }
             catch {
-                // telemetry must never affect application behavior
+                // must never throw
             }
         }
     }

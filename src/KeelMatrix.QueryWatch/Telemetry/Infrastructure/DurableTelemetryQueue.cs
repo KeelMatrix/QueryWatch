@@ -155,13 +155,16 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
 
         /// <summary>
         /// Returns a failed item back to pending.
+        /// Ensures we only delete the processing item after the updated entry is safely persisted,
+        /// or after we successfully moved it to dead-letter.
         /// </summary>
         public void Abandon(ClaimedItem item) {
             try {
                 var env = item.Envelope;
 
+                // If max attempts reached, try to dead-letter; do not delete unless move succeeds.
                 if (env.Attempts + 1 >= MaxSendAttempts) {
-                    MoveToDeadLetter(item.Path);
+                    MoveToDeadLetterBestEffort(item.Path);
                     return;
                 }
 
@@ -174,25 +177,17 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
                 };
 
                 var target = Path.Combine(pendingDir, Path.GetFileName(item.Path));
-                var tmp = target + ".tmp";
 
-                File.WriteAllText(tmp, updated.Serialize());
-
-#if NET8_0_OR_GREATER
-                File.Move(tmp, target, overwrite: true);
-#else
-                try {
-                    if (File.Exists(target))
-                        File.Delete(target);
-
-                    File.Move(tmp, target);
+                // Persist updated envelope into pending atomically-ish:
+                // write temp in pending dir, then move into place.
+                // Only after this succeeds do we delete the processing file.
+                if (!DurableTelemetryQueue.TryWritePendingAtomically(target, updated.Serialize())) {
+                    // Requeue failed; keep processing file so it can be retried later
+                    // (CrashRecovery will move it back to pending on next start).
+                    return;
                 }
-                catch {
-                    try { File.Delete(tmp); } catch { /* swallow */ }
-                }
-#endif
 
-
+                // Requeue succeeded; now safe to delete the processing item.
                 SafeDelete(item.Path);
             }
             catch {
@@ -200,13 +195,68 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
             }
         }
 
-        private void MoveToDeadLetter(string processingPath) {
+        /// <summary>
+        /// Attempts to write a pending item using tmp + move semantics.
+        /// Returns true only if the final file is known to exist with the written content.
+        /// </summary>
+        private static bool TryWritePendingAtomically(string target, string content) {
+            string tmp = target + ".tmp";
+
             try {
-                var target = Path.Combine(deadLetterDir, Path.GetFileName(processingPath));
-                File.Move(processingPath, target);
+                File.WriteAllText(tmp, content);
+
+#if NET8_0_OR_GREATER
+                // On modern runtimes, overwrite is supported directly.
+                File.Move(tmp, target, overwrite: true);
+                return true;
+#else
+        // netstandard2.0: emulate overwrite safely.
+        // Important: we must not claim success unless the final file exists.
+        try {
+            if (File.Exists(target))
+                File.Delete(target);
+
+            File.Move(tmp, target);
+            return File.Exists(target);
+        }
+        catch {
+            // If move fails, do not delete processing file; just cleanup tmp best-effort.
+            try { File.Delete(tmp); } catch { /* swallow */ }
+            return false;
+        }
+#endif
             }
             catch {
-                SafeDelete(processingPath);
+                try { File.Delete(tmp); } catch { /* swallow */ }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Moves a processing item to dead-letter.
+        /// Never deletes the processing file unless the move succeeded.
+        /// </summary>
+        private void MoveToDeadLetterBestEffort(string processingPath) {
+            try {
+                var target = Path.Combine(deadLetterDir, Path.GetFileName(processingPath));
+#if NET8_0_OR_GREATER
+                File.Move(processingPath, target, overwrite: true);
+#else
+        // netstandard2.0: best-effort overwrite emulation
+        try {
+            if (File.Exists(target))
+                File.Delete(target);
+
+            File.Move(processingPath, target);
+        }
+        catch {
+            // If we can't move to dead-letter, leave the processing file in place.
+            // (CrashRecovery will return it to pending on next start.)
+        }
+#endif
+            }
+            catch {
+                // swallow
             }
         }
 

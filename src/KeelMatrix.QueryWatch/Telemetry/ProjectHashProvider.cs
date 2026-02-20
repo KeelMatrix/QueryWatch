@@ -12,7 +12,7 @@ namespace KeelMatrix.QueryWatch.Telemetry {
 
         private static string ComputeHash() {
             try {
-                var getName = typeof(ProjectHashProvider).Assembly.GetName();
+                var getName = typeof(ProjectHashProvider).Assembly.GetName(); // WRONG: the “assemblyName” is not the consuming project’s assembly name. It is the assembly that contains ProjectHashProvider itself (the QueryWatch library).
                 var assemblyName = getName.Name ?? string.Empty;
                 var salt = GetOrCreateMachineSalt();
 

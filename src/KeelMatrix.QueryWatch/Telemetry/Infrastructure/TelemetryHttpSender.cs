@@ -25,7 +25,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
                 using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var client = GetClient();
-                var response = await client
+                using var response = await client
                     .PostAsync(Url, content, token)
                     .ConfigureAwait(false);
 

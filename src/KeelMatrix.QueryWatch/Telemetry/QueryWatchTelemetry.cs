@@ -11,6 +11,7 @@ namespace KeelMatrix.QueryWatch.Telemetry {
                 if (TelemetryConfig.IsTelemetryDisabled())
                     return new NullTelemetryClient();
 
+                // Starts the worker (no I/O). All I/O happens inside worker thread.
                 TelemetryDeliveryWorker.EnsureStarted();
                 return new TelemetryClient();
             }
