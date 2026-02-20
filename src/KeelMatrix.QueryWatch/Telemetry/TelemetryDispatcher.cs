@@ -3,6 +3,7 @@
 using System.Globalization;
 using KeelMatrix.QueryWatch.Telemetry.Events;
 using KeelMatrix.QueryWatch.Telemetry.Infrastructure;
+using KeelMatrix.QueryWatch.Telemetry.ProjectHash;
 
 namespace KeelMatrix.QueryWatch.Telemetry {
     /// <summary>
@@ -10,13 +11,17 @@ namespace KeelMatrix.QueryWatch.Telemetry {
     /// Determines whether telemetry events should be emitted.
     /// </summary>
     internal sealed class TelemetryDispatcher {
-        public static TelemetryDispatcher Instance { get; } = new();
-        private static TelemetryClock Clock { get; } = new();
-        private static string ProjectHash { get; } = ProjectHashProvider.Get();
+        private readonly TelemetryClock clock;
         private readonly TelemetryState state;
+        private readonly string projectHash;
 
-        private TelemetryDispatcher() {
-            state = new(ProjectHash);
+        public TelemetryDispatcher(string projectHash) {
+            this.projectHash = string.IsNullOrWhiteSpace(projectHash)
+                ? ProjectHashCache.ComputeUninitializedPlaceholderHash()
+                : projectHash;
+
+            clock = new TelemetryClock();
+            state = new TelemetryState(this.projectHash);
         }
 
         /// <summary>
@@ -34,11 +39,11 @@ namespace KeelMatrix.QueryWatch.Telemetry {
                 TelemetryConfig.ToolName,
                 TelemetryConfig.ToolVersion,
                 TelemetryConfig.SchemaVersion,
-                ProjectHash,
+                projectHash,
                 RuntimeInfo.Runtime,
                 RuntimeInfo.Os,
                 RuntimeInfo.IsCi,
-                Clock.UtcNow.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture));
+                clock.UtcNow.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -49,7 +54,7 @@ namespace KeelMatrix.QueryWatch.Telemetry {
             if (TelemetryConfig.IsTelemetryDisabled())
                 return null;
 
-            var week = Clock.GetCurrentIsoWeek();
+            var week = clock.GetCurrentIsoWeek();
             if (!state.ShouldSendHeartbeat(week))
                 return null;
 
@@ -57,7 +62,7 @@ namespace KeelMatrix.QueryWatch.Telemetry {
                 TelemetryConfig.ToolName,
                 TelemetryConfig.ToolVersion,
                 TelemetryConfig.SchemaVersion,
-                ProjectHash,
+                projectHash,
                 week);
         }
 

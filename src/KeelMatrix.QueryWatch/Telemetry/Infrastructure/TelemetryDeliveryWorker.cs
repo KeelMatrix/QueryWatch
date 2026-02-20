@@ -1,5 +1,6 @@
 // Copyright (c) KeelMatrix
 
+using KeelMatrix.QueryWatch.Telemetry.ProjectHash;
 using KeelMatrix.QueryWatch.Telemetry.Serialization;
 
 namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
@@ -91,6 +92,17 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
                     break;
                 }
 
+                // 0) Compute project identity/hash once on the worker thread (best-effort).
+                // Must never run on a calling thread.
+                try {
+                    if (!TelemetryConfig.IsTelemetryDisabled()) {
+                        _ = ProjectHashCache.Shared.EnsureComputedOnWorkerThread();
+                    }
+                }
+                catch {
+                    // swallow
+                }
+
                 // 1) Plan & enqueue new telemetry based on requests (marker I/O happens here, not on caller)
                 try {
                     ProcessRequestsOnWorkerThread();
@@ -148,12 +160,24 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
             if (TelemetryConfig.IsTelemetryDisabled())
                 return;
 
-            // Lazily create dispatcher/state on worker thread to keep caller non-blocking.
-            dispatcher ??= TelemetryDispatcher.Instance;
+            // Compute/lock project hash early on the worker thread (cached for process lifetime).
+            string projectHash;
+            try {
+                projectHash = ProjectHashCache.Shared.EnsureComputedOnWorkerThread();
+            }
+            catch {
+                projectHash = ProjectHashCache.ComputeUninitializedPlaceholderHash();
+            }
 
             // Drain request flags.
             var doActivation = Interlocked.Exchange(ref activationRequested, 0) == 1;
             var doHeartbeat = Interlocked.Exchange(ref heartbeatRequested, 0) == 1;
+
+            if (!doActivation && !doHeartbeat)
+                return;
+
+            // Create dispatcher/state on worker thread (marker I/O happens inside TelemetryState).
+            dispatcher ??= new TelemetryDispatcher(projectHash);
 
             if (doActivation) {
                 try {
