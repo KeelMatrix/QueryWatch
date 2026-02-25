@@ -3,7 +3,7 @@
 using System.Globalization;
 using KeelMatrix.QueryWatch.Telemetry.Events;
 using KeelMatrix.QueryWatch.Telemetry.Infrastructure;
-using KeelMatrix.QueryWatch.Telemetry.ProjectHash;
+using KeelMatrix.QueryWatch.Telemetry.ProjectIdentity;
 
 namespace KeelMatrix.QueryWatch.Telemetry {
     /// <summary>
@@ -17,7 +17,7 @@ namespace KeelMatrix.QueryWatch.Telemetry {
 
         public TelemetryDispatcher(string projectHash) {
             this.projectHash = string.IsNullOrWhiteSpace(projectHash)
-                ? ProjectHashCache.ComputeUninitializedPlaceholderHash()
+                ? ProjectIdentityProvider.ComputeUninitializedPlaceholderHash()
                 : projectHash;
 
             clock = new TelemetryClock();

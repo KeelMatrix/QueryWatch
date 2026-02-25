@@ -39,7 +39,7 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
                 TotalDurationMs = TotalDurationMs,
                 AverageDurationMs = AverageDurationMs,
                 Events = includeEvents ? [.. Events] : Array.Empty<EventSample>(),
-                Meta = meta is null ? [] : new Dictionary<string, string>(meta)
+                Meta = meta is null ? [] : new(meta)
             };
         }
     }

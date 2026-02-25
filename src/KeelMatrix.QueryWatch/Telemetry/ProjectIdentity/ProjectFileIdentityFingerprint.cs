@@ -6,18 +6,8 @@ using System.Text.Json;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
+namespace KeelMatrix.QueryWatch.Telemetry.ProjectIdentity {
     internal static class ProjectFileIdentityFingerprint {
-        private const int MaxUpwardSteps = 8;
-        private const int MaxFileBytes = 512 * 1024;
-        private const int MaxTotalFiles = 7;
-        private const int MaxProjectFiles = 3;
-
-        // Caps for recursive enumeration under identityRoot (deterministic traversal).
-        private const int MaxRecursiveDirs = 128;
-        private const int MaxRecursiveFiles = 1024;
-        private static readonly char[] separator = [';'];
-
         public static bool TryComputeIdentityFingerprintFromProjectFiles(out byte[] fingerprintBytes) {
             fingerprintBytes = [];
 
@@ -38,6 +28,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
             out string identityRoot,
             out string primaryPath,
             out string primaryRole) {
+
             identityRoot = string.Empty;
             primaryPath = string.Empty;
             primaryRole = string.Empty;
@@ -49,7 +40,19 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
             var projCandidates = new List<Candidate>();
 
             string? current = SafeGetFullPath(startingPoint);
-            for (int step = 0; step <= MaxUpwardSteps && !string.IsNullOrEmpty(current); step++) {
+
+            string highestVisited = string.Empty;
+            string markerRoot = string.Empty;
+
+            for (int step = 0;
+                 step <= TelemetryConfig.ProjectIdentity.MaxUpwardSteps && !string.IsNullOrEmpty(current);
+                 step++) {
+
+                highestVisited = current!;
+
+                if (string.IsNullOrEmpty(markerRoot) && LooksLikeRepoRootMarker(current!))
+                    markerRoot = current!;
+
                 TryCollectCandidatesInDirectory(current!, step, slnCandidates, projCandidates);
                 current = SafeGetParentDirectory(current!);
             }
@@ -62,7 +65,18 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
 
                 primaryPath = chosen.FullPath;
                 primaryRole = "sln";
-                identityRoot = SafeGetFullPath(Path.GetDirectoryName(primaryPath) ?? string.Empty);
+
+                var primaryDir = SafeGetFullPath(Path.GetDirectoryName(primaryPath) ?? string.Empty);
+                if (!string.IsNullOrEmpty(markerRoot)) {
+                    identityRoot = markerRoot;
+                }
+                else if (!string.IsNullOrEmpty(highestVisited)) {
+                    identityRoot = highestVisited;
+                }
+                else {
+                    identityRoot = primaryDir;
+                }
+
                 return !string.IsNullOrEmpty(identityRoot) && !string.IsNullOrEmpty(primaryPath);
             }
 
@@ -74,11 +88,44 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
 
                 primaryPath = chosen.FullPath;
                 primaryRole = "proj";
-                identityRoot = SafeGetFullPath(Path.GetDirectoryName(primaryPath) ?? string.Empty);
+
+                var primaryDir = SafeGetFullPath(Path.GetDirectoryName(primaryPath) ?? string.Empty);
+                if (!string.IsNullOrEmpty(markerRoot)) {
+                    identityRoot = markerRoot;
+                }
+                else if (!string.IsNullOrEmpty(highestVisited)) {
+                    identityRoot = highestVisited;
+                }
+                else {
+                    identityRoot = primaryDir;
+                }
+
                 return !string.IsNullOrEmpty(identityRoot) && !string.IsNullOrEmpty(primaryPath);
             }
 
             return false;
+        }
+
+        private static bool LooksLikeRepoRootMarker(string dir) {
+            try {
+                if (Directory.Exists(Path.Combine(dir, ".git")))
+                    return true;
+
+                // Common repo-level markers in .NET repos/monorepos.
+                if (File.Exists(Path.Combine(dir, "global.json")))
+                    return true;
+                if (File.Exists(Path.Combine(dir, "Directory.Build.props")))
+                    return true;
+                if (File.Exists(Path.Combine(dir, "Directory.Build.targets")))
+                    return true;
+                if (File.Exists(Path.Combine(dir, "NuGet.config")))
+                    return true;
+
+                return false;
+            }
+            catch {
+                return false;
+            }
         }
 
         private static void TryCollectCandidatesInDirectory(
@@ -121,19 +168,29 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
             if (string.IsNullOrEmpty(identityRoot) || string.IsNullOrEmpty(primaryPath))
                 return false;
 
-            var items = new List<FileItem>(MaxTotalFiles) {
-                // Primary is required.
-                new(primaryRole, primaryPath)
+            // On Windows paths are case-insensitive; on Unix they are case-sensitive.
+            var pathComparer = Path.DirectorySeparatorChar == '\\'
+                ? StringComparer.OrdinalIgnoreCase
+                : StringComparer.Ordinal;
+
+            bool PathsEqual(string a, string b) => pathComparer.Equals(a, b);
+
+            var items = new List<FileItem>(TelemetryConfig.ProjectIdentity.MaxTotalFiles) {
+		        // Primary is required.
+		        new(primaryRole, primaryPath)
             };
 
             // If primary is sln, include up to 3 project files under identityRoot.
             if (string.Equals(primaryRole, "sln", StringComparison.Ordinal)) {
                 var projects = FindProjectFilesUnderIdentityRoot(identityRoot);
 #pragma warning disable S3267 // Loops should be simplified with "LINQ" expressions
-                foreach (var p in projects.Take(MaxProjectFiles)) {
-                    if (!string.Equals(SafeGetFullPath(p), primaryPath, StringComparison.OrdinalIgnoreCase)) {
+                foreach (var p in projects.Take(TelemetryConfig.ProjectIdentity.MaxProjectFiles)) {
+                    var pFull = SafeGetFullPath(p);
+
+                    // Avoid duplicating primary. Comparison must respect OS path semantics.
+                    if (!string.IsNullOrEmpty(pFull) && !PathsEqual(pFull, primaryPath)) {
                         items.Add(new FileItem("proj", p));
-                        if (items.Count >= 1 + MaxProjectFiles)
+                        if (items.Count >= 1 + TelemetryConfig.ProjectIdentity.MaxProjectFiles)
                             break;
                     }
                 }
@@ -144,16 +201,18 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
             TryAddConfigFiles(identityRoot, Path.GetDirectoryName(primaryPath) ?? identityRoot, items);
 
             // Enforce hard cap (should already be within bounds).
-            if (items.Count > MaxTotalFiles)
-                items = [.. items.Take(MaxTotalFiles)];
+            if (items.Count > TelemetryConfig.ProjectIdentity.MaxTotalFiles)
+                items = [.. items.Take(TelemetryConfig.ProjectIdentity.MaxTotalFiles)];
 
             // Compute per-file digests (primary must succeed).
             var digests = new List<FileDigest>(items.Count);
 
             foreach (var item in items) {
                 if (!TryComputeFileDigest(identityRoot, item, out var digest)) {
-                    if (string.Equals(item.Path, primaryPath, StringComparison.OrdinalIgnoreCase))
-                        return false; // primary unusable => identity unavailable for this starting point
+                    // Primary unusable => identity unavailable for this starting point.
+                    if (PathsEqual(item.Path, primaryPath))
+                        return false;
+
                     continue; // optional file; skip
                 }
 
@@ -211,7 +270,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
             int dirsVisited = 0;
 
             while (queue.Count > 0) {
-                if (dirsVisited++ > MaxRecursiveDirs)
+                if (dirsVisited++ > TelemetryConfig.ProjectIdentity.MaxRecursiveDirs)
                     return;
 
                 var dir = queue.Dequeue();
@@ -230,7 +289,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
                         continue;
 
                     results.Add(full);
-                    if (results.Count >= MaxRecursiveFiles)
+                    if (results.Count >= TelemetryConfig.ProjectIdentity.MaxRecursiveFiles)
                         return;
                 }
 
@@ -239,7 +298,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
                 subdirs.Sort(StringComparer.Ordinal);
 
                 foreach (var sd in subdirs) {
-                    if (results.Count >= MaxRecursiveFiles)
+                    if (results.Count >= TelemetryConfig.ProjectIdentity.MaxRecursiveFiles)
                         return;
 
                     var full = SafeGetFullPath(sd);
@@ -258,7 +317,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
             string? current = SafeGetFullPath(startDir);
             string root = SafeGetFullPath(identityRoot);
 
-            for (int step = 0; step <= MaxUpwardSteps && !string.IsNullOrEmpty(current); step++) {
+            for (int step = 0; step <= TelemetryConfig.ProjectIdentity.MaxUpwardSteps && !string.IsNullOrEmpty(current); step++) {
                 if (wantProps)
                     TryAddIfExists(items, "dirprops", Path.Combine(current!, "Directory.Build.props"), ref wantProps);
 
@@ -296,7 +355,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
         private static bool TryComputeFileDigest(string identityRoot, FileItem item, out FileDigest digest) {
             digest = default;
 
-            if (!TryReadFileBytesCapped(item.Path, MaxFileBytes, out var rawBytes))
+            if (!TryReadFileBytesCapped(item.Path, TelemetryConfig.ProjectIdentity.MaxFileBytes, out var rawBytes))
                 return false;
 
             string rel = GetRelativePath(identityRoot, item.Path);
@@ -550,7 +609,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
                         if (v.Length == 0)
                             continue;
 
-                        foreach (var part in v.Split(separator, StringSplitOptions.RemoveEmptyEntries)) {
+                        foreach (var part in v.Split(TelemetryConfig.ProjectIdentity.Separator, StringSplitOptions.RemoveEmptyEntries)) {
                             var t = part.Trim();
                             if (t.Length == 0)
                                 continue;

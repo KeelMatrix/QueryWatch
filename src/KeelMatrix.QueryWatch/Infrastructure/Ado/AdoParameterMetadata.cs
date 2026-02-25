@@ -32,7 +32,10 @@ namespace KeelMatrix.QueryWatch.Infrastructure.Ado {
             if (command.Parameters is null || command.Parameters.Count == 0)
                 return null;
 
+#pragma warning disable IDE0028 // Simplify collection initialization
             List<AdoParameterShape> list = new(command.Parameters.Count);
+#pragma warning restore IDE0028
+
             foreach (DbParameter p in command.Parameters) {
                 AdoParameterShape shape = new() {
                     Name = SafeName(p.ParameterName),

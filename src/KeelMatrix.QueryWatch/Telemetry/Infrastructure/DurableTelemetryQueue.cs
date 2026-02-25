@@ -8,14 +8,16 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
     /// Filesystem-backed durable queue using one JSON file per entry.
     /// Safe across crashes and multiple processes.
     /// </summary>
-    internal sealed class DurableTelemetryQueue {
-        public static readonly DurableTelemetryQueue Instance = new();
-        private const int MaxQueueItems = 128;
-        private const int MaxSendAttempts = 12;
+    internal sealed class DurableTelemetryQueue : ITelemetryQueue {
+        public static ITelemetryQueue Instance { get; } = CreateSafe();
 
         private readonly string pendingDir;
         private readonly string processingDir;
         private readonly string deadLetterDir;
+        private static ITelemetryQueue CreateSafe() {
+            try { return new DurableTelemetryQueue(); }
+            catch { return new NullTelemetryQueue(); }
+        }
 
         private DurableTelemetryQueue() {
             string root = ResolveQueueRoot();
@@ -46,10 +48,29 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
         }
 
         private void CrashRecovery() {
+            var nowUtc = DateTime.UtcNow;
+
             foreach (var file in Directory.EnumerateFiles(processingDir, "*.json")) {
                 try {
+                    DateTime lastWriteUtc;
+                    try {
+                        lastWriteUtc = File.GetLastWriteTimeUtc(file);
+                    }
+                    catch {
+                        // If we can't read the timestamp, we can't safely decide it's stale.
+                        continue;
+                    }
+
+                    // Defensive: LastWriteTimeUtc can sometimes be default/invalid or in the future due to clock skew.
+                    if (lastWriteUtc == DateTime.MinValue || lastWriteUtc > nowUtc)
+                        continue;
+
+                    var age = nowUtc - lastWriteUtc;
+                    if (age < TelemetryConfig.ProcessingStaleThreshold)
+                        continue;
+
                     var target = Path.Combine(pendingDir, Path.GetFileName(file));
-                    try { File.Delete(target); } catch { /* file does not exist, that's fine. */ }
+                    try { File.Delete(target); } catch { /* file may not exist; ignore */ }
                     File.Move(file, target);
                 }
                 catch { /* swallow */ }
@@ -102,6 +123,8 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
 
                     try {
                         File.Move(file, claimedPath);
+                        try { File.SetLastWriteTimeUtc(claimedPath, DateTime.UtcNow); }
+                        catch { /* swallow */ }
                     }
                     catch {
                         continue; // another process claimed it
@@ -149,7 +172,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
         /// <summary>
         /// Permanently deletes a successfully delivered item.
         /// </summary>
-        public static void Complete(ClaimedItem item) {
+        public void Complete(ClaimedItem item) {
             SafeDelete(item.Path);
         }
 
@@ -163,7 +186,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
                 var env = item.Envelope;
 
                 // If max attempts reached, try to dead-letter; do not delete unless move succeeds.
-                if (env.Attempts + 1 >= MaxSendAttempts) {
+                if (env.Attempts + 1 >= TelemetryConfig.MaxSendAttempts) {
                     MoveToDeadLetterBestEffort(item.Path);
                     return;
                 }
@@ -265,21 +288,21 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
         /// </summary>
         private void EnforceLimit() {
             try {
-                EnforceLimitOnDirectory(pendingDir);
-                EnforceLimitOnDirectory(processingDir);
+                EnforceLimitOnDirectory(pendingDir, TelemetryConfig.MaxPendingItems);
+                EnforceLimitOnDirectory(deadLetterDir, TelemetryConfig.MaxDeadLetterItems);
             }
             catch {
                 // swallow
             }
         }
 
-        private static void EnforceLimitOnDirectory(string dir) {
+        private static void EnforceLimitOnDirectory(string dir, int maxQueueItems) {
             try {
                 var files = Directory.EnumerateFiles(dir, "*.json")
                                      .OrderBy(File.GetCreationTimeUtc)
                                      .ToList();
 
-                var excess = files.Count - MaxQueueItems;
+                var excess = files.Count - maxQueueItems;
                 if (excess <= 0)
                     return;
 

@@ -2,7 +2,7 @@
 
 using System.Globalization;
 
-namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
+namespace KeelMatrix.QueryWatch.Telemetry.ProjectIdentity {
     internal static class RepoKeyNormalizer {
         /// <summary>
         /// Normalizes CI/Git repo identity into a stable "repo key" form:
@@ -91,6 +91,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
             if (path.Length == 0)
                 return false;
 
+            path = path.ToLowerInvariant();
             normalized = "https://" + hostWithPort + "/" + path.TrimEnd('/');
             return true;
         }
@@ -114,6 +115,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
             if (path.Length == 0)
                 return false;
 
+            path = path.ToLowerInvariant();
             normalized = "https://" + host + "/" + path.TrimEnd('/');
             return true;
         }

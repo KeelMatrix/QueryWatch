@@ -4,24 +4,16 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Text;
 
-namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
+namespace KeelMatrix.QueryWatch.Telemetry.ProjectIdentity {
     internal static class GitDiscovery {
-        private const int MaxUpwardSteps = 8;
-
-        private const int MaxConfigBytes = 512 * 1024;
-        private const int MaxPackedRefsBytes = 512 * 1024;
-        private const int MaxObjectBytesDecompressed = 512 * 1024;
-
-        private const int MaxCommitParentTraversal = 256;
-
         public static IEnumerable<string> GetStartingPoints() {
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var seen = new HashSet<string>(Path.DirectorySeparatorChar == '\\' ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
             foreach (var p in new[] {
-                    SafeGetCurrentDirectory(),
-                    SafeGetBaseDirectory(),
-                    SafeGetEntryAssemblyDirectory()
-                }) {
+                SafeGetCurrentDirectory(),
+                SafeGetBaseDirectory(),
+                SafeGetEntryAssemblyDirectory()
+            }) {
                 if (string.IsNullOrWhiteSpace(p))
                     continue;
 
@@ -38,7 +30,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
             gitDir = string.Empty;
 
             string? current = startingPoint;
-            for (int i = 0; i <= MaxUpwardSteps && !string.IsNullOrEmpty(current); i++) {
+            for (int i = 0; i <= TelemetryConfig.ProjectIdentity.MaxUpwardSteps && !string.IsNullOrEmpty(current); i++) {
                 try {
                     var dotGitPath = Path.Combine(current, ".git");
 
@@ -67,7 +59,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
             originUrl = string.Empty;
 
             var configPath = Path.Combine(gitDir, "config");
-            if (!TryReadTextFileCapped(configPath, MaxConfigBytes, out var configText))
+            if (!TryReadTextFileCapped(configPath, TelemetryConfig.ProjectIdentity.MaxConfigBytes, out var configText))
                 return false;
 
             bool inOriginSection = false;
@@ -131,7 +123,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
             // Traverse commit parents to find root commit hash.
             // Best-effort: only supports loose objects. If objects are packed or parsing fails, return false.
             string current = headHashLower;
-            for (int i = 0; i < MaxCommitParentTraversal; i++) {
+            for (int i = 0; i < TelemetryConfig.ProjectIdentity.MaxCommitParentTraversal; i++) {
                 if (!TryReadLooseCommitObject(gitDir, current, out var commitText))
                     return false;
 
@@ -175,7 +167,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
 
                 // packed-refs
                 var packedRefsPath = Path.Combine(gitDir, "packed-refs");
-                if (!TryReadTextFileCapped(packedRefsPath, MaxPackedRefsBytes, out var packedRefsText))
+                if (!TryReadTextFileCapped(packedRefsPath, TelemetryConfig.ProjectIdentity.MaxPackedRefsBytes, out var packedRefsText))
                     return false;
 
                 using var reader = new StringReader(packedRefsText);
@@ -224,7 +216,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.ProjectHash {
                 using var fs = new FileStream(objPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 using var ds = new DeflateStream(fs, CompressionMode.Decompress);
 
-                if (!TryReadAllBytesCapped(ds, MaxObjectBytesDecompressed, out var decompressed))
+                if (!TryReadAllBytesCapped(ds, TelemetryConfig.ProjectIdentity.MaxObjectBytesDecompressed, out var decompressed))
                     return false;
 
                 // Format: "commit <size>\0<content>"

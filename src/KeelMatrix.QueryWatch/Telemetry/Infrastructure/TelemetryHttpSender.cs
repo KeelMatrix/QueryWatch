@@ -7,9 +7,6 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
     /// Handles low-level transmission of telemetry payloads.
     /// </summary>
     internal static class TelemetryHttpSender {
-        private static readonly Uri Url =
-            new("https://keelmatrix-nuget-telemetry.dz-bb6.workers.dev", UriKind.Absolute);
-
 #if NET8_0_OR_GREATER
         private readonly static HttpClient httpClient = CreateHttpClient();
 #else
@@ -26,7 +23,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
 
                 var client = GetClient();
                 using var response = await client
-                    .PostAsync(Url, content, token)
+                    .PostAsync(TelemetryConfig.Url, content, token)
                     .ConfigureAwait(false);
 
                 return response.IsSuccessStatusCode;

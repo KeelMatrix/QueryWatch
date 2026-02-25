@@ -6,7 +6,6 @@ namespace KeelMatrix.QueryWatch.Telemetry {
     /// File existence represents committed state. No locks are used.
     /// </summary>
     internal sealed class TelemetryState {
-        private const int MaxFiles = 1024;
         private static readonly string MarkerDir = Path.Combine(TelemetryConfig.GetRootDirectory(), "markers");
         private readonly string projectHash;
 
@@ -69,7 +68,7 @@ namespace KeelMatrix.QueryWatch.Telemetry {
                                      .OrderBy(f => f.CreationTimeUtc)
                                      .ToList();
 
-                var excess = files.Count - MaxFiles;
+                var excess = files.Count - TelemetryConfig.MaxMarkerFiles;
                 if (excess <= 0)
                     return;
 

@@ -38,13 +38,14 @@ namespace KeelMatrix.QueryWatch.Telemetry {
         }
 
         private static bool DetectCi() {
-            // common CI indicators
-            return
-                HasEnv("CI") ||
-                HasEnv("GITHUB_ACTIONS") ||
-                HasEnv("TF_BUILD") ||
-                HasEnv("BUILD_BUILDID") ||
-                HasEnv("JENKINS_URL");
+            try {
+                return HasEnv("CI") ||
+                       HasEnv("GITHUB_ACTIONS") ||
+                       HasEnv("TF_BUILD") ||
+                       HasEnv("BUILD_BUILDID") ||
+                       HasEnv("JENKINS_URL");
+            }
+            catch { return false; }
         }
 
         private static bool HasEnv(string name)

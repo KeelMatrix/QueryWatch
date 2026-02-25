@@ -1,6 +1,6 @@
 // Copyright (c) KeelMatrix
 
-using KeelMatrix.QueryWatch.Telemetry.ProjectHash;
+using KeelMatrix.QueryWatch.Telemetry.ProjectIdentity;
 using KeelMatrix.QueryWatch.Telemetry.Serialization;
 
 namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
@@ -32,8 +32,12 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
         private static readonly ThreadLocal<Random> JitterRandom =
             new(() => new Random(unchecked((Environment.TickCount * 31) + Environment.CurrentManagedThreadId)));
 
+#pragma warning disable S4487 // Unread "private" fields should be removed
+        private readonly Task _workerTask; // left for observing a potential exception during debug
+#pragma warning restore S4487
+
         private TelemetryDeliveryWorker() {
-            _ = Task.Run(RunAsync);
+            _workerTask = Task.Run(RunAsync);
 
             AppDomain.CurrentDomain.ProcessExit += (_, _) => Dispose();
 #if NET8_0_OR_GREATER
@@ -83,6 +87,7 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
 
         private async Task RunAsync() {
             var token = cts.Token;
+            bool projectHashComputed = false;
 
             while (!token.IsCancellationRequested) {
                 try {
@@ -93,14 +98,15 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
                 }
 
                 // 0) Compute project identity/hash once on the worker thread (best-effort).
-                // Must never run on a calling thread.
-                try {
-                    if (!TelemetryConfig.IsTelemetryDisabled()) {
-                        _ = ProjectHashCache.Shared.EnsureComputedOnWorkerThread();
+                if (!projectHashComputed && !TelemetryConfig.IsTelemetryDisabled()) {
+                    try {
+                        _ = ProjectIdentityProvider.Shared.EnsureComputedOnWorkerThread();
                     }
-                }
-                catch {
-                    // swallow
+                    catch {
+                        // swallow
+                    }
+
+                    projectHashComputed = true;
                 }
 
                 // 1) Plan & enqueue new telemetry based on requests (marker I/O happens here, not on caller)
@@ -112,27 +118,38 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
                 }
 
                 // 2) Deliver any queued items (including backlog from previous runs)
+                if (TelemetryConfig.IsTelemetryDisabled()) {
+                    // Policy: if disabled, do not send anything, including backlog.
+                    // Also avoid touching the queue to prevent unintended I/O.
+                    Interlocked.Exchange(ref hasPendingWork, 0);
+                    ResetBackoff();
+                    continue;
+                }
+
                 while (!token.IsCancellationRequested) {
                     bool anyAttempted = false;
                     bool anyFailed = false;
 
-                    foreach (var item in DurableTelemetryQueue.Instance.TryClaim(4)) {
-                        anyAttempted = true;
+                    try {
+                        foreach (var item in DurableTelemetryQueue.Instance.TryClaim(4)) {
+                            anyAttempted = true;
 
-                        try {
-                            if (await TelemetryHttpSender.TrySendAsync(item.Envelope.PayloadJson, token).ConfigureAwait(false)) {
-                                DurableTelemetryQueue.Complete(item);
+                            try {
+                                if (await TelemetryHttpSender.TrySendAsync(item.Envelope.PayloadJson, token).ConfigureAwait(false)) {
+                                    DurableTelemetryQueue.Instance.Complete(item);
+                                }
+                                else {
+                                    DurableTelemetryQueue.Instance.Abandon(item);
+                                    anyFailed = true;
+                                }
                             }
-                            else {
+                            catch {
                                 DurableTelemetryQueue.Instance.Abandon(item);
                                 anyFailed = true;
                             }
                         }
-                        catch {
-                            DurableTelemetryQueue.Instance.Abandon(item);
-                            anyFailed = true;
-                        }
                     }
+                    catch { /* swallow */ }
 
                     if (!anyAttempted) {
                         Interlocked.Exchange(ref hasPendingWork, 0);
@@ -160,21 +177,21 @@ namespace KeelMatrix.QueryWatch.Telemetry.Infrastructure {
             if (TelemetryConfig.IsTelemetryDisabled())
                 return;
 
-            // Compute/lock project hash early on the worker thread (cached for process lifetime).
-            string projectHash;
-            try {
-                projectHash = ProjectHashCache.Shared.EnsureComputedOnWorkerThread();
-            }
-            catch {
-                projectHash = ProjectHashCache.ComputeUninitializedPlaceholderHash();
-            }
-
-            // Drain request flags.
+            // Drain request flags first to avoid any compute when nothing was requested.
             var doActivation = Interlocked.Exchange(ref activationRequested, 0) == 1;
             var doHeartbeat = Interlocked.Exchange(ref heartbeatRequested, 0) == 1;
 
             if (!doActivation && !doHeartbeat)
                 return;
+
+            // Compute/lock project hash on the worker thread (cached for process lifetime).
+            string projectHash;
+            try {
+                projectHash = ProjectIdentityProvider.Shared.EnsureComputedOnWorkerThread();
+            }
+            catch {
+                projectHash = ProjectIdentityProvider.ComputeUninitializedPlaceholderHash();
+            }
 
             // Create dispatcher/state on worker thread (marker I/O happens inside TelemetryState).
             dispatcher ??= new TelemetryDispatcher(projectHash);

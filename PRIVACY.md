@@ -2,7 +2,7 @@
 
 QueryWatch includes a minimal, privacy-preserving telemetry system to understand high-level usage. Telemetry is **opt-out by default** and can be fully disabled by setting:
 
-KeelMatrix.QueryWatch_NO_TELEMETRY=1
+KEELMATRIX_NO_TELEMETRY=1
 
 (or `true` / `yes`) in the environment before running your application.
 
@@ -53,9 +53,9 @@ Payloads are capped at 512 bytes and failures are always swallowed; telemetry ca
 
 Telemetry is disabled when any of the following environment variable values are set:
 
-KeelMatrix.QueryWatch_NO_TELEMETRY=1  
-KeelMatrix.QueryWatch_NO_TELEMETRY=true  
-KeelMatrix.QueryWatch_NO_TELEMETRY=yes  
+KEELMATRIX_NO_TELEMETRY=1  
+KEELMATRIX_NO_TELEMETRY=true  
+KEELMATRIX_NO_TELEMETRY=yes  
 
 ---
 

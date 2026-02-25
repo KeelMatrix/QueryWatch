@@ -53,7 +53,9 @@ namespace KeelMatrix.QueryWatch.Tests {
             // Convert library event meta (Dictionary<string, object?>?) to JsonElement values for the contract model.
             static Dictionary<string, JsonElement>? ToJsonMeta(System.Collections.Generic.IReadOnlyDictionary<string, object?>? meta) {
                 if (meta is null) return null;
+#pragma warning disable IDE0028 // Simplify collection initialization
                 Dictionary<string, JsonElement> dict = new(meta.Count);
+#pragma warning restore IDE0028
                 var options = new JsonSerializerOptions();
                 foreach (var kv in meta) {
                     dict[kv.Key] = JsonSerializer.SerializeToElement(kv.Value, options);
@@ -61,6 +63,7 @@ namespace KeelMatrix.QueryWatch.Tests {
                 return dict;
             }
 
+#pragma warning disable IDE0028 // Simplify collection initialization
             Summary contract = new() {
                 Schema = libSummary.Schema,
                 StartedAt = libSummary.StartedAt,
@@ -69,8 +72,9 @@ namespace KeelMatrix.QueryWatch.Tests {
                 TotalDurationMs = libSummary.TotalDurationMs,
                 AverageDurationMs = libSummary.AverageDurationMs,
                 Events = [.. libSummary.Events.Select(e => new EventSample { At = e.At, DurationMs = e.DurationMs, Text = e.Text, Meta = ToJsonMeta(e.Meta) })],
-                Meta = new Dictionary<string, string>(libSummary.Meta)
+                Meta = new(libSummary.Meta)
             };
+#pragma warning restore IDE0028
 
             string libJson = JsonSerializer.Serialize(libSummary); // library serializer
             string contractJson = JsonSerializer.Serialize(contract, QueryWatchJsonContext.Default.Summary);
