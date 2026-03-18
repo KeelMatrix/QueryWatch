@@ -63,12 +63,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Pack README and icon -->
-    <None Include="README.md" Pack="true" PackagePath="" />
-    <None Include="icon.png" Pack="true" PackagePath="" />
-  </ItemGroup>
-
-  <ItemGroup>
     <!-- Exclude moved redaction implementations and helpers -->
     <Compile Remove="Redaction\**\*.cs" />
     <Compile Remove="Redaction\*.cs" />

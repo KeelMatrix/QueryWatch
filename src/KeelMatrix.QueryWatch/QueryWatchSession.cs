@@ -25,12 +25,16 @@ namespace KeelMatrix.QueryWatch {
         /// Optional configuration controlling capture behavior (for example text capture and redaction).
         /// If <c>null</c>, default options are used.
         /// </param>
+#pragma warning disable S125 // Sections of code should not be commented out
+#pragma warning disable S1135 // Track uses of "TODO" tags
         public QueryWatchSession(QueryWatchOptions? options = null) {
             Options = options ?? new QueryWatchOptions();
             StartedAt = DateTimeOffset.UtcNow;
 
-            Telemetry.QueryWatchTelemetry.TrackActivation();
+            // TODO: Telemetry.QueryWatchTelemetry.TrackActivation();
         }
+#pragma warning restore S1135 // Track uses of "TODO" tags
+#pragma warning restore S125 // Sections of code should not be commented out
 
         /// <summary>Options for this session.</summary>
         public QueryWatchOptions Options { get; }
@@ -124,10 +128,14 @@ namespace KeelMatrix.QueryWatch {
         private QueryWatchReport StopInternal() {
             DateTimeOffset now = DateTimeOffset.UtcNow;
 
+#pragma warning disable S125 // Sections of code should not be commented out
+#pragma warning disable S1135 // Track uses of "TODO" tags
             if (Interlocked.CompareExchange(ref _stopped, 1, 0) == 0) {
                 StoppedAt = now;
-                Telemetry.QueryWatchTelemetry.TrackHeartbeat();
+                // TODO: Telemetry.QueryWatchTelemetry.TrackHeartbeat();
             }
+#pragma warning restore S1135 // Track uses of "TODO" tags
+#pragma warning restore S125 // Sections of code should not be commented out
 
             List<QueryEvent> snapshot;
             lock (_sync) {

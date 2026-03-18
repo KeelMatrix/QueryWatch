@@ -34,11 +34,6 @@
     <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj" />
   </ItemGroup>
   
-  <ItemGroup>
-    <!-- Pack it only if present -->
-    <None Include="README.md" Pack="true" PackagePath="" Condition="Exists('README.md')" />
-  </ItemGroup>
-
   <!-- Guard: fail the pack if version is missing when packing a tool -->
   <Target Name="EnsureToolVersion" BeforeTargets="Pack" Condition="'$(PackAsDotNetTool)'=='true' and '$(ToolVersion)'==''">
     <Error Text="When PackAsDotNetTool=true, you must pass ToolVersion= &lt;semver&gt; (e.g., dotnet pack -p:PackAsDotNetTool=true -p:ToolVersion=0.1.0)." />

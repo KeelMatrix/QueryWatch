@@ -27,6 +27,7 @@ All telemetry payloads contain only the following fields:
 - event — "activation" or "heartbeat"  
 - tool — always "querywatch"  
 - toolVersion — library version (e.g. 1.0.0)  
+- telemetryVersion - telemetry library version
 - schemaVersion — currently 1  
 - projectHash — stable, anonymous hash derived from the local project (not reversible)  
 - runtime — short framework identifier (e.g. .NET 8.0)  

@@ -52,14 +52,6 @@
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
-  <!-- Pack README.md and icon.png into the NuGet package root if they exist -->
-  <Target Name="AttachPackageReadmeAndIcon" BeforeTargets="Pack">
-    <ItemGroup>
-      <None Include="README.md" Pack="true" PackagePath="" Condition="Exists('README.md')" />
-      <None Include="icon.png"  Pack="true" PackagePath="" Condition="Exists('icon.png')" />
-    </ItemGroup>
-  </Target>
-
   <!-- Tests: keep warnings as warnings unless a test project opts in -->
   <PropertyGroup Condition="'$(IsTestProject)'=='true'">
     <GenerateDocumentationFile>false</GenerateDocumentationFile>

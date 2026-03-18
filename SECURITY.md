@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within this project, please report it by emailing **security@example.com** or by opening a private security advisory on GitHub. Do **not** create a public issue for security vulnerabilities.
+If you discover a security vulnerability within this project, please report it by emailing **keelmatrix@gmail.com** or by opening a private security advisory on GitHub. Do **not** create a public issue for security vulnerabilities.
 
 We will respond as quickly as possible to your report and will work with you to address the issue promptly. We take security seriously and appreciate your efforts to responsibly disclose vulnerabilities.
 
