@@ -10,13 +10,54 @@ permissions:
   contents: read
 
 jobs:
-  # Regular tests (exclude provider smoke tests)
+  supported-tfms:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        tfm: [net8.0, netstandard2.0]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore KeelMatrix.QueryWatch.sln
+
+      - name: Build for ${{ matrix.tfm }}
+        shell: pwsh
+        run: |
+          if ('${{ matrix.tfm }}' -eq 'net8.0') {
+            dotnet build KeelMatrix.QueryWatch.sln -c Release --no-restore -f net8.0
+            exit $LASTEXITCODE
+          }
+
+          # netstandard is not directly runnable under dotnet test, so validate the
+          # supported library assets by building each netstandard target explicitly.
+          dotnet build ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --no-restore -f netstandard2.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build ./src/KeelMatrix.QueryWatch.Contracts/KeelMatrix.QueryWatch.Contracts.csproj -c Release --no-restore -f netstandard2.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build ./src/KeelMatrix.QueryWatch.Redaction/KeelMatrix.QueryWatch.Redaction.csproj -c Release --no-restore -f netstandard2.0
+          exit $LASTEXITCODE
+
+  # Regular runnable tests across all major OSes.
   unit-and-integration:
     if: github.actor != 'dependabot[bot]'
-    runs-on: ubuntu-latest
+    needs: supported-tfms
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
     timeout-minutes: 20
     env:
-      QWATCH__DISABLE_COMPOSE: "0"
+      QWATCH__DISABLE_COMPOSE: "1"
     steps:
       - uses: actions/checkout@v4
 
@@ -30,15 +71,15 @@ jobs:
       - name: Build
         run: dotnet build KeelMatrix.QueryWatch.sln -c Release --no-restore
 
-      # IMPORTANT: exclude the provider smoke tests here so they only run in the dedicated job below
       - name: Test (exclude smoke)
         run: >
-          dotnet test KeelMatrix.QueryWatch.sln -c Release --no-build
+          dotnet test KeelMatrix.QueryWatch.sln -c Release --no-build --framework net8.0
           --filter "FullyQualifiedName!~KeelMatrix.QueryWatch.Providers.SmokeTests"
 
-  # Provider smoke tests (run in isolation; DBs auto up/down via Directory.Build.targets)
+  # Provider smoke tests stay isolated because they depend on docker compose.
   smoke-tests:
     if: github.actor != 'dependabot[bot]'
+    needs: unit-and-integration
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -50,6 +91,10 @@ jobs:
 
       # No manual docker steps needed; tests/Directory.Build.targets handles compose up/down
       - name: Run smoke tests
+        env:
+          QWATCH__DISABLE_COMPOSE: "0"
         run: >
-          dotnet test --configuration Release
+          dotnet test tests/KeelMatrix.QueryWatch.Providers.SmokeTests/KeelMatrix.QueryWatch.Providers.SmokeTests.csproj
+          --configuration Release
+          --framework net8.0
           --filter "FullyQualifiedName~KeelMatrix.QueryWatch.Providers.SmokeTests"

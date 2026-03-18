@@ -12,10 +12,45 @@ on:
     branches: [ "*" ]
 
 jobs:
-  build:
+  supported-tfms:
     if: github.actor != 'dependabot[bot]'
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        tfm: [net8.0, netstandard2.0]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore dependencies
+        run: dotnet restore KeelMatrix.QueryWatch.sln
+      - name: Build for ${{ matrix.tfm }}
+        shell: pwsh
+        run: |
+          if ('${{ matrix.tfm }}' -eq 'net8.0') {
+            dotnet build KeelMatrix.QueryWatch.sln --configuration Release --no-restore -f net8.0
+            exit $LASTEXITCODE
+          }
+
+          # netstandard is not directly runnable under dotnet test, so validate the
+          # supported library assets by building each netstandard target explicitly.
+          dotnet build ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj --configuration Release --no-restore -f netstandard2.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build ./src/KeelMatrix.QueryWatch.Contracts/KeelMatrix.QueryWatch.Contracts.csproj --configuration Release --no-restore -f netstandard2.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build ./src/KeelMatrix.QueryWatch.Redaction/KeelMatrix.QueryWatch.Redaction.csproj --configuration Release --no-restore -f netstandard2.0
+          exit $LASTEXITCODE
+
+  test:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ${{ matrix.os }}
+    needs: supported-tfms
+    strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
     steps:
@@ -30,12 +65,48 @@ jobs:
         run: dotnet build --configuration Release --no-restore
       - name: Test
         env:
-          QWATCH__DISABLE_COMPOSE: "1"   # disable compose on runners without Linux Docker
+          QWATCH__DISABLE_COMPOSE: "1"
         run: >
-          dotnet test --configuration Release --no-build
+          dotnet test KeelMatrix.QueryWatch.sln --configuration Release --no-build --framework net8.0
           --collect:"XPlat Code Coverage"
           --results-directory ./artifacts/TestResults
           --filter "FullyQualifiedName!~KeelMatrix.QueryWatch.Providers.SmokeTests"
+  smoke-tests:
+    if: github.actor != 'dependabot[bot]'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore dependencies
+        run: dotnet restore KeelMatrix.QueryWatch.sln
+      - name: Run smoke tests
+        env:
+          QWATCH__DISABLE_COMPOSE: "0"
+        run: >
+          dotnet test tests/KeelMatrix.QueryWatch.Providers.SmokeTests/KeelMatrix.QueryWatch.Providers.SmokeTests.csproj
+          --configuration Release
+          --framework net8.0
+          --filter "FullyQualifiedName~KeelMatrix.QueryWatch.Providers.SmokeTests"
+
+  package-and-analyze:
+    if: github.actor != 'dependabot[bot]'
+    needs: [test, smoke-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore dependencies
+        run: dotnet restore KeelMatrix.QueryWatch.sln
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
       - name: QueryWatch gate (optional - JSON)
         shell: pwsh
         run: |
@@ -69,7 +140,7 @@ jobs:
         uses: github/codeql-action/analyze@v3
   perf-bench:
     if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main') && github.actor != 'dependabot[bot]'
-    needs: build
+    needs: test
     runs-on: windows-latest
     timeout-minutes: 12
     strategy:
