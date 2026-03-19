@@ -34,9 +34,11 @@ This Code of Conduct applies within all community spaces and also applies when a
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement at **keelmatrix@gmail.com**. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior in this project's public spaces may be raised through the GitHub issue tracker so maintainers can review and moderate them.
 
-All community leaders are obligated to respect the privacy and security of the reporter of any incident.
+This project does not currently provide a private Code of Conduct reporting channel by email. Do **not** use the security contact for Code of Conduct matters.
+
+If the behavior occurs on GitHub itself and GitHub's platform tools are more appropriate, you may also use GitHub's built-in reporting features.
 
 ## Attribution
 

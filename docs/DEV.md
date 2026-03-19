@@ -7,7 +7,7 @@
 
 ## 0) Prereqs
 
-- .NET SDK 8.x installed (`dotnet --info` should show 8.x).
+- .NET SDK 8.x or newer installed (`dotnet --info` should show a compatible SDK).
 - Windows PowerShell (`pwsh`) recommended, but Bash works too (Linux/macOS).
 - Git (for SourceLink & versioning).
 - For EF Core tests: nothing extra — they use SQLite in-memory.
@@ -207,7 +207,7 @@ Read more in `bench/BENCHMARKS.md`.
 - **README flags**: keep the markers in place; re-run the updater after any CLI change.
 - **Trimming**: if a future change adds heavy reflection to the CLI, publish with `-p:EnableCliTrim=false` temporarily.
 - **Tests expecting strings**: several integration tests assert exact substrings like `Baseline written:` or `Baseline regressions:`; keep them stable.
-- **Per‑adapter text capture toggles**: use `QueryWatchOptions.Disable{Ado|Dapper|EfCore}TextCapture` if a hot path shouldn’t record SQL text.
+- **Text capture**: use `QueryWatchOptions.CaptureSqlText=false` if a hot path should not record SQL text.
 - **Parameter shapes**: **ON by default**. Set `QueryWatchOptions.CaptureParameterShape=false` to disable; exported JSON will include `event.meta.parameters`.
 
 ---

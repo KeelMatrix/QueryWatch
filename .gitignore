@@ -25,6 +25,7 @@ lcov*.info
 .vs/
 .vscode/
 .idea/
+.dotnet/
 *.suo
 *.user
 *.userosscache

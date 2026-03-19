@@ -23,6 +23,9 @@
     <ToolCommandName Condition="'$(PackAsDotNetTool)'=='true'">qwatch</ToolCommandName>
     <!-- Keep PackageId short and ergonomic for dotnet tool install -g qwatch -->
     <PackageId Condition="'$(PackAsDotNetTool)'=='true'">qwatch</PackageId>
+    <Description Condition="'$(PackAsDotNetTool)'=='true'">Inspect QueryWatch JSON summaries and enforce query-performance budgets in CI.</Description>
+    <PackageTags Condition="'$(PackAsDotNetTool)'=='true'">querywatch;cli;database-testing;sql-performance;budgets;ci</PackageTags>
+    <PackageProjectUrl Condition="'$(PackAsDotNetTool)'=='true'">https://github.com/KeelMatrix/QueryWatch#cli</PackageProjectUrl>
     <!-- Only set PackageReadmeFile if the file actually exists -->
     <PackageReadmeFile Condition="'$(PackAsDotNetTool)'=='true' and Exists('README.md')">README.md</PackageReadmeFile>
     <!-- Deterministic versioning path: require ToolVersion when packing as a tool -->

@@ -4,7 +4,7 @@ Tiny apps that consume the local `KeelMatrix.QueryWatch*` packages so you can se
 
 ## Layout
 - `EFCore.Sqlite/` – EF Core (SQLite) with interceptor wiring and basic budgets.
-- `Ado.Sqlite/` – plain ADO.NET over `Microsoft.Data.Sqlite` via `QueryWatchConnection`.
+- `Ado.Sqlite/` – plain ADO.NET over `Microsoft.Data.Sqlite` via `WithQueryWatch(...)`.
 - `Dapper.Sqlite/` – Dapper (async + transactions) via `WithQueryWatch(...)`.
 - `cli-examples.ps1` / `cli-examples.sh` – quick commands to run the CLI gate.
 - `NuGet.config` – pins `KeelMatrix.QueryWatch*` to `../artifacts/packages` (local build).

@@ -1,68 +1,20 @@
-# Privacy Policy
+# Privacy
 
-QueryWatch includes a minimal, privacy-preserving telemetry system to understand high-level usage. Telemetry is **opt-out by default** and can be fully disabled by setting:
+QueryWatch uses `KeelMatrix.Telemetry` transitively for minimal anonymous usage telemetry.
 
-KEELMATRIX_NO_TELEMETRY=1
+This repository is not the source of truth for telemetry implementation details such as:
+- event types
+- emitted fields
+- opt-out environment variables
+- local storage layout
+- network endpoint
+- retention behavior
 
-(or `true` / `yes`) in the environment before running your application.
+Those details can change with the telemetry package and are maintained in the telemetry repository:
 
----
+- Telemetry README: https://github.com/KeelMatrix/Telemetry#readme
+- Telemetry privacy policy: https://github.com/KeelMatrix/Telemetry/blob/main/PRIVACY.md
 
-## What is sent
+## QueryWatch-specific note
 
-QueryWatch emits at most two types of events:
-
-### 1) Activation (once per project)
-Sent only the first time a project uses QueryWatch.
-
-### 2) Heartbeat (at most once per ISO week)
-A lightweight signal that the project is still in use.
-
----
-
-## Data fields included
-
-All telemetry payloads contain only the following fields:
-
-- event — "activation" or "heartbeat"  
-- tool — always "querywatch"  
-- toolVersion — library version (e.g. 1.0.0)  
-- telemetryVersion - telemetry library version
-- schemaVersion — currently 1  
-- projectHash — stable, anonymous hash derived from the local project (not reversible)  
-- runtime — short framework identifier (e.g. .NET 8.0)  
-- os — windows, linux, osx, or unknown  
-- ci — boolean indicating whether common CI environment variables are present  
-- timestamp — UTC timestamp (activation only)  
-- week — ISO week string (heartbeat only, e.g. 2025-W03)  
-
-No SQL, no file paths, no machine names, no usernames, no IP addresses, and no user content are ever collected.
-
----
-
-## Endpoint
-
-Telemetry is sent via HTTPS to:
-
-https://keelmatrix-nuget-telemetry.dz-bb6.workers.dev
-
-Payloads are capped at 512 bytes and failures are always swallowed; telemetry can never affect application behavior.
-
----
-
-## Disabling telemetry
-
-Telemetry is disabled when any of the following environment variable values are set:
-
-KEELMATRIX_NO_TELEMETRY=1  
-KEELMATRIX_NO_TELEMETRY=true  
-KEELMATRIX_NO_TELEMETRY=yes  
-
----
-
-## Guarantees
-
-- Telemetry is best-effort and never throws  
-- Telemetry cannot block execution  
-- Telemetry contains no personal data  
-- Telemetry can be fully disabled  
+QueryWatch does not add product-specific telemetry fields on top of the shared telemetry package behavior documented above. If that changes in a way that affects privacy, this file will be updated.

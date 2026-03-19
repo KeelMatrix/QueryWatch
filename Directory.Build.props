@@ -40,6 +40,25 @@
     <Deterministic>true</Deterministic>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsPackable)'=='true'">
+    <Authors Condition="'$(Authors)'==''">KeelMatrix</Authors>
+    <RepositoryUrl Condition="'$(RepositoryUrl)'==''">https://github.com/KeelMatrix/QueryWatch</RepositoryUrl>
+    <RepositoryType Condition="'$(RepositoryType)'==''">git</RepositoryType>
+    <PackageLicenseExpression Condition="'$(PackageLicenseExpression)'==''">MIT</PackageLicenseExpression>
+    <PackageProjectUrl Condition="'$(PackageProjectUrl)'==''">https://github.com/KeelMatrix/QueryWatch#readme</PackageProjectUrl>
+    <PackageReadmeFile Condition="'$(PackageReadmeFile)'=='' and Exists('$(MSBuildProjectDirectory)\README.md')">README.md</PackageReadmeFile>
+    <PackageIcon Condition="'$(PackageIcon)'=='' and Exists('$(MSBuildProjectDirectory)\icon.png')">icon.png</PackageIcon>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)'=='true'">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
+  </ItemGroup>
   
   <!-- Include Public API baseline files if they exist next to a project. -->
   <ItemGroup>

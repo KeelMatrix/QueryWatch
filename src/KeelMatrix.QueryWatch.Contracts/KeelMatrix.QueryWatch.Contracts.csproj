@@ -8,17 +8,21 @@
     <Deterministic>true</Deterministic>
     <Description>Contracts for the KeelMatrix.QueryWatch JSON wire format (Summary/EventSample) with System.Text.Json source generation.</Description>
     <PackageId>KeelMatrix.QueryWatch.Contracts</PackageId>
+    <PackageTags>querywatch;contracts;json;schema;source-generator</PackageTags>
+    <PackageProjectUrl>https://github.com/KeelMatrix/QueryWatch/tree/main/src/KeelMatrix.QueryWatch.Contracts</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Authors>KeelMatrix</Authors>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <!-- Release promotes warnings to errors -->
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
   
   <!-- We reference System.Text.Json so the source generator runs on all TFMs -->

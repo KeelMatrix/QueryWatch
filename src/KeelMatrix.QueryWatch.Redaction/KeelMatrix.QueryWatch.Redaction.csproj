@@ -10,7 +10,9 @@
     <EnablePublicApiAnalyzers>true</EnablePublicApiAnalyzers>
     <Description>Redaction primitives for KeelMatrix.QueryWatch: fast, safe, centralized masking of PII/secrets/noise.</Description>
     <PackageId>KeelMatrix.QueryWatch.Redaction</PackageId>
-    <RepositoryUrl>https://example.invalid/KeelMatrix/QueryWatch</RepositoryUrl>
+    <PackageTags>querywatch;redaction;pii;secret-masking;sql;privacy;security</PackageTags>
+    <RepositoryUrl>https://github.com/KeelMatrix/QueryWatch</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/KeelMatrix/QueryWatch/tree/main/src/KeelMatrix.QueryWatch.Redaction</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
@@ -29,12 +31,5 @@
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>KeelMatrix.QueryWatch.Tests</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
 </Project>
-
-
 

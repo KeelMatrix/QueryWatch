@@ -1,73 +1,123 @@
 # QueryWatch
 
-Guardrail your **database queries** in tests & CI. Capture executed SQL, enforce **budgets** (counts & timings), and fail builds on regressions. Works with **ADO.NET**, **Dapper**, and **EF Core**.
+QueryWatch is a .NET library for catching database-query regressions in tests and CI before they reach production. It records executed SQL, counts queries, measures timings, exports JSON summaries, and lets you fail builds on budget violations.
 
-**Quick links:**  
-- 👉 [Quick Start — Samples (local)](#quick-start--samples-local)  
-- 👉 [EF Core wiring](#ef-core-wiring) · [Dapper wiring](#dapper-wiring) · [ADO.NET wiring](#adonet-wiring)  
-- 👉 [CLI flags](#cli) · [Troubleshooting](#troubleshooting)  
+Works with:
+- ADO.NET
+- Dapper
+- EF Core
 
----
+## Why Use It
 
-## 5-minute success (tests)
+QueryWatch is designed for test-time guardrails, not production profiling dashboards.
 
-Use a `QueryWatchSession`, then export JSON and assert budgets directly.
+Typical use cases:
+- Catch N+1 regressions introduced by ORM changes
+- Enforce per-test query-count budgets
+- Fail CI when average or total SQL time drifts upward
+- Export machine-readable summaries for baselines and PR reporting
+- Capture parameter shape metadata without storing parameter values
 
-``` csharp
+## Packages
+
+| Package | Purpose |
+| --- | --- |
+| `KeelMatrix.QueryWatch` | Core recording, assertions, JSON export, ADO.NET and Dapper wrapping |
+| `KeelMatrix.QueryWatch.EfCore` | EF Core interceptor and `UseQueryWatch(...)` integration |
+| `KeelMatrix.QueryWatch.Redaction` | Query-text redactors for masking secrets, PII, and noisy tokens |
+| `KeelMatrix.QueryWatch.Contracts` | JSON contract types and source-generated serialization context |
+
+## Install
+
+Core only:
+
+```bash
+dotnet add package KeelMatrix.QueryWatch
+```
+
+EF Core integration:
+
+```bash
+dotnet add package KeelMatrix.QueryWatch
+dotnet add package KeelMatrix.QueryWatch.EfCore
+```
+
+Optional redaction helpers:
+
+```bash
+dotnet add package KeelMatrix.QueryWatch.Redaction
+```
+
+## 5-Minute Quick Start
+
+```csharp
 using KeelMatrix.QueryWatch;
 using KeelMatrix.QueryWatch.Assertions;
 using KeelMatrix.QueryWatch.Reporting;
 
 using QueryWatchSession session = new();
 
-// Wrap your connection so commands are recorded
 using var conn = rawConnection.WithQueryWatch(session);
 
-// ... run your code that hits the DB ...
+// Run code that talks to the database.
 
-// Finalize session
 QueryWatchReport report = session.Complete();
 
-// Export JSON for the CLI
-QueryWatchJson.ExportToFile(report, "artifacts/qwatch.report.json", sampleTop: 200);
+report.ShouldHaveExecutedAtMost(20);
+report.ShouldHaveMaxAverageTime(TimeSpan.FromMilliseconds(15));
 
-// Enforce budgets in tests
-report.ShouldHaveExecutedAtMost(50);
-report.ShouldHaveMaxAverageTime(TimeSpan.FromMilliseconds(25));
-report.ShouldHaveMaxTotalTime(TimeSpan.FromMilliseconds(30));
+QueryWatchJson.ExportToFile(report, "artifacts/qwatch.report.json", sampleTop: 200);
 ```
 
-The file `artifacts/qwatch.report.json` is now ready for the CLI gate.
+The exported JSON can be consumed by the CLI in CI.
 
----
+## Real-World Scenarios
 
-## Quick Start — Samples (local)
+### Prevent accidental N+1 queries
 
-This repo ships three tiny sample apps (EF Core, ADO.NET, Dapper) that **consume local packages** you build from source.
+Wrap the test scope, execute the application code, and assert the query count stays below a fixed threshold.
 
-1. **Pack the libraries** (run **at repo root**):
+### Gate pull requests on SQL budgets
+
+Export a summary file during tests, then run the CLI in GitHub Actions to fail the build if query counts or timings regress.
+
+### Track parameter shape safely
+
+Enable parameter-shape capture to understand whether code is issuing parameterized commands, without persisting sensitive parameter values.
+
+### Normalize SQL before comparisons
+
+Add redactors to remove secrets, GUID noise, timestamps, or tokens so CI diffs focus on structural query changes.
+
+## Quick Start - Samples (Local)
+
+This repo ships three sample apps that consume local packages built from source.
+
+1. Pack the libraries at the repo root:
+
    ```bash
    dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
    dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
    dotnet pack ./src/KeelMatrix.QueryWatch.Redaction/KeelMatrix.QueryWatch.Redaction.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
    ```
-2. **Install local packages to samples** (pins to `../artifacts/packages` via `samples/NuGet.config`):
-   - Windows (PowerShell): `pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1`  
-   - Linux/macOS (bash): `bash build/Dev-PackInstallSamples.sh`
-3. **Run a sample** (EF example shown):
+
+2. Install local packages into the sample apps:
+   - PowerShell: `pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1`
+   - bash: `bash build/Dev-PackInstallSamples.sh`
+
+3. Run a sample:
+
    ```bash
    dotnet run --project ./samples/EFCore.Sqlite/EFCore.Sqlite.csproj -c Release
    ```
-4. **Gate with the CLI**:
+
+4. Gate the generated summary with the CLI:
+
    ```bash
    dotnet run --project ./tools/KeelMatrix.QueryWatch.Cli -- --input ./samples/EFCore.Sqlite/bin/Release/net8.0/artifacts/qwatch.ef.json --max-queries 50
    ```
 
-> CI uses the same flow and restores using `samples/NuGet.config` so **samples build after `dotnet pack` with no tweaks**.
-
----
-
-## EF Core wiring
+## EF Core Wiring
 
 ```csharp
 using KeelMatrix.QueryWatch;
@@ -78,19 +128,18 @@ using var session = new QueryWatchSession();
 
 var options = new DbContextOptionsBuilder<MyDbContext>()
     .UseSqlite("Data Source=:memory:")
-    .UseQueryWatch(session)    // adds the interceptor
+    .UseQueryWatch(session)
     .Options;
 
-// ... run workload ...
+// Run workload...
 
 var report = session.Complete();
 QueryWatchJson.ExportToFile(report, "artifacts/ef.json", sampleTop: 200);
 ```
-> Interceptor only records **executed** commands. Use `QueryWatchOptions` on the session to tune capture (text, parameter shapes, etc.).
 
----
+The EF Core interceptor records executed commands only. Use `QueryWatchOptions` to tune SQL text capture, sampling, and parameter-shape capture.
 
-## Dapper wiring
+## Dapper Wiring
 
 ```csharp
 using KeelMatrix.QueryWatch;
@@ -101,20 +150,16 @@ using var session = new QueryWatchSession();
 await using var raw = new SqliteConnection("Data Source=:memory:");
 await raw.OpenAsync();
 
-// Wrap the provider connection so Dapper commands are recorded
 using var conn = raw.WithQueryWatch(session);
-
 var rows = await conn.QueryAsync("SELECT 1");
 
 var report = session.Complete();
 QueryWatchJson.ExportToFile(report, "artifacts/dapper.json", sampleTop: 200);
 ```
 
-> The extension returns the **ADO wrapper** when possible for high‑fidelity recording; otherwise it falls back to a Dapper‑specific wrapper.
+If the underlying connection is a `DbConnection`, QueryWatch uses the higher-fidelity ADO.NET wrapper automatically.
 
----
-
-## ADO.NET wiring
+## ADO.NET Wiring
 
 ```csharp
 using KeelMatrix.QueryWatch;
@@ -125,9 +170,8 @@ using var session = new QueryWatchSession();
 await using var raw = new SqliteConnection("Data Source=:memory:");
 await raw.OpenAsync();
 
-// Wrap the provider connection so ADO.NET commands are recorded
 using var conn = raw.WithQueryWatch(session);
-using var cmd  = conn.CreateCommand();
+using var cmd = conn.CreateCommand();
 cmd.CommandText = "SELECT 1";
 await cmd.ExecuteNonQueryAsync();
 
@@ -135,22 +179,39 @@ var report = session.Complete();
 QueryWatchJson.ExportToFile(report, "artifacts/ado.json", sampleTop: 200);
 ```
 
----
+## Redaction
 
-## Budgets (counts & timing)
+If captured SQL can include secrets, tokens, email addresses, or noisy identifiers, add `KeelMatrix.QueryWatch.Redaction` and configure redactors on `QueryWatchOptions`.
 
-At **test time** (scope) you can enforce `maxQueries`, `maxAverage`, `maxTotal`. At **CI time** use the CLI for stronger rules including **per‑pattern budgets**. Patterns support wildcards (`*`, `?`) or `regex:` prefix.
+```csharp
+using KeelMatrix.QueryWatch;
+using KeelMatrix.QueryWatch.Redaction;
 
-Example per‑pattern budgets:
+var options = new QueryWatchOptions()
+    .UseRecommendedRedactors(includeTimestamps: false, includeIpAddresses: false, includePhone: false);
+```
+
+## Budgets
+
+At test time, enforce budgets directly on `QueryWatchReport`.
+
+At CI time, use the CLI for:
+- total-query budgets
+- average-duration budgets
+- total-duration budgets
+- baseline comparisons
+- per-pattern budgets
+
+Per-pattern budgets support wildcards (`*`, `?`) or a `regex:` prefix.
+
+Examples:
 
 ```bash
 --budget "SELECT * FROM Users*=1"
 --budget "regex:^UPDATE Orders SET=3"
 ```
 
-> If your JSON is **top‑N sampled**, budgets evaluate only over those events. Increase `sampleTop` in your export to tighten guarantees.
-
----
+If a summary is top-N sampled, budgets are evaluated only over those captured events. Increase `sampleTop` if you need stricter guarantees.
 
 ## CLI
 
@@ -171,23 +232,27 @@ Example per‑pattern budgets:
 
 <!-- END:CLI_FLAGS -->
 
-### Multi‑file support
-Repeat `--input` to aggregate multiple JSONs (e.g., per‑project reports in a mono‑repo). Budgets evaluate on the aggregate.
-
-### GitHub PR summary
-When run inside GitHub Actions, the CLI writes a Markdown table to the **Step Summary** automatically.
-
----
+Multi-file support:
+- repeat `--input` to aggregate summaries from multiple test projects
+- compare current results against a baseline summary
+- write GitHub Actions step summaries automatically when running in CI
 
 ## Troubleshooting
 
-- **“Budget violations:” but no pattern table** → you didn’t pass any `--budget`, or your JSON was **heavily sampled**. Re‑export with higher `sampleTop` (e.g., 200–500).  
-- **Baselines seem too strict** → tolerances are **percent of baseline**. Ensure your baseline is representative; use `--baseline-allow-percent` to allow small drift.  
-- **CLI help in README looks stale** → run `./build/Update-ReadmeFlags.ps1` (or `--print-flags-md`) to refresh the block between markers.  
-- **Hot path text capture** → disable globally: `QueryWatchOptions.CaptureSqlText = false` (applies to ADO.NET, Dapper, and EF Core).  
-- **Parameter metadata** → **ON by default**. Set `QueryWatchOptions.CaptureParameterShape=false` (emits `event.meta.parameters`), never values.
+- Pattern budgets look incomplete: your summary may be sampled too aggressively. Re-export with a higher `sampleTop`.
+- Baseline checks are noisy: use `--baseline-allow-percent` and keep baselines representative.
+- CLI flags in the README look stale: refresh the generated block with `build/Update-ReadmeFlags.ps1`.
+- You do not want SQL text on a hot path: set `QueryWatchOptions.CaptureSqlText = false`.
+- You want metadata without secret leakage: use parameter-shape capture, not parameter-value capture.
 
----
+## Privacy
+
+QueryWatch uses `KeelMatrix.Telemetry` transitively for minimal anonymous usage telemetry.
+
+See:
+- [PRIVACY.md](PRIVACY.md) for the QueryWatch-specific summary
+- [KeelMatrix.Telemetry README](https://github.com/KeelMatrix/Telemetry#readme) for the maintained telemetry behavior and opt-out details
 
 ## License
+
 MIT
