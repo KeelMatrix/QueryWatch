@@ -20,7 +20,8 @@
       * If an API is TFM-specific, annotate the line with a trailing comment, e.g.:
             // TFM: net8.0
             // TFM: netstandard2.0
-      * To add new public members: run the bump script (build/bump-api.ps1 or .sh), then review the diff.
+      * To add or change public members: update the PublicAPI.Shipped.txt / PublicAPI.Unshipped.txt
+        files in the affected project and review the diff.
   -->
   <PropertyGroup>
     <!-- Only provide default TFMs for packable projects when the project has not set TargetFramework/TargetFrameworks. -->
@@ -48,7 +49,7 @@
     <PackageLicenseExpression Condition="'$(PackageLicenseExpression)'==''">MIT</PackageLicenseExpression>
     <PackageProjectUrl Condition="'$(PackageProjectUrl)'==''">https://github.com/KeelMatrix/QueryWatch#readme</PackageProjectUrl>
     <PackageReadmeFile Condition="'$(PackageReadmeFile)'=='' and Exists('$(MSBuildProjectDirectory)\README.md')">README.md</PackageReadmeFile>
-    <PackageIcon Condition="'$(PackageIcon)'=='' and Exists('$(MSBuildProjectDirectory)\icon.png')">icon.png</PackageIcon>
+    <PackageIcon Condition="'$(PackageIcon)'=='' and Exists('$(MSBuildThisFileDirectory)icon.png')">icon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>

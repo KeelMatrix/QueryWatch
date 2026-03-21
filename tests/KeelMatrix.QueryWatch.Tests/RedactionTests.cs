@@ -1,11 +1,12 @@
 // Copyright (c) KeelMatrix
 
 using FluentAssertions;
+using KeelMatrix.Redaction;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
     public partial class RedactionTests {
-        private sealed partial class DigitsToAsterisks : KeelMatrix.QueryWatch.IQueryTextRedactor {
+        private sealed partial class DigitsToAsterisks : ITextRedactor {
             public string Redact(string input) => RedactRegex().Replace(input ?? string.Empty, "*");
 
             [System.Text.RegularExpressions.GeneratedRegex(@"\d")]

@@ -1,5 +1,7 @@
 // Copyright (c) KeelMatrix
 
+using KeelMatrix.Redaction;
+
 namespace KeelMatrix.QueryWatch {
     /// <summary>
     /// Options for a monitoring session.
@@ -13,7 +15,7 @@ namespace KeelMatrix.QueryWatch {
         /// <summary>
         /// Redactors applied to captured SQL text in the order listed.
         /// </summary>
-        public IList<IQueryTextRedactor> Redactors { get; } = [];
+        public IList<ITextRedactor> Redactors { get; } = [];
 
         /// <summary>
         /// Whether to capture only parameter shapes (names, DbType, size, direction), never values. Defaults to <c>true</c>.

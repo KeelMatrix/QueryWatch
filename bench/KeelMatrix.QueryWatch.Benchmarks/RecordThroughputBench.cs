@@ -4,6 +4,7 @@
 // Compares production "lock + copy-on-stop" vs an alternative "ConcurrentQueue + snapshot".
 using System.Collections.Concurrent;
 using BenchmarkDotNet.Attributes;
+using KeelMatrix.Redaction;
 
 namespace KeelMatrix.QueryWatch.Benchmarks {
 
@@ -69,7 +70,7 @@ namespace KeelMatrix.QueryWatch.Benchmarks {
             string text = string.Empty;
             if (_options.CaptureSqlText) {
                 text = commandText ?? string.Empty;
-                foreach (IQueryTextRedactor r in _options.Redactors) text = r.Redact(text);
+                foreach (ITextRedactor r in _options.Redactors) text = r.Redact(text);
             }
 
             // second check to minimize recording after stop (not strictly needed for the benchmark)

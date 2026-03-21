@@ -24,7 +24,7 @@ Typical use cases:
 | --- | --- |
 | `KeelMatrix.QueryWatch` | Core recording, assertions, JSON export, ADO.NET and Dapper wrapping |
 | `KeelMatrix.QueryWatch.EfCore` | EF Core interceptor and `UseQueryWatch(...)` integration |
-| `KeelMatrix.QueryWatch.Redaction` | Query-text redactors for masking secrets, PII, and noisy tokens |
+| `KeelMatrix.Redaction` | Query-text redactors for masking secrets, PII, and noisy tokens |
 | `KeelMatrix.QueryWatch.Contracts` | JSON contract types and source-generated serialization context |
 
 ## Install
@@ -45,8 +45,10 @@ dotnet add package KeelMatrix.QueryWatch.EfCore
 Optional redaction helpers:
 
 ```bash
-dotnet add package KeelMatrix.QueryWatch.Redaction
+dotnet add package KeelMatrix.Redaction
 ```
+
+Local development restores `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` from the repo feed at `./artifacts/packages`. Stage those packages from their sibling repos before a fresh QueryWatch restore/build.
 
 ## 5-Minute Quick Start
 
@@ -92,20 +94,13 @@ Add redactors to remove secrets, GUID noise, timestamps, or tokens so CI diffs f
 ## Quick Start - Samples (Local)
 
 This repo ships three sample apps that consume local packages built from source.
+The local sample workflow expects sibling checkouts of `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` next to this repo under `../KeelMatrix.Redaction/app` and `../KeelMatrix.Telemetry/app`.
 
-1. Pack the libraries at the repo root:
-
-   ```bash
-   dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
-   dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
-   dotnet pack ./src/KeelMatrix.QueryWatch.Redaction/KeelMatrix.QueryWatch.Redaction.csproj -c Release --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
-   ```
-
-2. Install local packages into the sample apps:
+1. Build and pack the local packages used by the samples:
    - PowerShell: `pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1`
    - bash: `bash build/Dev-PackInstallSamples.sh`
 
-3. Run a sample:
+2. Run a sample:
 
    ```bash
    dotnet run --project ./samples/EFCore.Sqlite/EFCore.Sqlite.csproj -c Release
@@ -181,11 +176,12 @@ QueryWatchJson.ExportToFile(report, "artifacts/ado.json", sampleTop: 200);
 
 ## Redaction
 
-If captured SQL can include secrets, tokens, email addresses, or noisy identifiers, add `KeelMatrix.QueryWatch.Redaction` and configure redactors on `QueryWatchOptions`.
+If captured SQL can include secrets, tokens, email addresses, or noisy identifiers, add `KeelMatrix.Redaction` and configure redactors on `QueryWatchOptions`.
 
 ```csharp
 using KeelMatrix.QueryWatch;
 using KeelMatrix.QueryWatch.Redaction;
+using KeelMatrix.Redaction;
 
 var options = new QueryWatchOptions()
     .UseRecommendedRedactors(includeTimestamps: false, includeIpAddresses: false, includePhone: false);

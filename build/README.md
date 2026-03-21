@@ -7,11 +7,13 @@ Run from the **repo root** unless otherwise noted.
 
 ## 📦 What’s Here
 
-- **`Dev-PackInstallSamples.ps1` / `.sh`** — Restore, build, and **pack** `KeelMatrix.QueryWatch*` libraries, then restore **samples** against the locally packed feed (`./artifacts/packages`).  
+- **`Dev-PackInstallSamples.ps1` / `.sh`** — Restore, build, and **pack** the local `KeelMatrix.QueryWatch`, `KeelMatrix.Redaction`, and `KeelMatrix.Telemetry` packages, then restore **samples** against the locally packed feed (`./artifacts/packages`).  
   → `build/Dev-PackInstallSamples.ps1` • `build/Dev-PackInstallSamples.sh`
 
-- **`Dev-CleanPackInstallSamples.ps1` / `.sh`** — Same as above, but first **cleans** local `KeelMatrix.QueryWatch*.nupkg` / `.snupkg` before rebuilding & packing. Ideal when iterating locally.  
+- **`Dev-CleanPackInstallSamples.ps1` / `.sh`** — Same as above, but first **cleans** local `KeelMatrix.QueryWatch*`, `KeelMatrix.Redaction*`, and `KeelMatrix.Telemetry*` packages before rebuilding & packing. Ideal when iterating locally.  
   → `build/Dev-CleanPackInstallSamples.ps1` • `build/Dev-CleanPackInstallSamples.sh`
+
+These scripts bootstrap the local feed in the order QueryWatch now needs: stage `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` first, then restore/build/pack QueryWatch against those packages.
 
 - **`Update-ReadmeFlags.ps1`** — Builds the CLI and updates the README block between  
   `<!-- BEGIN:CLI_FLAGS -->` and `<!-- END:CLI_FLAGS -->` using `--print-flags-md`.  

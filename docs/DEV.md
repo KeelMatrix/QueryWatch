@@ -10,6 +10,7 @@
 - .NET SDK 8.x or newer installed (`dotnet --info` should show a compatible SDK).
 - Windows PowerShell (`pwsh`) recommended, but Bash works too (Linux/macOS).
 - Git (for SourceLink & versioning).
+- Local QueryWatch development expects sibling checkouts of `../KeelMatrix.Redaction/app` and `../KeelMatrix.Telemetry/app` so their packages can be staged into `./artifacts/packages`.
 - For EF Core tests: nothing extra — they use SQLite in-memory.
 
 ```bash
@@ -21,6 +22,9 @@ dotnet --info
 ## 1) Build & Test (fast iteration)
 
 ```bash
+# stage local dependency packages first
+pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
+
 # restore once
 dotnet restore KeelMatrix.QueryWatch.sln
 
@@ -188,14 +192,8 @@ Read more in `bench/BENCHMARKS.md`.
 
 - **Samples** (consume your locally packed packages):
   ```bash
-  # From repo root
-  dotnet restore ./KeelMatrix.QueryWatch.sln
-  dotnet build ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --no-restore
-  dotnet build ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --no-restore
-  dotnet pack  ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg -o ./artifacts/packages
-  dotnet pack  ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg -o ./artifacts/packages
-
-  # Then run the sample setup
+  # From repo root, with sibling checkouts at ../KeelMatrix.Redaction/app
+  # and ../KeelMatrix.Telemetry/app
   pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
   dotnet run --project samples/EFCore.Sqlite/EFCore.Sqlite.csproj -c Release
   ```

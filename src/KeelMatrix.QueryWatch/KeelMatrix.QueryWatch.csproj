@@ -63,8 +63,6 @@
     <!-- Exclude moved redaction implementations and helpers -->
     <Compile Remove="Redaction\**\*.cs" />
     <Compile Remove="Redaction\*.cs" />
-    <Compile Remove="Security\RedactionHelper.cs" />
-    <Compile Remove="IQueryTextRedactor.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -73,8 +71,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Reference the new Redaction implementations assembly for type forwarders and extension usage -->
-    <ProjectReference Include="..\KeelMatrix.QueryWatch.Redaction\KeelMatrix.QueryWatch.Redaction.csproj" />
+    <PackageReference Include="KeelMatrix.Redaction" />
+    <PackageReference Include="KeelMatrix.Telemetry" />
   </ItemGroup>
 
 </Project>

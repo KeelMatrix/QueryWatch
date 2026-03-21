@@ -52,7 +52,7 @@ QueryWatchJson.ExportToFile(report, "artifacts/qwatch.json", sampleTop: 200);
 ## Related Packages
 
 - EF Core integration: `KeelMatrix.QueryWatch.EfCore`
-- Query redaction helpers: `KeelMatrix.QueryWatch.Redaction`
+- Query redaction helpers: `KeelMatrix.Redaction`
 - JSON contracts: `KeelMatrix.QueryWatch.Contracts`
 
 ## Documentation

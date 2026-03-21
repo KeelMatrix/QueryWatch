@@ -1,15 +1,16 @@
 // Copyright (c) KeelMatrix
 
 using FluentAssertions;
+using KeelMatrix.Redaction;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests {
     public class QueryWatchRedactorOrderTests {
-        private sealed class ReplaceFooWithBar : KeelMatrix.QueryWatch.IQueryTextRedactor {
+        private sealed class ReplaceFooWithBar : ITextRedactor {
             public string Redact(string input) => (input ?? string.Empty).Replace("foo", "bar");
         }
 
-        private sealed class ReplaceBarWithBaz : KeelMatrix.QueryWatch.IQueryTextRedactor {
+        private sealed class ReplaceBarWithBaz : ITextRedactor {
             public string Redact(string input) => (input ?? string.Empty).Replace("bar", "baz");
         }
 

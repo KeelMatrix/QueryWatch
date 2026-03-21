@@ -1,12 +1,10 @@
 <Project>
   <!-- Custom build targets shared by all projects -->
-  <Target Name="AttachPackageReadmeAndIcon" BeforeTargets="Pack">
-    <!-- Pack README.md and icon.png into the NuGet package root if they exist -->
-    <ItemGroup>
-      <None Include="README.md" Pack="true" PackagePath="" Condition="Exists('README.md')" />
-      <None Include="icon.png" Pack="true" PackagePath="" Condition="Exists('icon.png')" />
-    </ItemGroup>
-  </Target>
+  <!-- Pack the project README and repo icon into the NuGet package root when present. -->
+  <ItemGroup Condition="'$(IsPackable)'=='true'">
+    <None Include="$(MSBuildProjectDirectory)\README.md" Pack="true" PackagePath="" Link="README.md" Condition="Exists('$(MSBuildProjectDirectory)\README.md')" />
+    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath="" Link="icon.png" Condition="Exists('$(MSBuildThisFileDirectory)icon.png') and '$(PackageIcon)'!=''" />
+  </ItemGroup>
   
   <PropertyGroup Condition="'$(IsTestProject)'=='true'">
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
@@ -17,8 +15,8 @@
 <!--
   Public API maintenance
   ######################
-  - Run ./build/bump-api.ps1 (Windows/PowerShell) or ./build/bump-api.sh (macOS/Linux)
-    after adding public members to automatically update *PublicAPI.Unshipped.txt* files.
+  - After adding or changing public members, update the *PublicAPI.Shipped.txt*
+    and *PublicAPI.Unshipped.txt* files in the affected project.
   - Keep only a single shipped/unshipped pair per project. If an API is TFM-specific,
     append a comment to the API line:  // TFM: net8.0  or  // TFM: netstandard2.0
 -->

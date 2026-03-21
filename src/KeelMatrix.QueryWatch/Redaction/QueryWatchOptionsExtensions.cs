@@ -1,5 +1,7 @@
 // Copyright (c) KeelMatrix
 
+using KeelMatrix.Redaction;
+
 namespace KeelMatrix.QueryWatch.Redaction {
     /// <summary>
     /// Extensions for <see cref="QueryWatchOptions"/> to add built‑in redactors.

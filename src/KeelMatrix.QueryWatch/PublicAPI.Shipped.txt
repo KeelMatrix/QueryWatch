@@ -9,7 +9,7 @@ KeelMatrix.QueryWatch.QueryWatchOptions
 KeelMatrix.QueryWatch.QueryWatchOptions.CaptureSqlText.get -> bool
 KeelMatrix.QueryWatch.QueryWatchOptions.CaptureSqlText.set -> void
 KeelMatrix.QueryWatch.QueryWatchOptions.QueryWatchOptions() -> void
-KeelMatrix.QueryWatch.QueryWatchOptions.Redactors.get -> System.Collections.Generic.IList<KeelMatrix.QueryWatch.IQueryTextRedactor!>!
+KeelMatrix.QueryWatch.QueryWatchOptions.Redactors.get -> System.Collections.Generic.IList<KeelMatrix.Redaction.ITextRedactor!>!
 KeelMatrix.QueryWatch.QueryWatchReport
 KeelMatrix.QueryWatch.QueryWatchReport.AverageDuration.get -> System.TimeSpan
 KeelMatrix.QueryWatch.QueryWatchReport.Events.get -> System.Collections.Generic.IReadOnlyList<KeelMatrix.QueryWatch.QueryEvent!>!

@@ -1,7 +1,7 @@
 # Benchmarks
 
-This folder contains all **performance benchmarks** for the QueryWatch ecosystem.  
-We use [BenchmarkDotNet](https://benchmarkdotnet.org/) to validate perf regressions in our redactors and related components.
+This folder contains all **performance benchmarks** for the QueryWatch repo.  
+We use [BenchmarkDotNet](https://benchmarkdotnet.org/) to validate perf regressions in QueryWatch-specific components.
 
 ---
 
@@ -29,20 +29,20 @@ This will:
   pwsh -NoProfile -File bench/Run-Benchmarks.ps1
   ```
 
-- **Run everything from the RedactionBench class:**
+- **Run the record-throughput benchmark class:**
 
   ```powershell
   pwsh -NoProfile -File bench/Run-Benchmarks.ps1 `
-  -Filter "*RedactionBench.*" `
+  -Filter "*RecordThroughputBench.*" `
   -Job Default `
   -Framework net8.0 `
   -CoolDownSec 0
   ```
 
-- **Run only PhoneRedactor benchmarks:**
+- **Run only the record-throughput benchmark class:**
 
   ```powershell
-  pwsh -NoProfile -File bench/Run-Benchmarks.ps1 -Filter *Phone*
+  pwsh -NoProfile -File bench/Run-Benchmarks.ps1 -Filter *RecordThroughputBench*
   ```
 
 - **Use a shorter job (for quick iteration):**

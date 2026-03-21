@@ -1,6 +1,7 @@
 // Copyright (c) KeelMatrix
 
 using FluentAssertions;
+using KeelMatrix.Redaction;
 using KeelMatrix.QueryWatch.Redaction;
 using Xunit;
 
@@ -32,7 +33,7 @@ namespace KeelMatrix.QueryWatch.Tests.Redaction {
                 /* 123e4567-e89b-12d3-a456-426614174000 */
                 SELECT    1
             ";
-            foreach (IQueryTextRedactor red in opts.Redactors)
+            foreach (ITextRedactor red in opts.Redactors)
                 redacted = red.Redact(redacted);
 
             // whitespace normalized
