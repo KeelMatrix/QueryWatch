@@ -9,11 +9,26 @@ function Run {
   if ($LASTEXITCODE -ne 0) { throw "Command failed: $exe $($args -join ' ')" }
 }
 
+function Resolve-DependencyRepoRoot {
+  param(
+    [Parameter(Mandatory=$true)][string]$EnvVarName,
+    [Parameter(Mandatory=$true)][string]$FallbackRelativePath
+  )
+
+  # CI can override sibling checkout discovery with QW_*_REPO_ROOT.
+  $configured = [Environment]::GetEnvironmentVariable($EnvVarName)
+  if (-not [string]::IsNullOrWhiteSpace($configured)) {
+    return [System.IO.Path]::GetFullPath($configured)
+  }
+
+  return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $FallbackRelativePath))
+}
+
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
 
-$redactionRepoRoot = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "..\..\KeelMatrix.Redaction\app"))
-$telemetryRepoRoot = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "..\..\KeelMatrix.Telemetry\app"))
+$redactionRepoRoot = Resolve-DependencyRepoRoot -EnvVarName 'QW_REDACTION_REPO_ROOT' -FallbackRelativePath "..\..\KeelMatrix.Redaction\app"
+$telemetryRepoRoot = Resolve-DependencyRepoRoot -EnvVarName 'QW_TELEMETRY_REPO_ROOT' -FallbackRelativePath "..\..\KeelMatrix.Telemetry\app"
 $redactionProject = Join-Path $redactionRepoRoot "src\KeelMatrix.Redaction\KeelMatrix.Redaction.csproj"
 $telemetryProject = Join-Path $telemetryRepoRoot "src\KeelMatrix.Telemetry\KeelMatrix.Telemetry.csproj"
 

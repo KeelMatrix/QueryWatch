@@ -19,7 +19,7 @@ namespace KeelMatrix.QueryWatch.Contracts
     [JsonSerializable(typeof(EventSample))]
     [JsonSerializable(typeof(Dictionary<string, string>))]
     [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
-    public partial class QueryWatchJsonContext : JsonSerializerContext
+    internal partial class QueryWatchJsonContext : JsonSerializerContext
     {
     }
 }

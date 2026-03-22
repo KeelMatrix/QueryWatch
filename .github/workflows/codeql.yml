@@ -28,6 +28,9 @@ jobs:
     #   - https://gh.io/using-larger-runners (GitHub.com only)
     # Consider using larger runners or machines with greater resources for possible analysis time improvements.
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    env:
+      QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
+      QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
 
     # Ensure the SARIF upload can succeed.
     permissions:
@@ -51,8 +54,7 @@ jobs:
 
           # Primary language of this repo (KeelMatrix.QueryWatch)
           - language: csharp
-            # Let CodeQL discover and build your solution automatically.
-            build-mode: autobuild
+            build-mode: manual
         # CodeQL supports the following values keywords for 'language': 'actions', 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'rust', 'swift'
         # Use `c-cpp` to analyze code written in C, C++ or both
         # Use 'java-kotlin' to analyze code written in Java, Kotlin or both
@@ -66,13 +68,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Checkout KeelMatrix.Redaction
+        if: matrix.language == 'csharp'
+        uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Redaction
+          path: _deps/KeelMatrix.Redaction/app
+
+      - name: Checkout KeelMatrix.Telemetry
+        if: matrix.language == 'csharp'
+        uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Telemetry
+          path: _deps/KeelMatrix.Telemetry/app
+
       # Add any setup steps before running the `github/codeql-action/init` action.
       # This includes steps like installing compilers or runtimes (`actions/setup-node`
       # or others). This is typically only required for manual builds.
       # - name: Setup runtime (example)
       #   uses: actions/setup-example@v1
 
-      # Ensure .NET 8 SDK is present for autobuild of the C# solution.
+      # Ensure .NET 8 SDK is present for the manual C# build.
       - name: Set up .NET 8
         if: matrix.language == 'csharp'
         uses: actions/setup-dotnet@v4
@@ -92,21 +108,12 @@ jobs:
           # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
           queries: +security-extended,security-and-quality
 
-      # If the analyze step fails for one of the languages you are analyzing with
-      # "We were unable to automatically build your code", modify the matrix above
-      # to set the build mode to "manual" for that language. Then modify this step
-      # to build your code.
-      # ℹ️ Command-line programs to run using the OS shell.
-      # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
-      - if: matrix.build-mode == 'manual'
+      - if: matrix.language == 'csharp'
         shell: bash
         run: |
-          echo 'If you are using a "manual" build mode for one or more of the' \
-            'languages you are analyzing, replace this with the commands to build' \
-            'your code, for example:'
-          echo '  dotnet restore KeelMatrix.QueryWatch.sln'
-          echo '  dotnet build   KeelMatrix.QueryWatch.sln -c Release --no-restore'
-          exit 1
+          bash build/Dev-PackInstallSamples.sh
+          dotnet restore KeelMatrix.QueryWatch.sln
+          dotnet build KeelMatrix.QueryWatch.sln -c Release --no-restore
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3

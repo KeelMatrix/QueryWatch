@@ -32,10 +32,14 @@ SCRIPT_DIR="$( cd -- "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$REPO_ROOT"
 
-REDACTION_REPO_ROOT="$(cd "$REPO_ROOT/../../KeelMatrix.Redaction/app" && pwd)"
-TELEMETRY_REPO_ROOT="$(cd "$REPO_ROOT/../../KeelMatrix.Telemetry/app" && pwd)"
+# CI can override sibling checkout discovery with QW_*_REPO_ROOT.
+REDACTION_REPO_ROOT="${QW_REDACTION_REPO_ROOT:-$REPO_ROOT/../../KeelMatrix.Redaction/app}"
+TELEMETRY_REPO_ROOT="${QW_TELEMETRY_REPO_ROOT:-$REPO_ROOT/../../KeelMatrix.Telemetry/app}"
 REDACTION_PROJECT="$REDACTION_REPO_ROOT/src/KeelMatrix.Redaction/KeelMatrix.Redaction.csproj"
 TELEMETRY_PROJECT="$TELEMETRY_REPO_ROOT/src/KeelMatrix.Telemetry/KeelMatrix.Telemetry.csproj"
+
+[[ -f "$REDACTION_PROJECT" ]] || { echo "Missing local dependency project: $REDACTION_PROJECT" >&2; exit 1; }
+[[ -f "$TELEMETRY_PROJECT" ]] || { echo "Missing local dependency project: $TELEMETRY_PROJECT" >&2; exit 1; }
 
 step ".NET SDK info"
 run dotnet --info >/dev/null

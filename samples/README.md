@@ -12,7 +12,7 @@ Tiny apps that consume the local `KeelMatrix.QueryWatch*` packages, plus the sha
 ## Start here
 Follow the **[Quick Start — Samples (local)](../README.md#quick-start--samples-local)** in the root README.
 
-> Keep sibling checkouts of `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` next to this repo, then run `pwsh -NoProfile -File ../build/Dev-PackInstallSamples.ps1` (or `bash ../build/Dev-PackInstallSamples.sh`) once from the repo root to stage all local packages. No other tweaks are needed.
+> Until `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` are published to NuGet.org, bootstrap them into `../artifacts/packages` first. Local development uses sibling checkouts at `../../KeelMatrix.Redaction/app` and `../../KeelMatrix.Telemetry/app` by default; CI can point the same scripts at checked-out dependency repos with `QW_REDACTION_REPO_ROOT` and `QW_TELEMETRY_REPO_ROOT`. Then run `pwsh -NoProfile -File ../build/Dev-PackInstallSamples.ps1` (or `bash ../build/Dev-PackInstallSamples.sh`) once from the repo root.
 
 ### Run a sample
 ```bash

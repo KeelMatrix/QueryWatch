@@ -24,8 +24,6 @@ Typical use cases:
 | --- | --- |
 | `KeelMatrix.QueryWatch` | Core recording, assertions, JSON export, ADO.NET and Dapper wrapping |
 | `KeelMatrix.QueryWatch.EfCore` | EF Core interceptor and `UseQueryWatch(...)` integration |
-| `KeelMatrix.Redaction` | Query-text redactors for masking secrets, PII, and noisy tokens |
-| `KeelMatrix.QueryWatch.Contracts` | JSON contract types and source-generated serialization context |
 
 ## Install
 
@@ -49,6 +47,8 @@ dotnet add package KeelMatrix.Redaction
 ```
 
 Local development restores `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` from the repo feed at `./artifacts/packages`. Stage those packages from their sibling repos before a fresh QueryWatch restore/build.
+
+Until `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` are published to NuGet.org, clean CI must bootstrap them into `./artifacts/packages` before any QueryWatch restore/build/test/pack step. Local development can rely on sibling checkouts, while CI uses `QW_REDACTION_REPO_ROOT` and `QW_TELEMETRY_REPO_ROOT` to point the bootstrap scripts at checked-out dependency repos.
 
 ## 5-Minute Quick Start
 
@@ -94,7 +94,7 @@ Add redactors to remove secrets, GUID noise, timestamps, or tokens so CI diffs f
 ## Quick Start - Samples (Local)
 
 This repo ships three sample apps that consume local packages built from source.
-The local sample workflow expects sibling checkouts of `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` next to this repo under `../KeelMatrix.Redaction/app` and `../KeelMatrix.Telemetry/app`.
+The bootstrap scripts resolve `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` from sibling checkouts under `../../KeelMatrix.Redaction/app` and `../../KeelMatrix.Telemetry/app` by default, or from `QW_REDACTION_REPO_ROOT` and `QW_TELEMETRY_REPO_ROOT` when CI overrides those locations.
 
 1. Build and pack the local packages used by the samples:
    - PowerShell: `pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1`

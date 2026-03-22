@@ -3,16 +3,16 @@
 using KeelMatrix.QueryWatch.Contracts;
 
 namespace KeelMatrix.QueryWatch.Cli.Core {
-    public sealed class Aggregated {
+    internal sealed class Aggregated {
         public int Files { get; private set; }
         public int TotalQueries { get; private set; }
         public double TotalDurationMs { get; private set; }
         public double AverageDurationMs { get; private set; }
-        public List<EventSample> Events { get; } = [];
+        internal List<EventSample> Events { get; } = [];
 
         public int SampledEventsCount => Events?.Count ?? 0;
 
-        public static Aggregated From(IEnumerable<Summary> inputs) {
+        internal static Aggregated From(IEnumerable<Summary> inputs) {
             List<Summary> list = [.. inputs];
             Aggregated agg = new() {
                 Files = list.Count,
@@ -26,7 +26,7 @@ namespace KeelMatrix.QueryWatch.Cli.Core {
             return agg;
         }
 
-        public Summary ToSummary(
+        internal Summary ToSummary(
             DateTimeOffset? startedAt = null,
             DateTimeOffset? stoppedAt = null,
             IReadOnlyDictionary<string, string>? meta = null,

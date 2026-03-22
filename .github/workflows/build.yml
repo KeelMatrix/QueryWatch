@@ -13,6 +13,9 @@ jobs:
   supported-tfms:
     if: github.actor != 'dependabot[bot]'
     runs-on: ${{ matrix.os }}
+    env:
+      QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
+      QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
     strategy:
       fail-fast: false
       matrix:
@@ -22,9 +25,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Redaction
+          path: _deps/KeelMatrix.Redaction/app
+
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Telemetry
+          path: _deps/KeelMatrix.Telemetry/app
+
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
+      - name: Bootstrap local dependency feed (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
+
+      - name: Bootstrap local dependency feed (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: bash build/Dev-PackInstallSamples.sh
 
       - name: Restore
         run: dotnet restore KeelMatrix.QueryWatch.sln
@@ -43,7 +66,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet build ./src/KeelMatrix.QueryWatch.Contracts/KeelMatrix.QueryWatch.Contracts.csproj -c Release --no-restore -f netstandard2.0
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build ./src/KeelMatrix.QueryWatch.Redaction/KeelMatrix.QueryWatch.Redaction.csproj -c Release --no-restore -f netstandard2.0
           exit $LASTEXITCODE
 
   # Regular runnable tests across all major OSes.
@@ -51,19 +73,41 @@ jobs:
     if: github.actor != 'dependabot[bot]'
     needs: supported-tfms
     runs-on: ${{ matrix.os }}
+    env:
+      QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
+      QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
+      QWATCH__DISABLE_COMPOSE: "1"
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
     timeout-minutes: 20
-    env:
-      QWATCH__DISABLE_COMPOSE: "1"
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Redaction
+          path: _deps/KeelMatrix.Redaction/app
+
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Telemetry
+          path: _deps/KeelMatrix.Telemetry/app
 
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
+      - name: Bootstrap local dependency feed (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
+
+      - name: Bootstrap local dependency feed (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: bash build/Dev-PackInstallSamples.sh
 
       - name: Restore
         run: dotnet restore KeelMatrix.QueryWatch.sln
@@ -82,12 +126,29 @@ jobs:
     needs: unit-and-integration
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
+      QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Redaction
+          path: _deps/KeelMatrix.Redaction/app
+
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Telemetry
+          path: _deps/KeelMatrix.Telemetry/app
 
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
+      - name: Bootstrap local dependency feed
+        shell: bash
+        run: bash build/Dev-PackInstallSamples.sh
 
       # No manual docker steps needed; tests/Directory.Build.targets handles compose up/down
       - name: Run smoke tests

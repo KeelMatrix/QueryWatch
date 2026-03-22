@@ -5,8 +5,8 @@ using System.Text;
 using KeelMatrix.QueryWatch.Contracts;
 
 namespace KeelMatrix.QueryWatch.Cli.Core {
-    public static class StepSummaryBuilder {
-        public static string Build(
+    internal static class StepSummaryBuilder {
+        internal static string Build(
             Aggregated agg,
             int? maxQueries,
             double? maxAvgMs,

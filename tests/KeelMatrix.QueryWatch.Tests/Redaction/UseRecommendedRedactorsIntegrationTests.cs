@@ -1,8 +1,8 @@
 // Copyright (c) KeelMatrix
 
 using FluentAssertions;
-using KeelMatrix.Redaction;
 using KeelMatrix.QueryWatch.Redaction;
+using KeelMatrix.Redaction;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Tests.Redaction {

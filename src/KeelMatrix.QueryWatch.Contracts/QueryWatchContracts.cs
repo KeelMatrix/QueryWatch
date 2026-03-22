@@ -18,7 +18,7 @@ namespace KeelMatrix.QueryWatch.Contracts
     /// <summary>
     /// Wire contracts for QueryWatch JSON. Keep additive over time; do not remove or rename fields.
     /// </summary>
-    public sealed class Summary
+    internal sealed class Summary
     {
         [JsonPropertyName("schema")]
         public string Schema { get; init; } = "1.0.0";
@@ -47,7 +47,7 @@ namespace KeelMatrix.QueryWatch.Contracts
     }
 
     /// <summary>Minimal per-event sample to keep files small yet useful.</summary>
-    public sealed class EventSample
+    internal sealed class EventSample
     {
         [JsonPropertyName("at")]
         public DateTimeOffset At { get; init; }

@@ -10,7 +10,9 @@
 - .NET SDK 8.x or newer installed (`dotnet --info` should show a compatible SDK).
 - Windows PowerShell (`pwsh`) recommended, but Bash works too (Linux/macOS).
 - Git (for SourceLink & versioning).
-- Local QueryWatch development expects sibling checkouts of `../KeelMatrix.Redaction/app` and `../KeelMatrix.Telemetry/app` so their packages can be staged into `./artifacts/packages`.
+- Until `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` are published to NuGet.org, QueryWatch bootstrap scripts stage them into `./artifacts/packages` first.
+- Local sibling-checkout mode looks for `../../KeelMatrix.Redaction/app` and `../../KeelMatrix.Telemetry/app` relative to the QueryWatch repo root.
+- CI mode sets `QW_REDACTION_REPO_ROOT` and `QW_TELEMETRY_REPO_ROOT` to checked-out dependency repos before running the same bootstrap scripts.
 - For EF Core tests: nothing extra — they use SQLite in-memory.
 
 ```bash
@@ -192,8 +194,9 @@ Read more in `bench/BENCHMARKS.md`.
 
 - **Samples** (consume your locally packed packages):
   ```bash
-  # From repo root, with sibling checkouts at ../KeelMatrix.Redaction/app
-  # and ../KeelMatrix.Telemetry/app
+  # From repo root, with sibling checkouts at ../../KeelMatrix.Redaction/app
+  # and ../../KeelMatrix.Telemetry/app, or with QW_REDACTION_REPO_ROOT /
+  # QW_TELEMETRY_REPO_ROOT set by CI
   pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
   dotnet run --project samples/EFCore.Sqlite/EFCore.Sqlite.csproj -c Release
   ```

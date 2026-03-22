@@ -15,6 +15,9 @@ jobs:
   supported-tfms:
     if: github.actor != 'dependabot[bot]'
     runs-on: ${{ matrix.os }}
+    env:
+      QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
+      QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
     strategy:
       fail-fast: false
       matrix:
@@ -22,10 +25,26 @@ jobs:
         tfm: [net8.0, netstandard2.0]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Redaction
+          path: _deps/KeelMatrix.Redaction/app
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Telemetry
+          path: _deps/KeelMatrix.Telemetry/app
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      - name: Bootstrap local dependency feed (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
+      - name: Bootstrap local dependency feed (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: bash build/Dev-PackInstallSamples.sh
       - name: Restore dependencies
         run: dotnet restore KeelMatrix.QueryWatch.sln
       - name: Build for ${{ matrix.tfm }}
@@ -42,23 +61,41 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet build ./src/KeelMatrix.QueryWatch.Contracts/KeelMatrix.QueryWatch.Contracts.csproj --configuration Release --no-restore -f netstandard2.0
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build ./src/KeelMatrix.QueryWatch.Redaction/KeelMatrix.QueryWatch.Redaction.csproj --configuration Release --no-restore -f netstandard2.0
           exit $LASTEXITCODE
 
   test:
     if: github.actor != 'dependabot[bot]'
     runs-on: ${{ matrix.os }}
     needs: supported-tfms
+    env:
+      QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
+      QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Redaction
+          path: _deps/KeelMatrix.Redaction/app
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Telemetry
+          path: _deps/KeelMatrix.Telemetry/app
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      - name: Bootstrap local dependency feed (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
+      - name: Bootstrap local dependency feed (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: bash build/Dev-PackInstallSamples.sh
       - name: Restore dependencies
         run: dotnet restore KeelMatrix.QueryWatch.sln
       - name: Build
@@ -76,12 +113,26 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
+      QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Redaction
+          path: _deps/KeelMatrix.Redaction/app
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Telemetry
+          path: _deps/KeelMatrix.Telemetry/app
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      - name: Bootstrap local dependency feed
+        shell: bash
+        run: bash build/Dev-PackInstallSamples.sh
       - name: Restore dependencies
         run: dotnet restore KeelMatrix.QueryWatch.sln
       - name: Run smoke tests
@@ -97,12 +148,26 @@ jobs:
     if: github.actor != 'dependabot[bot]'
     needs: [test, smoke-tests]
     runs-on: ubuntu-latest
+    env:
+      QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
+      QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Redaction
+          path: _deps/KeelMatrix.Redaction/app
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Telemetry
+          path: _deps/KeelMatrix.Telemetry/app
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      - name: Bootstrap local dependency feed
+        shell: bash
+        run: bash build/Dev-PackInstallSamples.sh
       - name: Restore dependencies
         run: dotnet restore KeelMatrix.QueryWatch.sln
       - name: Build
@@ -143,6 +208,9 @@ jobs:
     needs: test
     runs-on: windows-latest
     timeout-minutes: 12
+    env:
+      QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
+      QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
     strategy:
       fail-fast: false
       matrix:
@@ -155,8 +223,19 @@ jobs:
   
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Redaction
+          path: _deps/KeelMatrix.Redaction/app
+      - uses: actions/checkout@v4
+        with:
+          repository: KeelMatrix/Telemetry
+          path: _deps/KeelMatrix.Telemetry/app
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: '8.0.x' }
+      - name: Bootstrap local dependency feed
+        shell: pwsh
+        run: pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
   
       - name: Run perf benchmarks (${{ matrix.shard.name }})
         shell: pwsh
