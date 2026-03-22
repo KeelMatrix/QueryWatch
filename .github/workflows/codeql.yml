@@ -66,18 +66,18 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout KeelMatrix.Redaction
         if: matrix.language == 'csharp'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: KeelMatrix/Redaction
           path: _deps/KeelMatrix.Redaction/app
 
       - name: Checkout KeelMatrix.Telemetry
         if: matrix.language == 'csharp'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: KeelMatrix/Telemetry
           path: _deps/KeelMatrix.Telemetry/app

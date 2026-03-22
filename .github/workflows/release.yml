@@ -12,12 +12,12 @@ jobs:
       QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
       QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           repository: KeelMatrix/Redaction
           path: _deps/KeelMatrix.Redaction/app
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: KeelMatrix/Telemetry
           path: _deps/KeelMatrix.Telemetry/app
