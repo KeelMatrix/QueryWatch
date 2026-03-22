@@ -125,6 +125,9 @@ namespace KeelMatrix.QueryWatch {
 
         private QueryWatchReport StopInternal() {
             DateTimeOffset now = DateTimeOffset.UtcNow;
+            if (now <= StartedAt) {
+                now = StartedAt.AddTicks(1);
+            }
 
             if (Interlocked.CompareExchange(ref _stopped, 1, 0) == 0) {
                 StoppedAt = now;
