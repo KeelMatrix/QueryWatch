@@ -17,4 +17,9 @@ Those details can change with the telemetry package and are maintained in the te
 
 ## QueryWatch-specific note
 
+QueryWatch packages use the shared telemetry package, but not every package uses every shared event type.
+
+- The main `KeelMatrix.QueryWatch` library uses activation and heartbeat through its session lifecycle.
+- The `qwatch` CLI sends an activation event on normal execution, but does not send heartbeat events.
+
 QueryWatch does not add product-specific telemetry fields on top of the shared telemetry package behavior documented above. If that changes in a way that affects privacy, this file will be updated.

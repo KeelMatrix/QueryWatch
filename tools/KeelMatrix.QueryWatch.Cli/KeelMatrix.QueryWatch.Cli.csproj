@@ -36,6 +36,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="KeelMatrix.Telemetry" />
+  </ItemGroup>
   
   <!-- Guard: fail the pack if version is missing when packing a tool -->
   <Target Name="EnsureToolVersion" BeforeTargets="Pack" Condition="'$(PackAsDotNetTool)'=='true' and '$(ToolVersion)'==''">

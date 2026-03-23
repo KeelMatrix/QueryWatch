@@ -38,6 +38,7 @@ namespace KeelMatrix.QueryWatch.Cli {
             }
 
             // 4) Normal execution
+            QueryWatchCliTelemetry.TrackActivation();
             return await Runner.ExecuteAsync(parsed.Options);
         }
     }

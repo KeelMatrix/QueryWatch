@@ -133,6 +133,16 @@ If you only need the file format in another tool, see the contracts package:
 
 - `KeelMatrix.QueryWatch.Contracts`
 
+## Privacy
+
+`qwatch` sends a minimal anonymous telemetry activation event on normal CLI execution.
+
+It does not send heartbeat events. Reason: `qwatch` is typically a short-lived CI/local tool, so weekly heartbeat would mostly reflect retained pipeline wiring rather than meaningful interactive product usage.
+
+See:
+- [Repository privacy summary](../../PRIVACY.md)
+- [KeelMatrix.Telemetry README](https://github.com/KeelMatrix/Telemetry#readme)
+
 ## Related Documentation
 
 - [Root README](https://github.com/KeelMatrix/QueryWatch#readme)
