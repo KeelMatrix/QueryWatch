@@ -22,6 +22,9 @@ Until those dependency packages are published to NuGet.org, both local developme
   Writes fallback output to `docs/CLI_FLAGS.generated.md` if markers are missing.  
   → `build/Update-ReadmeFlags.ps1`
 
+- **`Get-CodeScanningAlerts.ps1`** — Fetches GitHub code scanning alerts for a repository, categorizes them, and writes raw, categorized, and summary JSON outputs under `build/artifacts/security` by default.  
+  → `build/Get-CodeScanningAlerts.ps1`
+
 - **`Pack-Sign-Push.ps1`** — End-to-end **pack → (optional) sign → push** workflow.  
   Stubs for signing/publishing (customize for your environment).  
   → `build/Pack-Sign-Push.ps1`
@@ -79,6 +82,45 @@ bash build/Dev-CleanPackInstallSamples.sh
 ```powershell
 ./build/Update-ReadmeFlags.ps1
 ```
+
+---
+
+### Export code scanning alerts
+
+```powershell
+./build/Get-CodeScanningAlerts.ps1
+```
+
+Optional parameters:
+
+- `-Repo <owner/name>`  
+  Explicit GitHub repository to query. If omitted, the script tries `gh repo view`, then falls back to the `origin` git remote.
+
+- `-State <open|dismissed|fixed|all>`  
+  Alert state filter. Default: `open`.
+
+- `-OutputRoot <path>`  
+  Output directory for generated files. Default: `build/artifacts/security` under the repo root.
+
+Examples:
+
+```powershell
+./build/Get-CodeScanningAlerts.ps1 -Repo KeelMatrix/QueryWatch
+./build/Get-CodeScanningAlerts.ps1 -State all
+./build/Get-CodeScanningAlerts.ps1 -OutputRoot .\build\artifacts\security
+```
+
+Outputs:
+
+- `*.raw.json` — raw GitHub API alert payloads
+- `*.categorized.json` — normalized alert records with category and triage metadata
+- `*.summary.json` — aggregate counts, top files/rules, and recommended triage buckets
+
+Prerequisites:
+
+- GitHub CLI (`gh`) installed
+- `gh auth login` completed
+- `git` available
 
 ---
 

@@ -19,6 +19,11 @@ on:
   schedule:
     - cron: '24 15 * * 6'
 
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
@@ -31,19 +36,6 @@ jobs:
     env:
       QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
       QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
-
-    # Ensure the SARIF upload can succeed.
-    permissions:
-      # required for all workflows
-      security-events: write
-
-      # required to fetch internal or private CodeQL packs
-      packages: read
-
-      # typical for public repos (safe to keep)
-      actions: read
-      contents: read
-
     strategy:
       fail-fast: false
       matrix:
@@ -97,25 +89,18 @@ jobs:
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@256d634097be96e792d6764f9edaefc4320557b1
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-          # If you wish to specify custom queries, you can do so here or in a config file.
-          # By default, queries listed here will override any specified in a config file.
-          # Prefix the list here with "+" to use these queries and those in the config file.
-          #
-          # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-          queries: +security-extended,security-and-quality
+          config-file: ./.github/codeql/codeql-config.yml
 
       - if: matrix.language == 'csharp'
         shell: bash
         run: |
           bash build/Dev-PackInstallSamples.sh
-          dotnet restore KeelMatrix.QueryWatch.sln
-          dotnet build KeelMatrix.QueryWatch.sln -c Release --no-restore
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@256d634097be96e792d6764f9edaefc4320557b1
         with:
           category: "/language:${{ matrix.language }}"

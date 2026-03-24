@@ -9,6 +9,9 @@ on:
     paths:
       - "samples/**"
 
+permissions:
+  contents: read
+
 jobs:
   build-run-gate:
     if: github.actor != 'dependabot[bot]'

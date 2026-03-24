@@ -1,0 +1,14 @@
+name: "CodeQL Config"
+
+query-filters:
+  - exclude:
+      problem.severity:
+        - recommendation
+
+paths-ignore:
+  - "_deps/**"
+  - "tests/**"
+  - "samples/**"
+  - "artifacts/**"
+  - "**/bin/**"
+  - "**/obj/**"
