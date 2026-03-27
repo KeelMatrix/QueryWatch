@@ -37,7 +37,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.408'
 
       - name: Bootstrap local dependency feed (Windows)
         if: runner.os == 'Windows'
@@ -56,7 +56,11 @@ jobs:
         shell: pwsh
         run: |
           if ('${{ matrix.tfm }}' -eq 'net8.0') {
-            dotnet build KeelMatrix.QueryWatch.sln -c Release --no-restore -f net8.0
+            dotnet build ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj -c Release --no-restore -f net8.0
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            dotnet build ./src/KeelMatrix.QueryWatch.Contracts/KeelMatrix.QueryWatch.Contracts.csproj -c Release --no-restore -f net8.0
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            dotnet build ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj -c Release --no-restore -f net8.0
             exit $LASTEXITCODE
           }
 
@@ -97,7 +101,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.408'
 
       - name: Bootstrap local dependency feed (Windows)
         if: runner.os == 'Windows'
@@ -144,7 +148,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.408'
 
       - name: Bootstrap local dependency feed
         shell: bash

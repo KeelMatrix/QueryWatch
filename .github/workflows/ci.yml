@@ -36,7 +36,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.408'
       - name: Bootstrap local dependency feed (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -51,7 +51,11 @@ jobs:
         shell: pwsh
         run: |
           if ('${{ matrix.tfm }}' -eq 'net8.0') {
-            dotnet build KeelMatrix.QueryWatch.sln --configuration Release --no-restore -f net8.0
+            dotnet build ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj --configuration Release --no-restore -f net8.0
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            dotnet build ./src/KeelMatrix.QueryWatch.Contracts/KeelMatrix.QueryWatch.Contracts.csproj --configuration Release --no-restore -f net8.0
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            dotnet build ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj --configuration Release --no-restore -f net8.0
             exit $LASTEXITCODE
           }
 
@@ -87,7 +91,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.408'
       - name: Bootstrap local dependency feed (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -129,7 +133,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.408'
       - name: Bootstrap local dependency feed
         shell: bash
         run: bash build/Dev-PackInstallSamples.sh
@@ -164,7 +168,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.408'
       - name: Bootstrap local dependency feed
         shell: bash
         run: bash build/Dev-PackInstallSamples.sh
@@ -232,7 +236,7 @@ jobs:
           repository: KeelMatrix/Telemetry
           path: _deps/KeelMatrix.Telemetry/app
       - uses: actions/setup-dotnet@v4
-        with: { dotnet-version: '8.0.x' }
+        with: { dotnet-version: '8.0.408' }
       - name: Bootstrap local dependency feed
         shell: pwsh
         run: pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
