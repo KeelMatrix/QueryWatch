@@ -45,7 +45,8 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string f = Path.Combine(AppContext.BaseDirectory, "Fixtures", "pattern.json");
 
             (int code, string? stdout, string? stderr) = CliRunner.Run([
-                "--input", f,
+                "--input",
+                f,
                 "--budget" // missing value
             ]);
 
@@ -58,8 +59,10 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string f = Path.Combine(AppContext.BaseDirectory, "Fixtures", "pattern.json");
 
             (int code, string? stdout, string? stderr) = CliRunner.Run([
-                "--input", f,
-                "--budget", "not-a-valid-spec" // lacks = and max
+                "--input",
+                f,
+                "--budget",
+                "not-a-valid-spec" // lacks = and max
             ]);
 
             _ = code.Should().Be(1, stdout + Environment.NewLine + stderr); // ExitCodes.InvalidArguments

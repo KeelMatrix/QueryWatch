@@ -31,6 +31,24 @@ Show help:
 qwatch --help
 ```
 
+Inspect telemetry state for the current repo:
+
+```bash
+qwatch telemetry status
+```
+
+Disable telemetry for the current repo:
+
+```bash
+qwatch telemetry disable
+```
+
+Re-enable telemetry for the current repo:
+
+```bash
+qwatch telemetry enable
+```
+
 Fail if total queries exceed 50:
 
 ```bash
@@ -136,6 +154,8 @@ If you only need the file format in another tool, see the contracts package:
 ## Privacy
 
 `qwatch` sends a minimal anonymous telemetry activation event on normal CLI execution.
+
+Telemetry management commands do not emit telemetry. Use `qwatch telemetry status`, `qwatch telemetry disable`, and `qwatch telemetry enable` to inspect or manage repo-local telemetry behavior without introducing a second config model.
 
 It does not send heartbeat events. Reason: `qwatch` is typically a short-lived CI/local tool, so weekly heartbeat would mostly reflect retained pipeline wiring rather than meaningful interactive product usage.
 

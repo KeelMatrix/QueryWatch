@@ -11,15 +11,19 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
 
             // Lowercase pattern, '?' for one char in "Users", '*' for the rest of the line
             (int ok, string? stdoutOk, string? stderrOk) = CliRunner.Run([
-                "--input", f,
-                "--budget", "select * from user?* = 2".Replace(" ", "") // avoid quoting/space headaches
+                "--input",
+                f,
+                "--budget",
+                "select * from user?* = 2".Replace(" ", "") // avoid quoting/space headaches
             ]);
             _ = ok.Should().Be(0, stdoutOk + Environment.NewLine + stderrOk);
 
             // Overly strict budget should fail (2 matches > 1 allowed)
             (int fail, string? stdoutFail, string? stderrFail) = CliRunner.Run([
-                "--input", f,
-                "--budget", "SELECT*FROM*User?*=1"
+                "--input",
+                f,
+                "--budget",
+                "SELECT*FROM*User?*=1"
             ]);
             _ = fail.Should().Be(4, stdoutFail + Environment.NewLine + stderrFail);
         }
@@ -30,15 +34,19 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
 
             // Should match both SELECTs in pattern.json
             (int ok, string? so1, string? se1) = CliRunner.Run([
-                "--input", f,
-                "--budget", @"regex:^select\s+\*\s+from\s+users\b.*=2"
+                "--input",
+                f,
+                "--budget",
+                @"regex:^select\s+\*\s+from\s+users\b.*=2"
             ]);
             _ = ok.Should().Be(0, so1 + Environment.NewLine + se1);
 
             // Only allow 1 -> should fail because there are 2 matches
             (int bad, string? so2, string? se2) = CliRunner.Run([
-                "--input", f,
-                "--budget", @"regex:^SELECT\s+\*\s+FROM\s+Users\b.*=1"
+                "--input",
+                f,
+                "--budget",
+                @"regex:^SELECT\s+\*\s+FROM\s+Users\b.*=1"
             ]);
             _ = bad.Should().Be(4, so2 + Environment.NewLine + se2);
         }
@@ -58,8 +66,10 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string f = System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "pattern.json");
 
             (int code, string? stdout, string? stderr) = CliRunner.Run([
-                "--input", f,
-                "--budget", "SELECT * FROM Users*=0"
+                "--input",
+                f,
+                "--budget",
+                "SELECT * FROM Users*=0"
             ]);
             _ = code.Should().Be(4, stdout + Environment.NewLine + stderr); // BudgetExceeded
         }
@@ -69,9 +79,12 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string f = System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "pattern.json");
 
             (int code, string? stdout, string? stderr) = CliRunner.Run([
-                "--input", f,
-                "--budget", "SELECT * FROM Users*=1",   // over (2 > 1)
-                "--budget", "INSERT INTO Users*=2"      // under (1 <= 2)
+                "--input",
+                f,
+                "--budget",
+                "SELECT * FROM Users*=1",   // over (2 > 1)
+                "--budget",
+                "INSERT INTO Users*=2"      // under (1 <= 2)
             ]);
             _ = code.Should().Be(4, stdout + Environment.NewLine + stderr);
         }

@@ -15,8 +15,10 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             try {
                 // Act
                 (int code, string? stdout, string? stderr) = CliRunner.Run([
-                    "--input", f,
-                    "--baseline", baselinePath,
+                    "--input",
+                    f,
+                    "--baseline",
+                    baselinePath,
                     "--write-baseline"
                 ]);
 

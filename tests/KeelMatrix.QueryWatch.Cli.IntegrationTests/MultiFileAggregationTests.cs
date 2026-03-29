@@ -11,18 +11,24 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string f2 = Path.Combine(AppContext.BaseDirectory, "Fixtures", "agg_b.json");
 
             (int exitOk, string? stdoutOk, string? stderrOk) = CliRunner.Run([
-                "--input", f1,
-                "--input", f2,
-                "--max-queries", "5"
+                "--input",
+                f1,
+                "--input",
+                f2,
+                "--max-queries",
+                "5"
             ]);
             _ = exitOk.Should().Be(0, stdoutOk + Environment.NewLine + stderrOk);
             _ = stdoutOk.Should().Contain("files 2");
             _ = stdoutOk.Should().Contain("Queries: 5");
 
             (int exitFail, string _, string? stderrFail) = CliRunner.Run([
-                "--input", f1,
-                "--input", f2,
-                "--max-queries", "4"
+                "--input",
+                f1,
+                "--input",
+                f2,
+                "--max-queries",
+                "4"
             ]);
             _ = exitFail.Should().Be(4);
             _ = stderrFail.Should().Contain("Budget violations:");

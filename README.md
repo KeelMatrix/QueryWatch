@@ -213,6 +213,16 @@ If a summary is top-N sampled, budgets are evaluated only over those captured ev
 
 <!-- BEGIN:CLI_FLAGS -->
 ```
+Usage:
+  qwatch --input file.json [options]
+  qwatch telemetry <status|disable|enable> [options]
+
+Commands:
+telemetry status [--json]    Show effective telemetry state for the current repo.
+telemetry disable            Write repo-local keelmatrix.telemetry.json with disabled=true.
+telemetry enable             Remove or neutralize qwatch-managed repo-local telemetry opt-out.
+
+Options:
 --input <path>               Input JSON summary file. (repeatable)
 --max-queries N              Fail if total query count exceeds N.
 --max-average-ms N           Fail if average duration exceeds N ms.
@@ -232,6 +242,7 @@ Multi-file support:
 - repeat `--input` to aggregate summaries from multiple test projects
 - compare current results against a baseline summary
 - write GitHub Actions step summaries automatically when running in CI
+- inspect or manage repo-local telemetry with `qwatch telemetry status|disable|enable`
 
 ## Troubleshooting
 
