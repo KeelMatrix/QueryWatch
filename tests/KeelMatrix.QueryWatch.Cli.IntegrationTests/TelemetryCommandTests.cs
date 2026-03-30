@@ -2,6 +2,8 @@
 
 using System.Text.Json;
 using FluentAssertions;
+using KeelMatrix.QueryWatch.Cli;
+using KeelMatrix.QueryWatch.Cli.Telemetry;
 using Xunit;
 
 namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
@@ -48,6 +50,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             _ = stdout.Should().Contain("Telemetry: enabled");
             _ = stdout.Should().Contain("Source: none");
             _ = stdout.Should().Contain($"Repo: {repo.Root}");
+            _ = stdout.Should().Contain("Repo-local config: missing");
         }
 
         [Fact]
@@ -81,6 +84,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             _ = stdout.Should().Contain("Source: keelmatrix.telemetry.json");
             _ = stdout.Should().Contain(Path.Combine(repo.Root, "keelmatrix.telemetry.json"));
             _ = stdout.Should().Contain("Scope: repo-local");
+            _ = stdout.Should().Contain("Repo-local config: not qwatch-managed");
         }
 
         [Fact]
@@ -129,6 +133,26 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             _ = stdout.Should().Contain("Telemetry: enabled");
             _ = stdout.Should().Contain("Source: process environment");
             _ = stdout.Should().Contain("Variable: KEELMATRIX_NO_TELEMETRY");
+            _ = stdout.Should().Contain("Repo-local config: not qwatch-managed");
+        }
+
+        [Fact]
+        public void Telemetry_Status_Shows_QueryWatchManaged_Config_State() {
+            using RepoScope repo = RepoScope.Create();
+            repo.WriteFile(
+                "{" + Environment.NewLine +
+                "  \"disabled\": true," + Environment.NewLine +
+                "  \"managedBy\": \"qwatch\"" + Environment.NewLine +
+                "}" + Environment.NewLine,
+                "keelmatrix.telemetry.json");
+
+            (int code, string stdout, string stderr) = CliRunner.Run(
+                ["telemetry", "status"],
+                env: RepoScope.TelemetryEnvironment,
+                workingDirectory: repo.WorkingDirectory);
+
+            _ = code.Should().Be(0, stdout + Environment.NewLine + stderr);
+            _ = stdout.Should().Contain("Repo-local config: qwatch-managed");
         }
 
         [Fact]
@@ -144,16 +168,51 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             _ = code.Should().Be(0, stdout + Environment.NewLine + stderr);
 
             using JsonDocument doc = JsonDocument.Parse(stdout);
-            _ = doc.RootElement.GetProperty("isEnabled").GetBoolean().Should().BeFalse();
-            _ = doc.RootElement.GetProperty("winningSourceKind").GetString().Should().Be("dotEnvLocal");
-            _ = doc.RootElement.GetProperty("winningPath").GetString().Should().Be(Path.Combine(repo.Root, ".env.local"));
-            _ = doc.RootElement.GetProperty("winningVariableName").GetString().Should().Be("KEELMATRIX_NO_TELEMETRY");
-            _ = doc.RootElement.GetProperty("scope").GetString().Should().Be("repoLocal");
-            _ = doc.RootElement.GetProperty("repoRoot").GetString().Should().Be(repo.Root);
+            JsonElement effectiveStatus = doc.RootElement.GetProperty("effectiveStatus");
+            _ = effectiveStatus.GetProperty("isEnabled").GetBoolean().Should().BeFalse();
+            _ = effectiveStatus.GetProperty("winningSourceKind").GetString().Should().Be("dotEnvLocal");
+            _ = effectiveStatus.GetProperty("winningPath").GetString().Should().Be(Path.Combine(repo.Root, ".env.local"));
+            _ = effectiveStatus.GetProperty("winningVariableName").GetString().Should().Be("KEELMATRIX_NO_TELEMETRY");
+            _ = effectiveStatus.GetProperty("scope").GetString().Should().Be("repoLocal");
+            _ = effectiveStatus.GetProperty("repoRoot").GetString().Should().Be(repo.Root);
+            _ = doc.RootElement.GetProperty("repoLocalConfigState").GetString().Should().Be("missing");
+            _ = doc.RootElement.GetProperty("repoLocalConfigPath").GetString().Should().Be(Path.Combine(repo.Root, "keelmatrix.telemetry.json"));
         }
 
         [Fact]
-        public void Telemetry_Disable_Writes_Qwatch_Managed_Repository_Config() {
+        public void Telemetry_Status_Json_Reports_Invalid_RepoLocal_Config_State() {
+            using RepoScope repo = RepoScope.Create();
+            repo.WriteFile("{ not-json", "keelmatrix.telemetry.json");
+
+            (int code, string stdout, string stderr) = CliRunner.Run(
+                ["telemetry", "status", "--json"],
+                env: RepoScope.TelemetryEnvironment,
+                workingDirectory: repo.WorkingDirectory);
+
+            _ = code.Should().Be(0, stdout + Environment.NewLine + stderr);
+
+            using JsonDocument doc = JsonDocument.Parse(stdout);
+            _ = doc.RootElement.GetProperty("repoLocalConfigState").GetString().Should().Be("invalidJson");
+        }
+
+        [Fact]
+        public void Telemetry_Status_Json_Reports_Oversized_RepoLocal_Config_State() {
+            using RepoScope repo = RepoScope.Create();
+            repo.WriteFile(new string('x', RepoLocalTelemetryConfigInspector.MaxRepositoryConfigBytes + 1), "keelmatrix.telemetry.json");
+
+            (int code, string stdout, string stderr) = CliRunner.Run(
+                ["telemetry", "status", "--json"],
+                env: RepoScope.TelemetryEnvironment,
+                workingDirectory: repo.WorkingDirectory);
+
+            _ = code.Should().Be(0, stdout + Environment.NewLine + stderr);
+
+            using JsonDocument doc = JsonDocument.Parse(stdout);
+            _ = doc.RootElement.GetProperty("repoLocalConfigState").GetString().Should().Be("tooLarge");
+        }
+
+        [Fact]
+        public void Telemetry_Disable_Creates_Qwatch_Managed_Repository_Config_When_None_Exists() {
             using RepoScope repo = RepoScope.Create();
 
             (int code, string stdout, string stderr) = CliRunner.Run(
@@ -167,7 +226,62 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
 
             using JsonDocument doc = JsonDocument.Parse(File.ReadAllText(configPath));
             _ = doc.RootElement.GetProperty("disabled").GetBoolean().Should().BeTrue();
-            _ = doc.RootElement.GetProperty("qwatchManaged").GetBoolean().Should().BeTrue();
+            _ = doc.RootElement.GetProperty("managedBy").GetString().Should().Be("qwatch");
+        }
+
+        [Fact]
+        public void Telemetry_Disable_Refuses_To_Overwrite_Non_Qwatch_Managed_Config() {
+            using RepoScope repo = RepoScope.Create();
+            string configPath = repo.WriteFile(
+                "{" + Environment.NewLine +
+                "  \"disabled\": false," + Environment.NewLine +
+                "  \"channel\": \"dev\"" + Environment.NewLine +
+                "}" + Environment.NewLine,
+                "keelmatrix.telemetry.json");
+            string originalConfig = File.ReadAllText(configPath);
+
+            (int code, string stdout, string stderr) = CliRunner.Run(
+                ["telemetry", "disable"],
+                env: RepoScope.TelemetryEnvironment,
+                workingDirectory: repo.WorkingDirectory);
+
+            _ = code.Should().Be(1, stdout + Environment.NewLine + stderr);
+            _ = stdout.Should().BeEmpty();
+            _ = stderr.Should().Contain("Refusing to overwrite existing repo-local telemetry config because it is not qwatch-managed");
+            _ = File.ReadAllText(configPath).Should().Be(originalConfig);
+        }
+
+        [Fact]
+        public void Telemetry_Disable_Refuses_Invalid_Json_Config() {
+            using RepoScope repo = RepoScope.Create();
+            string configPath = repo.WriteFile("{ not-json", "keelmatrix.telemetry.json");
+
+            (int code, string stdout, string stderr) = CliRunner.Run(
+                ["telemetry", "disable"],
+                env: RepoScope.TelemetryEnvironment,
+                workingDirectory: repo.WorkingDirectory);
+
+            _ = code.Should().Be(1, stdout + Environment.NewLine + stderr);
+            _ = stdout.Should().BeEmpty();
+            _ = stderr.Should().Contain("contains invalid JSON");
+            _ = File.ReadAllText(configPath).Should().Be("{ not-json");
+        }
+
+        [Fact]
+        public void Telemetry_Disable_Refuses_Oversized_Config() {
+            using RepoScope repo = RepoScope.Create();
+            string oversized = new string('x', RepoLocalTelemetryConfigInspector.MaxRepositoryConfigBytes + 1);
+            string configPath = repo.WriteFile(oversized, "keelmatrix.telemetry.json");
+
+            (int code, string stdout, string stderr) = CliRunner.Run(
+                ["telemetry", "disable"],
+                env: RepoScope.TelemetryEnvironment,
+                workingDirectory: repo.WorkingDirectory);
+
+            _ = code.Should().Be(1, stdout + Environment.NewLine + stderr);
+            _ = stdout.Should().BeEmpty();
+            _ = stderr.Should().Contain("exceeds the");
+            _ = File.ReadAllText(configPath).Should().Be(oversized);
         }
 
         [Fact]
@@ -176,7 +290,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string configPath = repo.WriteFile(
                 "{" + Environment.NewLine +
                 "  \"disabled\": true," + Environment.NewLine +
-                "  \"qwatchManaged\": true" + Environment.NewLine +
+                "  \"managedBy\": \"qwatch\"" + Environment.NewLine +
                 "}" + Environment.NewLine,
                 "keelmatrix.telemetry.json");
 
@@ -197,7 +311,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string configPath = repo.WriteFile(
                 "{" + Environment.NewLine +
                 "  \"disabled\": true," + Environment.NewLine +
-                "  \"qwatchManaged\": true," + Environment.NewLine +
+                "  \"managedBy\": \"qwatch\"," + Environment.NewLine +
                 "  \"channel\": \"dev\"" + Environment.NewLine +
                 "}" + Environment.NewLine,
                 "keelmatrix.telemetry.json");
@@ -212,7 +326,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
 
             using JsonDocument doc = JsonDocument.Parse(File.ReadAllText(configPath));
             _ = doc.RootElement.GetProperty("channel").GetString().Should().Be("dev");
-            _ = doc.RootElement.GetProperty("qwatchManaged").GetBoolean().Should().BeTrue();
+            _ = doc.RootElement.GetProperty("managedBy").GetString().Should().Be("qwatch");
             _ = doc.RootElement.TryGetProperty("disabled", out _).Should().BeFalse();
             _ = stdout.Should().Contain("Repo-local qwatch-managed telemetry config updated");
         }
@@ -232,32 +346,57 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
                 env: RepoScope.TelemetryEnvironment,
                 workingDirectory: repo.WorkingDirectory);
 
-            _ = code.Should().Be(0, stdout + Environment.NewLine + stderr);
+            _ = code.Should().Be(1, stdout + Environment.NewLine + stderr);
+            _ = stdout.Should().BeEmpty();
             _ = File.ReadAllText(configPath).Should().Be(originalConfig);
-            _ = stdout.Should().Contain("not qwatch-managed and was left unchanged");
-            _ = stdout.Should().Contain("Telemetry: disabled");
+            _ = stderr.Should().Contain("not qwatch-managed and was left unchanged");
         }
 
         [Fact]
-        public void Telemetry_Commands_Do_Not_Call_TrackActivation() {
+        public async Task Telemetry_Commands_Do_Not_Call_TrackActivation() {
             using RepoScope repo = RepoScope.Create();
-            string sentinelPath = Path.Combine(repo.Root, "activation-sentinel.txt");
+            using EnvironmentVariableSnapshot envSnapshot = new("KEELMATRIX_NO_TELEMETRY", "DOTNET_CLI_TELEMETRY_OPTOUT", "DO_NOT_TRACK");
+            using CurrentDirectoryScope __ = new(repo.WorkingDirectory);
+            using ConsoleCaptureScope console = new();
+            RecordingCliTelemetry telemetry = new();
+            ITelemetryHost previousTelemetry = TelemetryHost.Current;
+            TelemetryHost.Current = telemetry;
 
-            (int telemetryCode, string telemetryOut, string telemetryErr) = CliRunner.Run(
-                ["telemetry", "status"],
-                env: [.. RepoScope.TelemetryEnvironment, ("QWATCH_CLI_TRACK_ACTIVATION_SENTINEL", sentinelPath)],
+            try {
+                Environment.SetEnvironmentVariable("KEELMATRIX_NO_TELEMETRY", null);
+                Environment.SetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", null);
+                Environment.SetEnvironmentVariable("DO_NOT_TRACK", null);
+
+                int telemetryCode = await Program.RunAsync(["telemetry", "status"]);
+                _ = telemetryCode.Should().Be(0, console.StdOut + Environment.NewLine + console.StdErr);
+                _ = telemetry.ActivationCalls.Should().Be(0);
+
+                console.Clear();
+
+                string inputPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "current_ok.json");
+                int normalCode = await Program.RunAsync(["--input", inputPath]);
+                _ = normalCode.Should().Be(0, console.StdOut + Environment.NewLine + console.StdErr);
+                _ = telemetry.ActivationCalls.Should().Be(1);
+            }
+            finally {
+                TelemetryHost.Current = previousTelemetry;
+            }
+        }
+
+        [Fact]
+        public void Telemetry_Enable_Refuses_Invalid_Json_Config() {
+            using RepoScope repo = RepoScope.Create();
+            string configPath = repo.WriteFile("{ not-json", "keelmatrix.telemetry.json");
+
+            (int code, string stdout, string stderr) = CliRunner.Run(
+                ["telemetry", "enable"],
+                env: RepoScope.TelemetryEnvironment,
                 workingDirectory: repo.WorkingDirectory);
 
-            _ = telemetryCode.Should().Be(0, telemetryOut + Environment.NewLine + telemetryErr);
-            _ = File.Exists(sentinelPath).Should().BeFalse();
-
-            string inputPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "current_ok.json");
-            (int normalCode, string normalOut, string normalErr) = CliRunner.Run(
-                ["--input", inputPath],
-                env: [.. RepoScope.TelemetryEnvironment, ("QWATCH_CLI_TRACK_ACTIVATION_SENTINEL", sentinelPath)]);
-
-            _ = normalCode.Should().Be(0, normalOut + Environment.NewLine + normalErr);
-            _ = File.Exists(sentinelPath).Should().BeTrue();
+            _ = code.Should().Be(1, stdout + Environment.NewLine + stderr);
+            _ = stdout.Should().BeEmpty();
+            _ = stderr.Should().Contain("contains invalid JSON");
+            _ = File.ReadAllText(configPath).Should().Be("{ not-json");
         }
 
         [Fact]
@@ -296,8 +435,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             internal static readonly (string Key, string? Value)[] EmptyTelemetryEnvironment = [
                 ("KEELMATRIX_NO_TELEMETRY", null),
                 ("DOTNET_CLI_TELEMETRY_OPTOUT", null),
-                ("DO_NOT_TRACK", null),
-                ("QWATCH_CLI_TRACK_ACTIVATION_SENTINEL", null)
+                ("DO_NOT_TRACK", null)
             ];
 
             private RepoScope(string root) {
@@ -336,5 +474,73 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
                 }
             }
         }
+
+        private sealed class ConsoleCaptureScope : IDisposable {
+            private readonly TextWriter originalOut;
+            private readonly TextWriter originalErr;
+            private readonly StringWriter stdoutWriter = new();
+            private readonly StringWriter stderrWriter = new();
+
+            public ConsoleCaptureScope() {
+                originalOut = Console.Out;
+                originalErr = Console.Error;
+                Console.SetOut(stdoutWriter);
+                Console.SetError(stderrWriter);
+            }
+
+            public string StdOut => stdoutWriter.ToString();
+            public string StdErr => stderrWriter.ToString();
+
+            public void Clear() {
+                stdoutWriter.GetStringBuilder().Clear();
+                stderrWriter.GetStringBuilder().Clear();
+            }
+
+            public void Dispose() {
+                Console.SetOut(originalOut);
+                Console.SetError(originalErr);
+                stdoutWriter.Dispose();
+                stderrWriter.Dispose();
+            }
+        }
+
+        private sealed class CurrentDirectoryScope : IDisposable {
+            private readonly string originalCurrentDirectory;
+
+            public CurrentDirectoryScope(string currentDirectory) {
+                originalCurrentDirectory = Environment.CurrentDirectory;
+                Environment.CurrentDirectory = currentDirectory;
+            }
+
+            public void Dispose() {
+                Environment.CurrentDirectory = originalCurrentDirectory;
+            }
+        }
+
+        private sealed class EnvironmentVariableSnapshot : IDisposable {
+            private readonly (string Name, string? Value)[] snapshot;
+
+            public EnvironmentVariableSnapshot(params string[] names) {
+                snapshot = new (string, string?)[names.Length];
+                for (int i = 0; i < names.Length; i++) {
+                    string name = names[i];
+                    snapshot[i] = (name, Environment.GetEnvironmentVariable(name));
+                }
+            }
+
+            public void Dispose() {
+                foreach (var (name, value) in snapshot)
+                    Environment.SetEnvironmentVariable(name, value);
+            }
+        }
+
+        private sealed class RecordingCliTelemetry : ITelemetryHost {
+            public int ActivationCalls { get; private set; }
+
+            public void TrackActivation() {
+                ActivationCalls++;
+            }
+        }
+
     }
 }

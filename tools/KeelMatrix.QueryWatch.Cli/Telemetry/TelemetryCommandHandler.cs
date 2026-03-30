@@ -1,6 +1,5 @@
 // Copyright (c) KeelMatrix
 
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -11,10 +10,6 @@ using KeelMatrix.Telemetry;
 
 namespace KeelMatrix.QueryWatch.Cli.Telemetry {
     internal static class TelemetryCommandHandler {
-        private const string RepositoryConfigFileName = "keelmatrix.telemetry.json";
-        private const int MaxRepositoryConfigBytes = 16 * 1024;
-        private const string QwatchManagedPropertyName = "qwatchManaged";
-
         private static readonly JsonSerializerOptions JsonOptions = new() {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -40,7 +35,7 @@ namespace KeelMatrix.QueryWatch.Cli.Telemetry {
         }
 
         private static async Task<int> ExecuteStatusAsync(string repoRoot, bool json) {
-            RepositoryTelemetryStatus status = GetStatus(repoRoot);
+            TelemetryStatusResult status = GetStatus(repoRoot);
 
             if (json) {
                 await Console.Out.WriteLineAsync(JsonSerializer.Serialize(status, JsonOptions)).ConfigureAwait(false);
@@ -53,29 +48,36 @@ namespace KeelMatrix.QueryWatch.Cli.Telemetry {
         }
 
         private static async Task<int> ExecuteDisableAsync(string repoRoot) {
-            string path = Path.Combine(repoRoot, RepositoryConfigFileName);
-            await WriteDisabledConfigAsync(path).ConfigureAwait(false);
+            RepoLocalTelemetryConfigInspection configInspection = RepoLocalTelemetryConfigInspector.Inspect(repoRoot);
+            string? failureMessage = GetDisableFailureMessage(configInspection);
+            if (failureMessage is not null) {
+                await Console.Error.WriteLineAsync(failureMessage).ConfigureAwait(false);
+                return ExitCodes.InvalidArguments;
+            }
 
-            RepositoryTelemetryStatus status = GetStatus(repoRoot);
-            await Console.Out.WriteLineAsync($"Repo-local qwatch-managed telemetry opt-out written: {path}").ConfigureAwait(false);
-            await WriteEffectiveStatusAsync(status).ConfigureAwait(false);
+            await WriteDisabledConfigAsync(configInspection).ConfigureAwait(false);
+
+            TelemetryStatusResult status = GetStatus(repoRoot);
+            await Console.Out.WriteLineAsync(
+                $"Repo-local qwatch-managed telemetry opt-out written: {configInspection.Path}")
+                .ConfigureAwait(false);
+            await WriteEffectiveStatusAsync(status.EffectiveStatus).ConfigureAwait(false);
             return ExitCodes.Ok;
         }
 
         private static async Task<int> ExecuteEnableAsync(string repoRoot) {
-            string path = Path.Combine(repoRoot, RepositoryConfigFileName);
-            TelemetryConfigMutation mutation = await EnableConfigAsync(path).ConfigureAwait(false);
-            RepositoryTelemetryStatus status = GetStatus(repoRoot);
+            RepoLocalTelemetryConfigInspection configInspection = RepoLocalTelemetryConfigInspector.Inspect(repoRoot);
+            string? failureMessage = GetEnableFailureMessage(configInspection);
+            if (failureMessage is not null) {
+                await Console.Error.WriteLineAsync(failureMessage).ConfigureAwait(false);
+                return ExitCodes.InvalidArguments;
+            }
 
-            string message = mutation switch {
-                TelemetryConfigMutation.Removed => $"Repo-local qwatch-managed telemetry opt-out removed: {path}",
-                TelemetryConfigMutation.RewrittenEnabled => $"Repo-local qwatch-managed telemetry config updated: {path}",
-                TelemetryConfigMutation.NotQwatchManaged => $"Existing repo-local telemetry config is not qwatch-managed and was left unchanged: {path}",
-                _ => "No qwatch-managed repo-local telemetry opt-out was found."
-            };
+            string message = await EnableConfigAsync(configInspection).ConfigureAwait(false);
+            TelemetryStatusResult status = GetStatus(repoRoot);
 
             await Console.Out.WriteLineAsync(message).ConfigureAwait(false);
-            await WriteEffectiveStatusAsync(status).ConfigureAwait(false);
+            await WriteEffectiveStatusAsync(status.EffectiveStatus).ConfigureAwait(false);
             return ExitCodes.Ok;
         }
 
@@ -90,158 +92,106 @@ namespace KeelMatrix.QueryWatch.Cli.Telemetry {
                 await Console.Out.WriteLineAsync($"Variable: {status.WinningVariableName}").ConfigureAwait(false);
         }
 
-        private static string FormatHumanStatus(RepositoryTelemetryStatus status) {
+        private static string FormatHumanStatus(TelemetryStatusResult status) {
+            RepositoryTelemetryStatus effectiveStatus = status.EffectiveStatus;
             StringBuilder sb = new();
-            _ = sb.AppendLine($"Telemetry: {(status.IsEnabled ? "enabled" : "disabled")}");
-            _ = sb.AppendLine($"Source: {FormatSource(status.WinningSourceKind)}");
+            _ = sb.AppendLine($"Telemetry: {(effectiveStatus.IsEnabled ? "enabled" : "disabled")}");
+            _ = sb.AppendLine($"Source: {FormatSource(effectiveStatus.WinningSourceKind)}");
 
-            if (!string.IsNullOrEmpty(status.WinningPath))
-                _ = sb.AppendLine($"Path: {status.WinningPath}");
+            if (!string.IsNullOrEmpty(effectiveStatus.WinningPath))
+                _ = sb.AppendLine($"Path: {effectiveStatus.WinningPath}");
 
-            if (!string.IsNullOrEmpty(status.WinningVariableName))
-                _ = sb.AppendLine($"Variable: {status.WinningVariableName}");
+            if (!string.IsNullOrEmpty(effectiveStatus.WinningVariableName))
+                _ = sb.AppendLine($"Variable: {effectiveStatus.WinningVariableName}");
 
-            _ = sb.AppendLine($"Scope: {FormatScope(status.Scope)}");
-            _ = sb.AppendLine($"Repo: {status.RepoRoot}");
+            _ = sb.AppendLine($"Scope: {FormatScope(effectiveStatus.Scope)}");
+            _ = sb.AppendLine($"Repo: {effectiveStatus.RepoRoot}");
+            _ = sb.AppendLine($"Repo-local config: {FormatRepoLocalConfigState(status.RepoLocalConfigState)}");
+            _ = sb.AppendLine($"Repo-local config path: {status.RepoLocalConfigPath}");
             return sb.ToString().TrimEnd();
         }
 
-        private static RepositoryTelemetryStatus GetStatus(string repoRoot) {
-            return RepositoryTelemetry.GetEffectiveStatus(repoRoot);
+        private static TelemetryStatusResult GetStatus(string repoRoot) {
+            RepoLocalTelemetryConfigInspection configInspection = RepoLocalTelemetryConfigInspector.Inspect(repoRoot);
+            return new TelemetryStatusResult(
+                RepositoryTelemetry.GetEffectiveStatus(repoRoot),
+                configInspection.StateKind,
+                configInspection.Path);
         }
 
-        private static async Task WriteDisabledConfigAsync(string path) {
-            JsonObject config = ReadConfigObject(path);
-            RemovePropertyCaseInsensitive(config, "disabled");
-            RemovePropertyCaseInsensitive(config, QwatchManagedPropertyName);
-            config["disabled"] = true;
-            config[QwatchManagedPropertyName] = true;
+        private static async Task WriteDisabledConfigAsync(RepoLocalTelemetryConfigInspection configInspection) {
+            JsonObject config = configInspection.StateKind switch {
+                RepoLocalTelemetryConfigStateKind.Missing => RepoLocalTelemetryConfigInspector.CreateNewManagedOptOutConfig(),
+                RepoLocalTelemetryConfigStateKind.QueryWatchManaged => configInspection.Config!.DeepClone().AsObject(),
+                _ => throw new InvalidOperationException("Disable should only write when the config is missing or qwatch-managed.")
+            };
+
+            RepoLocalTelemetryConfigInspector.ApplyManagedOptOut(config);
 
             string json = JsonSerializer.Serialize(config, JsonOptions);
-            await File.WriteAllTextAsync(path, json + Environment.NewLine, Encoding.UTF8).ConfigureAwait(false);
+            await File.WriteAllTextAsync(configInspection.Path, json + Environment.NewLine, Encoding.UTF8).ConfigureAwait(false);
         }
 
-        private static async Task<TelemetryConfigMutation> EnableConfigAsync(string path) {
-            if (!File.Exists(path))
-                return TelemetryConfigMutation.None;
+        private static async Task<string> EnableConfigAsync(RepoLocalTelemetryConfigInspection configInspection) {
+            if (configInspection.StateKind == RepoLocalTelemetryConfigStateKind.Missing)
+                return $"No repo-local telemetry config exists: {configInspection.Path}";
 
-            JsonObject? config = TryReadExistingConfigObject(path);
-            if (config is null || !IsQwatchManaged(config))
-                return TelemetryConfigMutation.NotQwatchManaged;
-
-            bool hadDisabled = TryGetPropertyNameCaseInsensitive(config, "disabled", out string? propertyName);
+            JsonObject config = configInspection.Config!.DeepClone().AsObject();
+            RepoLocalTelemetryConfigInspector.NormalizeManagedMarker(config);
+            bool hadDisabled = RepoLocalTelemetryConfigInspector.TryGetPropertyNameCaseInsensitive(config, "disabled", out string? propertyName);
             if (hadDisabled)
                 config.Remove(propertyName!);
 
-            if (HasOnlyQwatchManagedMarker(config)) {
-                File.Delete(path);
-                return TelemetryConfigMutation.Removed;
+            if (hadDisabled && HasOnlyQueryWatchManagedMarker(config)) {
+                File.Delete(configInspection.Path);
+                return $"Repo-local qwatch-managed telemetry opt-out removed: {configInspection.Path}";
             }
 
             if (!hadDisabled)
-                return TelemetryConfigMutation.None;
+                return $"No qwatch-managed repo-local telemetry opt-out was found: {configInspection.Path}";
 
             string json = JsonSerializer.Serialize(config, JsonOptions);
-            await File.WriteAllTextAsync(path, json + Environment.NewLine, Encoding.UTF8).ConfigureAwait(false);
-            return TelemetryConfigMutation.RewrittenEnabled;
+            await File.WriteAllTextAsync(configInspection.Path, json + Environment.NewLine, Encoding.UTF8).ConfigureAwait(false);
+            return $"Repo-local qwatch-managed telemetry config updated: {configInspection.Path}";
         }
 
-        private static JsonObject ReadConfigObject(string path) {
-            JsonObject? existing = TryReadExistingConfigObject(path);
-            return existing ?? [];
+        private static string? GetDisableFailureMessage(RepoLocalTelemetryConfigInspection configInspection) {
+            return configInspection.StateKind switch {
+                RepoLocalTelemetryConfigStateKind.NotQueryWatchManaged =>
+                    $"Refusing to overwrite existing repo-local telemetry config because it is not qwatch-managed: {configInspection.Path}",
+                RepoLocalTelemetryConfigStateKind.Unreadable =>
+                    $"Refusing to overwrite existing repo-local telemetry config because it could not be read: {configInspection.Path}",
+                RepoLocalTelemetryConfigStateKind.InvalidJson =>
+                    $"Refusing to overwrite existing repo-local telemetry config because it contains invalid JSON: {configInspection.Path}",
+                RepoLocalTelemetryConfigStateKind.TooLarge =>
+                    $"Refusing to overwrite existing repo-local telemetry config because it exceeds the {RepoLocalTelemetryConfigInspector.MaxRepositoryConfigBytes}-byte inspection limit: {configInspection.Path}",
+                _ => null
+            };
         }
 
-        private static JsonObject? TryReadExistingConfigObject(string path) {
-            if (!TryReadTextFileCapped(path, MaxRepositoryConfigBytes, out string text))
-                return null;
-
-            try {
-                return JsonNode.Parse(text) as JsonObject;
-            }
-            catch {
-                return null;
-            }
+        private static string? GetEnableFailureMessage(RepoLocalTelemetryConfigInspection configInspection) {
+            return configInspection.StateKind switch {
+                RepoLocalTelemetryConfigStateKind.NotQueryWatchManaged =>
+                    $"Existing repo-local telemetry config is not qwatch-managed and was left unchanged: {configInspection.Path}",
+                RepoLocalTelemetryConfigStateKind.Unreadable =>
+                    $"Existing repo-local telemetry config could not be read and was left unchanged: {configInspection.Path}",
+                RepoLocalTelemetryConfigStateKind.InvalidJson =>
+                    $"Existing repo-local telemetry config contains invalid JSON and was left unchanged: {configInspection.Path}",
+                RepoLocalTelemetryConfigStateKind.TooLarge =>
+                    $"Existing repo-local telemetry config exceeds the {RepoLocalTelemetryConfigInspector.MaxRepositoryConfigBytes}-byte inspection limit and was left unchanged: {configInspection.Path}",
+                _ => null
+            };
         }
 
-        private static bool TryReadTextFileCapped(string path, int maxBytes, out string text) {
-            text = string.Empty;
-
-            try {
-                FileInfo fileInfo = new(path);
-                if (!fileInfo.Exists || fileInfo.Length <= 0 || fileInfo.Length > maxBytes)
-                    return false;
-
-                text = File.ReadAllText(path);
-                return text.Length > 0;
-            }
-            catch {
-                return false;
-            }
-        }
-
-        private static bool TryGetPropertyNameCaseInsensitive(JsonObject obj, string name, out string? propertyName) {
-            KeyValuePair<string, JsonNode?> property = obj
-                .FirstOrDefault(property => property.Key.Equals(name, StringComparison.OrdinalIgnoreCase));
-            if (property.Key is not null) {
-                propertyName = property.Key;
-                return true;
-            }
-
-            propertyName = null;
-            return false;
-        }
-
-        private static void RemovePropertyCaseInsensitive(JsonObject obj, string name) {
-            if (TryGetPropertyNameCaseInsensitive(obj, name, out string? propertyName))
-                obj.Remove(propertyName!);
-        }
-
-        private static bool IsQwatchManaged(JsonObject config) {
-            if (!TryGetPropertyNameCaseInsensitive(config, QwatchManagedPropertyName, out string? propertyName))
-                return false;
-
-            return IsTruthyJsonNode(config[propertyName!]);
-        }
-
-        private static bool HasOnlyQwatchManagedMarker(JsonObject config) {
-            return config.Count == 1 && IsQwatchManaged(config);
-        }
-
-        private static bool IsTruthyJsonNode(JsonNode? node) {
-            if (node is null)
-                return false;
-
-            try {
-                using JsonDocument doc = JsonDocument.Parse(node.ToJsonString());
-                return doc.RootElement.ValueKind switch {
-                    JsonValueKind.True => true,
-                    JsonValueKind.String => IsTruthyValue(doc.RootElement.GetString()),
-                    JsonValueKind.Number => IsTruthyValue(doc.RootElement.GetRawText()),
-                    _ => false
-                };
-            }
-            catch {
-                return false;
-            }
-        }
-
-        private static bool IsTruthyValue(string? value) {
-            if (string.IsNullOrWhiteSpace(value))
-                return false;
-
-            string normalized = value.Trim();
-            return normalized == "1"
-                || normalized.Equals("true", StringComparison.OrdinalIgnoreCase)
-                || normalized.Equals("yes", StringComparison.OrdinalIgnoreCase)
-                || normalized.Equals("y", StringComparison.OrdinalIgnoreCase)
-                || normalized.Equals("on", StringComparison.OrdinalIgnoreCase);
+        private static bool HasOnlyQueryWatchManagedMarker(JsonObject config) {
+            return config.Count == 1 && RepoLocalTelemetryConfigInspector.IsManagedByQueryWatch(config);
         }
 
         private static string FormatSource(RepositoryTelemetrySourceKind sourceKind) {
             return sourceKind switch {
                 RepositoryTelemetrySourceKind.None => "none",
                 RepositoryTelemetrySourceKind.ProcessEnvironment => "process environment",
-                RepositoryTelemetrySourceKind.RepositoryConfig => RepositoryConfigFileName,
+                RepositoryTelemetrySourceKind.RepositoryConfig => RepoLocalTelemetryConfigInspector.RepositoryConfigFileName,
                 RepositoryTelemetrySourceKind.DotEnvLocal => ".env.local",
                 RepositoryTelemetrySourceKind.DotEnv => ".env",
                 _ => "none"
@@ -257,11 +207,25 @@ namespace KeelMatrix.QueryWatch.Cli.Telemetry {
             };
         }
 
-        private enum TelemetryConfigMutation {
-            None,
-            Removed,
-            RewrittenEnabled,
-            NotQwatchManaged
+        private static string FormatRepoLocalConfigState(RepoLocalTelemetryConfigStateKind stateKind) {
+            return stateKind switch {
+                RepoLocalTelemetryConfigStateKind.Missing => "missing",
+                RepoLocalTelemetryConfigStateKind.QueryWatchManaged => "qwatch-managed",
+                RepoLocalTelemetryConfigStateKind.NotQueryWatchManaged => "not qwatch-managed",
+                RepoLocalTelemetryConfigStateKind.Unreadable => "unreadable",
+                RepoLocalTelemetryConfigStateKind.InvalidJson => "invalid JSON",
+                RepoLocalTelemetryConfigStateKind.TooLarge => "exceeds inspection size cap",
+                _ => "missing"
+            };
         }
+    }
+
+    internal sealed class TelemetryStatusResult(
+        RepositoryTelemetryStatus effectiveStatus,
+        RepoLocalTelemetryConfigStateKind repoLocalConfigState,
+        string repoLocalConfigPath) {
+        public RepositoryTelemetryStatus EffectiveStatus { get; } = effectiveStatus;
+        public RepoLocalTelemetryConfigStateKind RepoLocalConfigState { get; } = repoLocalConfigState;
+        public string RepoLocalConfigPath { get; } = repoLocalConfigPath;
     }
 }

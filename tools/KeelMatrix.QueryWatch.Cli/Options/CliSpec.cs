@@ -15,15 +15,15 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
             new CliOption("--baseline", "<path>", "Baseline summary JSON to compare against."),
             new CliOption("--baseline-allow-percent", "P", "Allow +P% regression vs baseline before failing."),
             new CliOption("--write-baseline", null, "Write current aggregated summary to --baseline."),
-            new CliOption("--budget", "\"<pattern>=<max>\"", "Per-pattern query count budget (repeatable).",
+            new CliOption("--budget", "\"<pattern>=<max>\"", "Per-pattern query count budget.",
                 Notes: "Pattern supports wildcards (*, ?) or prefix with 'regex:' for raw regex.", Repeatable: true),
             new CliOption("--require-full-events", null, "Fail if input summaries are top-N sampled."),
             new CliOption("--help", null, "Show this help.")
         ];
 
         public static readonly CliCommand[] TelemetryCommands = [
-            new CliCommand("telemetry status [--json]", "Show effective telemetry state for the current repo."),
-            new CliCommand("telemetry disable", "Write repo-local keelmatrix.telemetry.json with disabled=true."),
+            new CliCommand("telemetry status [--json]", "Show effective telemetry state and repo-local config status for the current repo."),
+            new CliCommand("telemetry disable", "Write a qwatch-managed repo-local telemetry opt-out."),
             new CliCommand("telemetry enable", "Remove or neutralize qwatch-managed repo-local telemetry opt-out.")
         ];
 
@@ -66,8 +66,8 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
             _ = sb.AppendLine("  qwatch telemetry enable");
             _ = sb.AppendLine();
             _ = sb.AppendLine("Commands:");
-            _ = AppendAlignedLine(sb, leftWidth, "status [--json]", "Show effective telemetry state for the current repo.");
-            _ = AppendAlignedLine(sb, leftWidth, "disable", "Write repo-local keelmatrix.telemetry.json with disabled=true.");
+            _ = AppendAlignedLine(sb, leftWidth, "status [--json]", "Show effective telemetry state and repo-local config status for the current repo.");
+            _ = AppendAlignedLine(sb, leftWidth, "disable", "Write a qwatch-managed repo-local telemetry opt-out.");
             _ = AppendAlignedLine(sb, leftWidth, "enable", "Remove or neutralize qwatch-managed repo-local telemetry opt-out.");
             _ = sb.AppendLine();
             _ = sb.AppendLine("Options:");

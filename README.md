@@ -218,8 +218,8 @@ Usage:
   qwatch telemetry <status|disable|enable> [options]
 
 Commands:
-telemetry status [--json]    Show effective telemetry state for the current repo.
-telemetry disable            Write repo-local keelmatrix.telemetry.json with disabled=true.
+telemetry status [--json]    Show effective telemetry state and repo-local config status for the current repo.
+telemetry disable            Write a qwatch-managed repo-local telemetry opt-out.
 telemetry enable             Remove or neutralize qwatch-managed repo-local telemetry opt-out.
 
 Options:
@@ -230,7 +230,7 @@ Options:
 --baseline <path>            Baseline summary JSON to compare against.
 --baseline-allow-percent P   Allow +P% regression vs baseline before failing.
 --write-baseline             Write current aggregated summary to --baseline.
---budget "<pattern>=<max>"   Per-pattern query count budget (repeatable). (repeatable)
+--budget "<pattern>=<max>"   Per-pattern query count budget. (repeatable)
                              Pattern supports wildcards (*, ?) or prefix with 'regex:' for raw regex.
 --require-full-events        Fail if input summaries are top-N sampled.
 --help                       Show this help.
@@ -242,7 +242,7 @@ Multi-file support:
 - repeat `--input` to aggregate summaries from multiple test projects
 - compare current results against a baseline summary
 - write GitHub Actions step summaries automatically when running in CI
-- inspect or manage repo-local telemetry with `qwatch telemetry status|disable|enable`
+- inspect or manage repo-local telemetry opt-out state with `qwatch telemetry status|disable|enable`
 
 ## Troubleshooting
 
@@ -259,6 +259,8 @@ QueryWatch uses `KeelMatrix.Telemetry` transitively for minimal anonymous usage 
 See:
 - [PRIVACY.md](PRIVACY.md) for the QueryWatch-specific summary
 - [KeelMatrix.Telemetry README](https://github.com/KeelMatrix/Telemetry#readme) for the maintained telemetry behavior and opt-out details
+
+For the CLI, `qwatch telemetry disable` writes a repo-local opt-out file and `qwatch telemetry enable` removes or neutralizes only qwatch-managed repo-local opt-out state. QueryWatch-owned files use `managedBy: "qwatch"` as the ownership marker. Higher-precedence process environment variables still win, and existing non-qwatch-managed repo-local config is left untouched.
 
 ## License
 

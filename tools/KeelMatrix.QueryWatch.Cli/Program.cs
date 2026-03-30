@@ -6,7 +6,11 @@ using KeelMatrix.QueryWatch.Cli.Telemetry;
 
 namespace KeelMatrix.QueryWatch.Cli {
     internal static class Program {
-        private static async Task<int> Main(string[] args) {
+        private static Task<int> Main(string[] args) {
+            return RunAsync(args);
+        }
+
+        internal static async Task<int> RunAsync(string[] args) {
             // 0) No arguments → show help
             if (args.Length == 0) {
                 Console.WriteLine(CommandLineOptions.HelpText);
@@ -42,7 +46,7 @@ namespace KeelMatrix.QueryWatch.Cli {
                 return await TelemetryCommandHandler.ExecuteAsync(parsed.TelemetryOptions).ConfigureAwait(false);
 
             // 4) Normal execution
-            QueryWatchCliTelemetry.TrackActivation();
+            TelemetryHost.TrackActivation();
             return await Runner.ExecuteAsync(parsed.Options!).ConfigureAwait(false);
         }
     }
