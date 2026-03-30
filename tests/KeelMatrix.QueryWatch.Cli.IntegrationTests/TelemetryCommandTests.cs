@@ -129,7 +129,6 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             _ = stdout.Should().Contain("Telemetry: enabled");
             _ = stdout.Should().Contain("Source: process environment");
             _ = stdout.Should().Contain("Variable: KEELMATRIX_NO_TELEMETRY");
-            _ = stdout.Should().Contain("Note: repo-local config is ignored while this process-level override is present");
         }
 
         [Fact]
@@ -146,13 +145,15 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
 
             using JsonDocument doc = JsonDocument.Parse(stdout);
             _ = doc.RootElement.GetProperty("isEnabled").GetBoolean().Should().BeFalse();
-            _ = doc.RootElement.GetProperty("winningSource").GetString().Should().Be(".env.local");
-            _ = doc.RootElement.GetProperty("winningPathOrVariable").GetString().Should().Be(Path.Combine(repo.Root, ".env.local"));
+            _ = doc.RootElement.GetProperty("winningSourceKind").GetString().Should().Be("dotEnvLocal");
+            _ = doc.RootElement.GetProperty("winningPath").GetString().Should().Be(Path.Combine(repo.Root, ".env.local"));
             _ = doc.RootElement.GetProperty("winningVariableName").GetString().Should().Be("KEELMATRIX_NO_TELEMETRY");
+            _ = doc.RootElement.GetProperty("scope").GetString().Should().Be("repoLocal");
+            _ = doc.RootElement.GetProperty("repoRoot").GetString().Should().Be(repo.Root);
         }
 
         [Fact]
-        public void Telemetry_Disable_Writes_Repository_Config() {
+        public void Telemetry_Disable_Writes_Qwatch_Managed_Repository_Config() {
             using RepoScope repo = RepoScope.Create();
 
             (int code, string stdout, string stderr) = CliRunner.Run(
@@ -166,12 +167,18 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
 
             using JsonDocument doc = JsonDocument.Parse(File.ReadAllText(configPath));
             _ = doc.RootElement.GetProperty("disabled").GetBoolean().Should().BeTrue();
+            _ = doc.RootElement.GetProperty("qwatchManaged").GetBoolean().Should().BeTrue();
         }
 
         [Fact]
         public void Telemetry_Enable_Removes_Qwatch_Managed_Config_File() {
             using RepoScope repo = RepoScope.Create();
-            string configPath = repo.WriteFile("{" + Environment.NewLine + "  \"disabled\": true" + Environment.NewLine + "}" + Environment.NewLine, "keelmatrix.telemetry.json");
+            string configPath = repo.WriteFile(
+                "{" + Environment.NewLine +
+                "  \"disabled\": true," + Environment.NewLine +
+                "  \"qwatchManaged\": true" + Environment.NewLine +
+                "}" + Environment.NewLine,
+                "keelmatrix.telemetry.json");
 
             (int code, string stdout, string stderr) = CliRunner.Run(
                 ["telemetry", "enable"],
@@ -180,7 +187,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
 
             _ = code.Should().Be(0, stdout + Environment.NewLine + stderr);
             _ = File.Exists(configPath).Should().BeFalse();
-            _ = stdout.Should().Contain("Repo-local telemetry opt-out removed");
+            _ = stdout.Should().Contain("Repo-local qwatch-managed telemetry opt-out removed");
             _ = stdout.Should().Contain("Telemetry: enabled");
         }
 
@@ -190,6 +197,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string configPath = repo.WriteFile(
                 "{" + Environment.NewLine +
                 "  \"disabled\": true," + Environment.NewLine +
+                "  \"qwatchManaged\": true," + Environment.NewLine +
                 "  \"channel\": \"dev\"" + Environment.NewLine +
                 "}" + Environment.NewLine,
                 "keelmatrix.telemetry.json");
@@ -203,8 +211,31 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             _ = File.Exists(configPath).Should().BeTrue();
 
             using JsonDocument doc = JsonDocument.Parse(File.ReadAllText(configPath));
-            _ = doc.RootElement.GetProperty("disabled").GetBoolean().Should().BeFalse();
             _ = doc.RootElement.GetProperty("channel").GetString().Should().Be("dev");
+            _ = doc.RootElement.GetProperty("qwatchManaged").GetBoolean().Should().BeTrue();
+            _ = doc.RootElement.TryGetProperty("disabled", out _).Should().BeFalse();
+            _ = stdout.Should().Contain("Repo-local qwatch-managed telemetry config updated");
+        }
+
+        [Fact]
+        public void Telemetry_Enable_Does_Not_Modify_Non_Qwatch_Managed_Config() {
+            using RepoScope repo = RepoScope.Create();
+            string originalConfig =
+                "{" + Environment.NewLine +
+                "  \"disabled\": true," + Environment.NewLine +
+                "  \"channel\": \"dev\"" + Environment.NewLine +
+                "}" + Environment.NewLine;
+            string configPath = repo.WriteFile(originalConfig, "keelmatrix.telemetry.json");
+
+            (int code, string stdout, string stderr) = CliRunner.Run(
+                ["telemetry", "enable"],
+                env: RepoScope.TelemetryEnvironment,
+                workingDirectory: repo.WorkingDirectory);
+
+            _ = code.Should().Be(0, stdout + Environment.NewLine + stderr);
+            _ = File.ReadAllText(configPath).Should().Be(originalConfig);
+            _ = stdout.Should().Contain("not qwatch-managed and was left unchanged");
+            _ = stdout.Should().Contain("Telemetry: disabled");
         }
 
         [Fact]
