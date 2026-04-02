@@ -31,7 +31,7 @@ namespace KeelMatrix.QueryWatch {
             Options = options ?? new QueryWatchOptions();
             StartedAt = DateTimeOffset.UtcNow;
 
-            QueryWatchTelemetry.TrackActivation();
+            TelemetryHost.TrackActivation();
         }
 
         /// <summary>Options for this session.</summary>
@@ -131,7 +131,7 @@ namespace KeelMatrix.QueryWatch {
 
             if (Interlocked.CompareExchange(ref _stopped, 1, 0) == 0) {
                 StoppedAt = now;
-                QueryWatchTelemetry.TrackHeartbeat();
+                TelemetryHost.TrackHeartbeat();
             }
 
             List<QueryEvent> snapshot;

@@ -35,14 +35,18 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             var json = CreateLibraryJson(totalEvents: 2, sampleTop: 10, out _);
 
             (int okCode, string? okOut, string? okErr) = CliRunner.Run([
-                "--input", json,
-                "--max-queries", "3"
+                "--input",
+                json,
+                "--max-queries",
+                "3"
             ]);
             _ = okCode.Should().Be(0, okOut + Environment.NewLine + okErr);
 
             (int failCode, string _, string? failErr) = CliRunner.Run([
-                "--input", json,
-                "--max-queries", "1"
+                "--input",
+                json,
+                "--max-queries",
+                "1"
             ]);
             _ = failCode.Should().Be(4);
             _ = failErr.Should().Contain("Max queries exceeded");
@@ -54,15 +58,19 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
 
             // Allow exactly the predictable match
             (int okCode, string? okOut, string? okErr) = CliRunner.Run([
-                "--input", json,
-                "--budget", "SELECT * FROM Users*=1"
+                "--input",
+                json,
+                "--budget",
+                "SELECT * FROM Users*=1"
             ]);
             _ = okCode.Should().Be(0, okOut + Environment.NewLine + okErr);
 
             // Now disallow it
             (int badCode, string _, string? badErr) = CliRunner.Run([
-                "--input", json,
-                "--budget", "SELECT * FROM Users*=0"
+                "--input",
+                json,
+                "--budget",
+                "SELECT * FROM Users*=0"
             ]);
             _ = badCode.Should().Be(4);
             _ = badErr.Should().Contain("Budget violations");
@@ -74,8 +82,10 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             var baselinePath = Path.Combine(Path.GetTempPath(), "qwatch-baseline-" + Guid.NewGuid().ToString("N"), "baseline.json");
 
             (int writeCode, string? writeOut, string? writeErr) = CliRunner.Run([
-                "--input", current1,
-                "--baseline", baselinePath,
+                "--input",
+                current1,
+                "--baseline",
+                baselinePath,
                 "--write-baseline"
             ]);
             _ = writeCode.Should().Be(0, writeOut + Environment.NewLine + writeErr);
@@ -85,17 +95,23 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
 
             // Generous tolerance -> pass
             (int passCode, string? passOut, string? passErr) = CliRunner.Run([
-                "--input", current2,
-                "--baseline", baselinePath,
-                "--baseline-allow-percent", "80"
+                "--input",
+                current2,
+                "--baseline",
+                baselinePath,
+                "--baseline-allow-percent",
+                "80"
             ]);
             _ = passCode.Should().Be(0, passOut + Environment.NewLine + passErr);
 
             // Tight tolerance -> fail with baseline regression code
             (int failCode, string _, string? failErr) = CliRunner.Run([
-                "--input", current2,
-                "--baseline", baselinePath,
-                "--baseline-allow-percent", "10"
+                "--input",
+                current2,
+                "--baseline",
+                baselinePath,
+                "--baseline-allow-percent",
+                "10"
             ]);
             _ = failCode.Should().Be(5);
             _ = failErr.Should().Contain("Baseline regressions");

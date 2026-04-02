@@ -9,7 +9,10 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
         private static string? _publishedDir;
         private static string? _publishedDll;
 
-        public static (int ExitCode, string StdOut, string StdErr) Run(string[] args, (string Key, string Value)[]? env = null) {
+        public static (int ExitCode, string StdOut, string StdErr) Run(
+            string[] args,
+            (string Key, string? Value)[]? env = null,
+            string? workingDirectory = null) {
             string repoRoot = FindRepoRoot();
             EnsurePublished(repoRoot, out string? dllPath, out string? workDir);
 
@@ -18,7 +21,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                WorkingDirectory = workDir
+                WorkingDirectory = workingDirectory ?? workDir
             };
 
             // Run the published app: dotnet <dll> -- <args>
@@ -26,8 +29,12 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             foreach (string a in args) psi.ArgumentList.Add(a);
 
             if (env is not null) {
-                foreach (var (k, v) in env)
-                    psi.Environment[k] = v;
+                foreach (var (k, v) in env) {
+                    if (v is null)
+                        _ = psi.Environment.Remove(k);
+                    else
+                        psi.Environment[k] = v;
+                }
             }
 
             using var proc = Process.Start(psi)!;
@@ -126,5 +133,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             }
             return AppContext.BaseDirectory;
         }
+
+        internal static string GetRepoRoot() => FindRepoRoot();
     }
 }

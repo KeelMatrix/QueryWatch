@@ -11,9 +11,12 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string baseline = Path.Combine(AppContext.BaseDirectory, "Fixtures", "baseline.json");
 
             (int code, string? stdout, string? stderr) = CliRunner.Run([
-                "--input", current,
-                "--baseline", baseline,
-                "--baseline-allow-percent", "10"
+                "--input",
+                current,
+                "--baseline",
+                baseline,
+                "--baseline-allow-percent",
+                "10"
             ]);
 
             _ = code.Should().Be(0, stdout + Environment.NewLine + stderr);
@@ -25,9 +28,12 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string baseline = Path.Combine(AppContext.BaseDirectory, "Fixtures", "baseline.json");
 
             (int code, string _, string? stderr) = CliRunner.Run([
-                "--input", current,
-                "--baseline", baseline,
-                "--baseline-allow-percent", "10"
+                "--input",
+                current,
+                "--baseline",
+                baseline,
+                "--baseline-allow-percent",
+                "10"
             ]);
 
             _ = code.Should().Be(5);

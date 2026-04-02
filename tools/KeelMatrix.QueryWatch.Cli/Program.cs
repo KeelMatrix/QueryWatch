@@ -2,10 +2,15 @@
 
 using KeelMatrix.QueryWatch.Cli.Core;
 using KeelMatrix.QueryWatch.Cli.Options;
+using KeelMatrix.QueryWatch.Cli.Telemetry;
 
 namespace KeelMatrix.QueryWatch.Cli {
     internal static class Program {
-        private static async Task<int> Main(string[] args) {
+        private static Task<int> Main(string[] args) {
+            return RunAsync(args);
+        }
+
+        internal static async Task<int> RunAsync(string[] args) {
             // 0) No arguments → show help
             if (args.Length == 0) {
                 Console.WriteLine(CommandLineOptions.HelpText);
@@ -18,13 +23,13 @@ namespace KeelMatrix.QueryWatch.Cli {
                 return ExitCodes.Ok;
             }
 
-            ParseResult parsed = CommandLineOptions.Parse(args);
+            RootParseResult parsed = CliCommandParser.Parse(args);
 
             // 2) If the caller asked for help, always print it and return:
             //    - 0 when parse succeeded (pure help)
             //    - 1 when parse failed (help + error)
             if (parsed.ShowHelp) {
-                Console.WriteLine(CommandLineOptions.HelpText);
+                Console.WriteLine(parsed.HelpText);
                 if (!parsed.Success && !string.IsNullOrEmpty(parsed.ErrorMessage))
                     await Console.Error.WriteLineAsync(parsed.ErrorMessage);
                 return parsed.Success ? ExitCodes.Ok : ExitCodes.InvalidArguments;
@@ -37,9 +42,12 @@ namespace KeelMatrix.QueryWatch.Cli {
                 return ExitCodes.InvalidArguments;
             }
 
+            if (parsed.TelemetryOptions is not null)
+                return await TelemetryCommandHandler.ExecuteAsync(parsed.TelemetryOptions).ConfigureAwait(false);
+
             // 4) Normal execution
-            QueryWatchCliTelemetry.TrackActivation();
-            return await Runner.ExecuteAsync(parsed.Options);
+            TelemetryHost.TrackActivation();
+            return await Runner.ExecuteAsync(parsed.Options!).ConfigureAwait(false);
         }
     }
 }

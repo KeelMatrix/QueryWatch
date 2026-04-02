@@ -10,8 +10,10 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string f = Path.Combine(AppContext.BaseDirectory, "Fixtures", "pattern.json");
             (int code, string? stdout, string? stderr) = CliRunner.Run(
             [
-                "--input", f,
-                "--budget", "SELECT * FROM Users*=1"
+                "--input",
+                f,
+                "--budget",
+                "SELECT * FROM Users*=1"
             ]);
 
             // For pattern budgets the CLI returns 4 when the count exceeds the budget.
@@ -26,8 +28,10 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             string f = Path.Combine(AppContext.BaseDirectory, "Fixtures", "pattern.json");
             (int code, string? stdout, string? stderr) = CliRunner.Run(
             [
-                "--input", f,
-                "--budget", "SELECT * FROM Users*=2"
+                "--input",
+                f,
+                "--budget",
+                "SELECT * FROM Users*=2"
             ]);
 
             _ = code.Should().Be(0, stdout + Environment.NewLine + stderr);

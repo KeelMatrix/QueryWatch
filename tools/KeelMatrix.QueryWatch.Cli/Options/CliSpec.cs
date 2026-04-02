@@ -4,6 +4,7 @@ using System.Text;
 
 namespace KeelMatrix.QueryWatch.Cli.Options {
     internal sealed record CliOption(string Flag, string? ValueSyntax, string Description, string? Notes = null, bool Repeatable = false);
+    internal sealed record CliCommand(string Command, string Description);
 
     internal static class CliSpec {
         public static readonly CliOption[] Options = [
@@ -14,10 +15,16 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
             new CliOption("--baseline", "<path>", "Baseline summary JSON to compare against."),
             new CliOption("--baseline-allow-percent", "P", "Allow +P% regression vs baseline before failing."),
             new CliOption("--write-baseline", null, "Write current aggregated summary to --baseline."),
-            new CliOption("--budget", "\"<pattern>=<max>\"", "Per-pattern query count budget (repeatable).",
+            new CliOption("--budget", "\"<pattern>=<max>\"", "Per-pattern query count budget.",
                 Notes: "Pattern supports wildcards (*, ?) or prefix with 'regex:' for raw regex.", Repeatable: true),
             new CliOption("--require-full-events", null, "Fail if input summaries are top-N sampled."),
             new CliOption("--help", null, "Show this help.")
+        ];
+
+        public static readonly CliCommand[] TelemetryCommands = [
+            new CliCommand("telemetry status [--json]", "Show effective telemetry state and repo-local config status for the current repo."),
+            new CliCommand("telemetry disable", "Write a qwatch-managed repo-local telemetry opt-out."),
+            new CliCommand("telemetry enable", "Remove or neutralize qwatch-managed repo-local telemetry opt-out.")
         ];
 
         public static string BuildHelpText() {
@@ -26,21 +33,20 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
             StringBuilder sb = new();
             _ = sb.AppendLine("QueryWatch CLI");
             _ = sb.AppendLine();
-            _ = sb.AppendLine("Usage: qwatch --input file.json [options]");
+            _ = sb.AppendLine("Usage:");
+            _ = sb.AppendLine("  qwatch --input file.json [options]");
+            _ = sb.AppendLine("  qwatch telemetry <status|disable|enable> [options]");
+            _ = sb.AppendLine();
+            _ = sb.AppendLine("Commands:");
+            foreach (CliCommand command in TelemetryCommands) {
+                _ = AppendAlignedLine(sb, leftWidth, command.Command, command.Description);
+            }
             _ = sb.AppendLine();
             _ = sb.AppendLine("Options:");
             foreach (CliOption o in Options) {
                 var left = o.Flag + (o.ValueSyntax is not null ? " " + o.ValueSyntax : string.Empty);
                 var repeat = o.Repeatable ? " (repeatable)" : string.Empty;
-                _ = sb.Append("  ");
-                if (left.Length >= leftWidth) {
-                    _ = sb.AppendLine(left);
-                    _ = sb.Append(' ', leftWidth);
-                }
-                else {
-                    _ = sb.Append(left.PadRight(leftWidth));
-                }
-                _ = sb.AppendLine(o.Description + repeat);
+                _ = AppendAlignedLine(sb, leftWidth, left, o.Description + repeat);
                 if (!string.IsNullOrWhiteSpace(o.Notes)) {
                     _ = sb.Append(' ', 2 + leftWidth);
                     _ = sb.AppendLine(o.Notes);
@@ -49,9 +55,41 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
             return sb.ToString();
         }
 
+        public static string BuildTelemetryHelpText() {
+            const int leftWidth = 28;
+            StringBuilder sb = new();
+            _ = sb.AppendLine("QueryWatch CLI telemetry");
+            _ = sb.AppendLine();
+            _ = sb.AppendLine("Usage:");
+            _ = sb.AppendLine("  qwatch telemetry status [--json]");
+            _ = sb.AppendLine("  qwatch telemetry disable");
+            _ = sb.AppendLine("  qwatch telemetry enable");
+            _ = sb.AppendLine();
+            _ = sb.AppendLine("Commands:");
+            _ = AppendAlignedLine(sb, leftWidth, "status [--json]", "Show effective telemetry state and repo-local config status for the current repo.");
+            _ = AppendAlignedLine(sb, leftWidth, "disable", "Write a qwatch-managed repo-local telemetry opt-out.");
+            _ = AppendAlignedLine(sb, leftWidth, "enable", "Remove or neutralize qwatch-managed repo-local telemetry opt-out.");
+            _ = sb.AppendLine();
+            _ = sb.AppendLine("Options:");
+            _ = AppendAlignedLine(sb, leftWidth, "--json", "Output telemetry status as JSON.");
+            _ = AppendAlignedLine(sb, leftWidth, "--help", "Show this help.");
+            return sb.ToString();
+        }
+
         public static string BuildReadmeFlagsMarkdown() {
             StringBuilder sb = new();
             _ = sb.AppendLine("```");
+            _ = sb.AppendLine("Usage:");
+            _ = sb.AppendLine("  qwatch --input file.json [options]");
+            _ = sb.AppendLine("  qwatch telemetry <status|disable|enable> [options]");
+            _ = sb.AppendLine();
+            _ = sb.AppendLine("Commands:");
+            foreach (CliCommand command in TelemetryCommands) {
+                var left = command.Command.PadRight(28);
+                _ = sb.AppendLine($"{left} {command.Description}");
+            }
+            _ = sb.AppendLine();
+            _ = sb.AppendLine("Options:");
             foreach (CliOption o in Options) {
                 var left = (o.Flag + (o.ValueSyntax is not null ? " " + o.ValueSyntax : string.Empty)).PadRight(28);
                 var repeat = o.Repeatable ? " (repeatable)" : string.Empty;
@@ -62,6 +100,20 @@ namespace KeelMatrix.QueryWatch.Cli.Options {
             }
             _ = sb.AppendLine("```");
             return sb.ToString();
+        }
+
+        private static StringBuilder AppendAlignedLine(StringBuilder sb, int leftWidth, string left, string right) {
+            _ = sb.Append("  ");
+            if (left.Length >= leftWidth) {
+                _ = sb.AppendLine(left);
+                _ = sb.Append(' ', leftWidth);
+            }
+            else {
+                _ = sb.Append(left.PadRight(leftWidth));
+            }
+
+            _ = sb.AppendLine(right);
+            return sb;
         }
     }
 }

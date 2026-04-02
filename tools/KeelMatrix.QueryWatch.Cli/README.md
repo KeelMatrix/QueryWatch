@@ -31,6 +31,24 @@ Show help:
 qwatch --help
 ```
 
+Inspect effective telemetry state and repo-local config status for the current repo:
+
+```bash
+qwatch telemetry status
+```
+
+Write a qwatch-managed repo-local telemetry opt-out for the current repo:
+
+```bash
+qwatch telemetry disable
+```
+
+Remove a qwatch-managed repo-local telemetry opt-out for the current repo:
+
+```bash
+qwatch telemetry enable
+```
+
 Fail if total queries exceed 50:
 
 ```bash
@@ -136,6 +154,8 @@ If you only need the file format in another tool, see the contracts package:
 ## Privacy
 
 `qwatch` sends a minimal anonymous telemetry activation event on normal CLI execution.
+
+Telemetry management commands do not emit telemetry. Use `qwatch telemetry status`, `qwatch telemetry disable`, and `qwatch telemetry enable` to inspect or manage the repo-local opt-out file without introducing a second config model. These commands stay repo-scoped to the current working directory, and process environment variables still take precedence over repo-local config. QueryWatch-owned files use `managedBy: "qwatch"` as the ownership marker. If an existing `keelmatrix.telemetry.json` is not qwatch-managed, the CLI fails safely instead of overwriting it.
 
 It does not send heartbeat events. Reason: `qwatch` is typically a short-lived CI/local tool, so weekly heartbeat would mostly reflect retained pipeline wiring rather than meaningful interactive product usage.
 

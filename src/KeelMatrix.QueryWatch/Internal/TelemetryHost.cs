@@ -3,7 +3,7 @@
 using KeelMatrix.Telemetry;
 
 namespace KeelMatrix.QueryWatch {
-    internal static class QueryWatchTelemetry {
+    internal static class TelemetryHost {
         private static readonly Client Client = new("QueryWatch", typeof(QueryWatchSession));
 
         internal static void TrackActivation() => Client.TrackActivation();
