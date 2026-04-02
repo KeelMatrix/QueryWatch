@@ -49,7 +49,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             _ = code.Should().Be(0, stdout + Environment.NewLine + stderr);
             _ = stdout.Should().Contain("Telemetry: enabled");
             _ = stdout.Should().Contain("Source: none");
-            _ = stdout.Should().Contain($"Repo: {repo.Root}");
+            _ = NormalizeForAssertion(stdout).Should().Contain($"Repo: {NormalizeForAssertion(repo.Root)}");
             _ = stdout.Should().Contain("Repo-local config: missing");
         }
 
@@ -82,7 +82,7 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             _ = code.Should().Be(0, stdout + Environment.NewLine + stderr);
             _ = stdout.Should().Contain("Telemetry: disabled");
             _ = stdout.Should().Contain("Source: keelmatrix.telemetry.json");
-            _ = stdout.Should().Contain(Path.Combine(repo.Root, "keelmatrix.telemetry.json"));
+            _ = NormalizeForAssertion(stdout).Should().Contain(NormalizeForAssertion(Path.Combine(repo.Root, "keelmatrix.telemetry.json")));
             _ = stdout.Should().Contain("Scope: repo-local");
             _ = stdout.Should().Contain("Repo-local config: not qwatch-managed");
         }
@@ -171,12 +171,12 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             JsonElement effectiveStatus = doc.RootElement.GetProperty("effectiveStatus");
             _ = effectiveStatus.GetProperty("isEnabled").GetBoolean().Should().BeFalse();
             _ = effectiveStatus.GetProperty("winningSourceKind").GetString().Should().Be("dotEnvLocal");
-            _ = effectiveStatus.GetProperty("winningPath").GetString().Should().Be(Path.Combine(repo.Root, ".env.local"));
+            _ = NormalizeForAssertion(effectiveStatus.GetProperty("winningPath").GetString()).Should().Be(NormalizeForAssertion(Path.Combine(repo.Root, ".env.local")));
             _ = effectiveStatus.GetProperty("winningVariableName").GetString().Should().Be("KEELMATRIX_NO_TELEMETRY");
             _ = effectiveStatus.GetProperty("scope").GetString().Should().Be("repoLocal");
-            _ = effectiveStatus.GetProperty("repoRoot").GetString().Should().Be(repo.Root);
+            _ = NormalizeForAssertion(effectiveStatus.GetProperty("repoRoot").GetString()).Should().Be(NormalizeForAssertion(repo.Root));
             _ = doc.RootElement.GetProperty("repoLocalConfigState").GetString().Should().Be("missing");
-            _ = doc.RootElement.GetProperty("repoLocalConfigPath").GetString().Should().Be(Path.Combine(repo.Root, "keelmatrix.telemetry.json"));
+            _ = NormalizeForAssertion(doc.RootElement.GetProperty("repoLocalConfigPath").GetString()).Should().Be(NormalizeForAssertion(Path.Combine(repo.Root, "keelmatrix.telemetry.json")));
         }
 
         [Fact]
@@ -515,6 +515,15 @@ namespace KeelMatrix.QueryWatch.Cli.IntegrationTests {
             public void Dispose() {
                 Environment.CurrentDirectory = originalCurrentDirectory;
             }
+        }
+
+        private static string NormalizeForAssertion(string? value) {
+            value.Should().NotBeNull();
+
+            if (!OperatingSystem.IsMacOS())
+                return value!;
+
+            return value!.Replace("/private/var/", "/var/", StringComparison.Ordinal);
         }
 
         private sealed class EnvironmentVariableSnapshot : IDisposable {
