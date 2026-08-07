@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:
+  KEELMATRIX_NO_TELEMETRY: "1"
+
 jobs:
   release:
     runs-on: windows-latest

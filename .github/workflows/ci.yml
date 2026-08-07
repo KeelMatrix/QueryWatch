@@ -5,6 +5,9 @@ permissions:
   security-events: write
   actions: read
 
+env:
+  KEELMATRIX_NO_TELEMETRY: "1"
+
 on:
   push:
     branches: [ main, master ]

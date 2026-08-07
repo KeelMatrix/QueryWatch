@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  KEELMATRIX_NO_TELEMETRY: "1"
+
 jobs:
   supported-tfms:
     if: github.actor != 'dependabot[bot]'

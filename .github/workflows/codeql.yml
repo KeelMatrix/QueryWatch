@@ -24,6 +24,9 @@ permissions:
   contents: read
   security-events: write
 
+env:
+  KEELMATRIX_NO_TELEMETRY: "1"
+
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})

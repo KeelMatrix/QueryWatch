@@ -12,6 +12,9 @@ on:
 permissions:
   contents: read
 
+env:
+  KEELMATRIX_NO_TELEMETRY: "1"
+
 jobs:
   build-run-gate:
     if: github.actor != 'dependabot[bot]'
