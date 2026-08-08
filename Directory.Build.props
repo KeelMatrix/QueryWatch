@@ -60,6 +60,32 @@
   <ItemGroup Condition="'$(IsPackable)'=='true'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
   </ItemGroup>
+
+  <!-- Keep local telemetry and environment files out of every NuGet package. -->
+  <Target Name="ExcludeSensitiveFilesFromPack"
+          BeforeTargets="_GetPackageFiles"
+          Condition="'$(IsPackable)'=='true'">
+    <ItemGroup>
+      <None Remove="keelmatrix.telemetry.json" />
+      <None Remove=".env" />
+      <None Remove=".env.local" />
+      <Content Remove="keelmatrix.telemetry.json" />
+      <Content Remove=".env" />
+      <Content Remove=".env.local" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Fail closed if an explicit or future broad pack glob reintroduces one. -->
+  <Target Name="RejectSensitiveFilesInPack"
+          AfterTargets="_GetPackageFiles"
+          Condition="'$(IsPackable)'=='true'">
+    <ItemGroup>
+      <_SensitivePackageFile Include="@(_PackageFiles)"
+                             Condition="'%(_PackageFiles.Filename)%(_PackageFiles.Extension)'=='keelmatrix.telemetry.json' Or '%(_PackageFiles.Filename)%(_PackageFiles.Extension)'=='.env' Or '%(_PackageFiles.Filename)%(_PackageFiles.Extension)'=='.env.local'" />
+    </ItemGroup>
+    <Error Condition="'@(_SensitivePackageFile)'!=''"
+           Text="Refusing to pack sensitive file(s): @(_SensitivePackageFile, ', ')." />
+  </Target>
   
   <!-- Include Public API baseline files if they exist next to a project. -->
   <ItemGroup>
