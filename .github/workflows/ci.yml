@@ -37,7 +37,7 @@ jobs:
           repository: KeelMatrix/Telemetry
           path: _deps/KeelMatrix.Telemetry/app
       - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.408'
       - name: Bootstrap local dependency feed (Windows)
@@ -92,7 +92,7 @@ jobs:
           repository: KeelMatrix/Telemetry
           path: _deps/KeelMatrix.Telemetry/app
       - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.408'
       - name: Bootstrap local dependency feed (Windows)
@@ -134,7 +134,7 @@ jobs:
           repository: KeelMatrix/Telemetry
           path: _deps/KeelMatrix.Telemetry/app
       - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.408'
       - name: Bootstrap local dependency feed
@@ -169,7 +169,7 @@ jobs:
           repository: KeelMatrix/Telemetry
           path: _deps/KeelMatrix.Telemetry/app
       - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.408'
       - name: Bootstrap local dependency feed
@@ -238,7 +238,7 @@ jobs:
         with:
           repository: KeelMatrix/Telemetry
           path: _deps/KeelMatrix.Telemetry/app
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with: { dotnet-version: '8.0.408' }
       - name: Bootstrap local dependency feed
         shell: pwsh
