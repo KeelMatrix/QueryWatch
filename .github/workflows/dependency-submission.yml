@@ -1,0 +1,29 @@
+name: Dependency submission
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '23 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  submit-nuget-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.408'
+      - name: Restore dependencies
+        run: dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config
+      - name: Submit resolved NuGet dependency graph
+        uses: advanced-security/component-detection-dependency-submission-action@v0.1.4
+        with:
+          filePath: .
+          detectorsCategories: NuGet
