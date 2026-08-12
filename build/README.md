@@ -7,15 +7,13 @@ Run from the **repo root** unless otherwise noted.
 
 ## 📦 What’s Here
 
-- **`Dev-PackInstallSamples.ps1` / `.sh`** — Restore, build, and **pack** the local `KeelMatrix.QueryWatch`, `KeelMatrix.Redaction`, and `KeelMatrix.Telemetry` packages, then restore **samples** against the locally packed feed (`./artifacts/packages`).  
+- **`Dev-PackInstallSamples.ps1` / `.sh`** — Restore from NuGet.org, build, and **pack** the local `KeelMatrix.QueryWatch` and `KeelMatrix.QueryWatch.EfCore` packages, then restore **samples** against the locally packed feed (`./artifacts/packages`).
   → `build/Dev-PackInstallSamples.ps1` • `build/Dev-PackInstallSamples.sh`
 
-- **`Dev-CleanPackInstallSamples.ps1` / `.sh`** — Same as above, but first **cleans** local `KeelMatrix.QueryWatch*`, `KeelMatrix.Redaction*`, and `KeelMatrix.Telemetry*` packages before rebuilding & packing. Ideal when iterating locally.  
+- **`Dev-CleanPackInstallSamples.ps1` / `.sh`** — Same as above, but first **cleans** local QueryWatch packages and their local cache entries before rebuilding & packing. Ideal when iterating locally.
   → `build/Dev-CleanPackInstallSamples.ps1` • `build/Dev-CleanPackInstallSamples.sh`
 
-These scripts bootstrap the local feed in the order QueryWatch now needs: stage `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` first, then restore/build/pack QueryWatch against those packages.
-
-Until those dependency packages are published to NuGet.org, both local development and CI should use these scripts before a clean QueryWatch restore/build/test/pack.
+The local feed is only for QueryWatch packages built from this repository. Redaction and Telemetry are always restored from NuGet.org.
 
 - **`Update-ReadmeFlags.ps1`** — Builds the CLI and updates the README block between  
   `<!-- BEGIN:CLI_FLAGS -->` and `<!-- END:CLI_FLAGS -->` using `--print-flags-md`.  
@@ -50,18 +48,7 @@ pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
 bash build/Dev-PackInstallSamples.sh
 ```
 
-By default the scripts look for sibling dependency repos at `../../KeelMatrix.Redaction/app` and `../../KeelMatrix.Telemetry/app` relative to the QueryWatch repo root. CI can override that discovery with:
-
-```bash
-QW_REDACTION_REPO_ROOT=/path/to/KeelMatrix.Redaction/app
-QW_TELEMETRY_REPO_ROOT=/path/to/KeelMatrix.Telemetry/app
-```
-
-Those overrides are intended for CI checkouts. The scripts validate:
-- `src/KeelMatrix.Redaction/KeelMatrix.Redaction.csproj`
-- `src/KeelMatrix.Telemetry/KeelMatrix.Telemetry.csproj`
-
-They then restore/build/pack Redaction and Telemetry into `./artifacts/packages`, restore/build/pack QueryWatch, and finally restore samples with `samples/NuGet.config`.
+The scripts restore/build/pack QueryWatch and then restore samples with `samples/NuGet.config`.
 
 ---
 

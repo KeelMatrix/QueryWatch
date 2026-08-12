@@ -13,21 +13,6 @@ function Run {
   if ($LASTEXITCODE -ne 0) { throw "Command failed: $exe $($args -join ' ')" }
 }
 
-function Resolve-DependencyRepoRoot {
-  param(
-    [Parameter(Mandatory=$true)][string]$EnvVarName,
-    [Parameter(Mandatory=$true)][string]$FallbackRelativePath
-  )
-
-  # CI can override sibling checkout discovery with QW_*_REPO_ROOT.
-  $configured = [Environment]::GetEnvironmentVariable($EnvVarName)
-  if (-not [string]::IsNullOrWhiteSpace($configured)) {
-    return [System.IO.Path]::GetFullPath($configured)
-  }
-
-  return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $FallbackRelativePath))
-}
-
 function Remove-WithRetry {
   param(
     [Parameter(Mandatory=$true)][string]$Path,
@@ -52,93 +37,52 @@ function Remove-WithRetry {
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
 
-$redactionRepoRoot = Resolve-DependencyRepoRoot -EnvVarName 'QW_REDACTION_REPO_ROOT' -FallbackRelativePath "..\..\KeelMatrix.Redaction\app"
-$telemetryRepoRoot = Resolve-DependencyRepoRoot -EnvVarName 'QW_TELEMETRY_REPO_ROOT' -FallbackRelativePath "..\..\KeelMatrix.Telemetry\app"
-$redactionProject = Join-Path $redactionRepoRoot "src\KeelMatrix.Redaction\KeelMatrix.Redaction.csproj"
-$telemetryProject = Join-Path $telemetryRepoRoot "src\KeelMatrix.Telemetry\KeelMatrix.Telemetry.csproj"
-
-if (-not (Test-Path $redactionProject)) { throw "Missing local dependency project: $redactionProject" }
-if (-not (Test-Path $telemetryProject)) { throw "Missing local dependency project: $telemetryProject" }
-
 try {
   Step ".NET SDK info"
   Run dotnet --info | Out-Null
 
-  $artifacts = Join-Path $repoRoot "artifacts"
-  $pkgDir    = Join-Path $artifacts "packages"
+  $pkgDir = Join-Path (Join-Path $repoRoot "artifacts") "packages"
+  if (-not (Test-Path $pkgDir)) { New-Item -ItemType Directory -Path $pkgDir | Out-Null }
 
-  if (-not (Test-Path $pkgDir)) {
-    New-Item -ItemType Directory -Path $pkgDir | Out-Null
-  }
-
-  # 0) Clean local ./artifacts/packages for the QueryWatch sample dependency graph.
-  Step "Clean ./artifacts/packages (KeelMatrix.QueryWatch*, KeelMatrix.Redaction*, KeelMatrix.Telemetry*)"
-  @("KeelMatrix.QueryWatch*.nupkg", "KeelMatrix.QueryWatch*.snupkg", "KeelMatrix.Redaction*.nupkg", "KeelMatrix.Redaction*.snupkg", "KeelMatrix.Telemetry*.nupkg", "KeelMatrix.Telemetry*.snupkg") |
+  Step "Clean local QueryWatch packages"
+  @("KeelMatrix.QueryWatch*.nupkg", "KeelMatrix.QueryWatch*.snupkg", "qwatch*.nupkg", "qwatch*.snupkg") |
     ForEach-Object {
       Get-ChildItem -Path $pkgDir -Filter $_ -ErrorAction SilentlyContinue |
         ForEach-Object { Remove-WithRetry $_.FullName }
     }
 
-  # 0b) Surgical cleanup: global NuGet cache for local package resolution.
-  Step "Clean global NuGet cache (KeelMatrix.QueryWatch*, KeelMatrix.Redaction*, KeelMatrix.Telemetry*)"
-
+  Step "Clean global QueryWatch package caches"
   $globalPkgs = Join-Path $env:USERPROFILE ".nuget\packages"
-  $targets = @(
-    "keelmatrix.querywatch",
-    "keelmatrix.querywatch.efcore",
-    "keelmatrix.querywatch.contracts",
-    "keelmatrix.redaction",
-    "keelmatrix.telemetry"
-  )
-
-  foreach ($name in $targets) {
-    $path = Join-Path $globalPkgs $name
-    if (Test-Path $path) {
-      Write-Host "   removing $path" -ForegroundColor DarkGray
-      Remove-WithRetry $path
+  @("keelmatrix.querywatch", "keelmatrix.querywatch.efcore", "qwatch") |
+    ForEach-Object {
+      $path = Join-Path $globalPkgs $_
+      if (Test-Path $path) {
+        Write-Host "   removing $path" -ForegroundColor DarkGray
+        Remove-WithRetry $path
+      }
     }
-  }
 
-  # 1) Restore local dependency projects first.
-  Step "Restore local dependency projects"
-  Run dotnet restore $redactionProject
-  Run dotnet restore $telemetryProject
+  Step "Restore QueryWatch from NuGet.org"
+  Run dotnet restore "KeelMatrix.QueryWatch.sln" --configfile "NuGet.config" --no-cache --force
 
-  # 2) Build local shared packages in dependency-friendly order.
-  Step "Build local shared packages (Release)"
-  Run dotnet build $redactionProject -c Release --no-restore
-  Run dotnet build $telemetryProject -c Release --no-restore
+  Step "Build QueryWatch libraries (Release)"
+  Run dotnet build "src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj" -c Release --no-restore
+  Run dotnet build "src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj" -c Release --no-restore
 
-  # 3) Pack local shared packages so QueryWatch can restore from the local feed.
-  Step "Pack local shared packages -> ./artifacts/packages"
+  Step "Pack QueryWatch libraries -> ./artifacts/packages"
   $packArgs = @(
     '--configuration','Release',
     '--no-build',
     '--include-symbols',
     '--p:SymbolPackageFormat=snupkg',
+    '--p:Version=0.1.0',
     '--output', $pkgDir
   )
-
-  Run dotnet pack $redactionProject @packArgs
-  Run dotnet pack $telemetryProject @packArgs
-
-  # 4) Restore and build QueryWatch after the local feed is ready.
-  Step "Restore and build QueryWatch solution"
-  Run dotnet restore "KeelMatrix.QueryWatch.sln"
-  Run dotnet build "src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj" -c Release --no-restore
-  Run dotnet build "src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj" -c Release --no-restore
-
-  # 5) Pack QueryWatch libraries into the same local feed.
-  Step "Pack QueryWatch libraries -> ./artifacts/packages"
   Run dotnet pack "src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj" @packArgs
   Run dotnet pack "src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj" @packArgs
 
-  # 6) Restore samples against local feed (force re-resolution)
-  Step "Restore samples with samples/NuGet.config (no-cache, force)"
-  Run dotnet restore "samples/QueryWatch.Samples.sln" `
-    --configfile "samples/NuGet.config" `
-    --no-cache `
-    --force
+  Step "Restore samples with their local QueryWatch package feed"
+  Run dotnet restore "samples/QueryWatch.Samples.sln" --configfile "samples/NuGet.config" --no-cache --force
 
   Step "Done"
   Write-Host "Cleaned, packed, and restored samples successfully." -ForegroundColor Green

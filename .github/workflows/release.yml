@@ -17,47 +17,95 @@ jobs:
     permissions:
       id-token: write
       contents: write
-    env:
-      QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
-      QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/checkout@v7
-        with:
-          repository: KeelMatrix/Redaction
-          path: _deps/KeelMatrix.Redaction/app
-      - uses: actions/checkout@v7
-        with:
-          repository: KeelMatrix/Telemetry
-          path: _deps/KeelMatrix.Telemetry/app
+
+      - name: Validate release tag
+        id: release-version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          if ($tag -notmatch '^v(?<version>\d+\.\d+\.\d+)$') {
+            throw "Malformed release tag '$tag'. Expected vX.Y.Z."
+          }
+          "version=$($Matches.version)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.x'
-      - name: Bootstrap local dependency feed
+
+      - name: Restore from NuGet.org
+        run: dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config --no-cache --force
+
+      - name: Build Release
+        run: dotnet build KeelMatrix.QueryWatch.sln --configuration Release --no-restore -p:Version=${{ steps.release-version.outputs.version }}
+
+      - name: Test (exclude provider smoke tests)
+        run: >
+          dotnet test KeelMatrix.QueryWatch.sln --configuration Release --no-build --framework net8.0
+          --filter "FullyQualifiedName!~KeelMatrix.QueryWatch.Providers.SmokeTests"
+
+      - name: Pack KeelMatrix.QueryWatch
+        run: >
+          dotnet pack src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj
+          --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg
+          -p:Version=${{ steps.release-version.outputs.version }} --output ./artifacts/packages
+
+      - name: Pack KeelMatrix.QueryWatch.EfCore
+        run: >
+          dotnet pack src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj
+          --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg
+          -p:Version=${{ steps.release-version.outputs.version }} --output ./artifacts/packages
+
+      - name: Pack qwatch
+        run: >
+          dotnet pack tools/KeelMatrix.QueryWatch.Cli/KeelMatrix.QueryWatch.Cli.csproj
+          --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg
+          -p:Version=${{ steps.release-version.outputs.version }} --output ./artifacts/packages
+
+      - name: Validate release artifacts
         shell: pwsh
-        run: pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
-      - name: Restore dependencies
-        run: dotnet restore
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-      - name: Pack (core)
-        run: dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
-      - name: Pack (EF Core adapter)
-        run: dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+        run: |
+          $expected = @(
+            "KeelMatrix.QueryWatch.${{ steps.release-version.outputs.version }}.nupkg",
+            "KeelMatrix.QueryWatch.EfCore.${{ steps.release-version.outputs.version }}.nupkg",
+            "qwatch.${{ steps.release-version.outputs.version }}.nupkg"
+          )
+          $actual = @(Get-ChildItem ./artifacts/packages -Filter *.nupkg | Select-Object -ExpandProperty Name | Sort-Object)
+          if ((Compare-Object $expected $actual) -ne $null) {
+            throw "Unexpected release package set. Expected: $($expected -join ', '). Actual: $($actual -join ', ')."
+          }
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuget-release-packages
+          path: ./artifacts/packages
+          if-no-files-found: error
+
       - name: Authenticate to NuGet.org
         id: nuget-login
         uses: NuGet/login@v1
         with:
           user: dmitriyzen
-      - name: Push packages to nuget.org
+
+      - name: Push packages to NuGet.org
+        shell: pwsh
         run: |
-          dotnet nuget push "./artifacts/packages/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --skip-duplicate
+          Get-ChildItem ./artifacts/packages -File |
+            Where-Object { $_.Extension -in @('.nupkg', '.snupkg') } |
+            ForEach-Object {
+              dotnet nuget push $_.FullName --source https://api.nuget.org/v3/index.json --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --skip-duplicate
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            }
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           generate_release_notes: true
+          files: ./artifacts/packages/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

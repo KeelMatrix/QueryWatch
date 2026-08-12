@@ -6,10 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-- Refined package metadata and NuGet-facing documentation across the core, EF Core, contracts, and CLI projects, and aligned QueryWatch with the extracted redaction package.
-- Simplified the local privacy statement to defer shared telemetry behavior details to the KeelMatrix.Telemetry repository.
-- Updated repository policy/docs files to better match the current QueryWatch codebase and packaging layout.
+## [0.1.0] - 2026-08-12
 
-## [0.1.0] - 2025-09-08
+### Added
 
-- Initial QueryWatch codebase release: core library, EF Core integration, contracts package, CLI, tests, samples, shared build configuration, and CI workflows, with redaction support now provided by the extracted KeelMatrix.Redaction package.
+- First public NuGet.org release of `KeelMatrix.QueryWatch` and `KeelMatrix.QueryWatch.EfCore` for N+1 detection, SQL/database performance budgets, EF Core interception, ADO.NET/Dapper instrumentation, assertions, and CI JSON summaries.
+- Public `qwatch` .NET tool (`qwatch`) for query-count and SQL-duration gates, baselines, pattern budgets, and CI reporting.
+- QueryWatch consumes the extracted `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` 0.1.0 packages from NuGet.org; the JSON contracts remain internal and are bundled into `qwatch` rather than published separately.

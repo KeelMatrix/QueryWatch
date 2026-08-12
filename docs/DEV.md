@@ -10,9 +10,8 @@
 - .NET SDK 8.x or newer installed (`dotnet --info` should show a compatible SDK).
 - Windows PowerShell (`pwsh`) recommended, but Bash works too (Linux/macOS).
 - Git (for SourceLink & versioning).
-- Until `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` are published to NuGet.org, QueryWatch bootstrap scripts stage them into `./artifacts/packages` first.
-- Local sibling-checkout mode looks for `../../KeelMatrix.Redaction/app` and `../../KeelMatrix.Telemetry/app` relative to the QueryWatch repo root.
-- CI mode sets `QW_REDACTION_REPO_ROOT` and `QW_TELEMETRY_REPO_ROOT` to checked-out dependency repos before running the same bootstrap scripts.
+- `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` 0.1.0 restore from NuGet.org.
+- The sample helper scripts use `./artifacts/packages` only for QueryWatch packages built from this repository.
 - For EF Core tests: nothing extra — they use SQLite in-memory.
 
 ```bash
@@ -24,11 +23,8 @@ dotnet --info
 ## 1) Build & Test (fast iteration)
 
 ```bash
-# stage local dependency packages first
-pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
-
 # restore once
-dotnet restore KeelMatrix.QueryWatch.sln
+dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config
 
 # build everything
 dotnet build KeelMatrix.QueryWatch.sln -c Debug
@@ -60,23 +56,23 @@ dotnet publish tools/KeelMatrix.QueryWatch.Cli/KeelMatrix.QueryWatch.Cli.csproj 
 
 ---
 
-## 3) Optional: Pack the CLI as a dotnet tool (deterministic versioning)
+## 3) Pack the CLI as a dotnet tool (deterministic versioning)
 
-> Handy for devs/CI. We **require** a version when packing as a tool to keep artifacts deterministic.
+> `qwatch` is a first-class public .NET tool and uses the repository release version.
 
 ```bash
 # pack as tool with explicit version (deterministic)
 dotnet pack tools/KeelMatrix.QueryWatch.Cli/KeelMatrix.QueryWatch.Cli.csproj \
-  -c Release -p:PackAsDotNetTool=true -p:ToolVersion=0.1.0 -o ./artifacts/packages
+  -c Release -p:Version=0.1.0 -o ./artifacts/packages
 
 # local install (global)
-dotnet tool install -g qwatch --add-source ./artifacts/packages
+dotnet tool install -g qwatch --version 0.1.0 --add-source ./artifacts/packages
 
 # verify
 qwatch --help
 ```
 
-- Bump the `ToolVersion` on every public change of UX/flags. CI/CD can publish the `.nupkg` if you like.
+- Pass the release version explicitly when producing release packages.
 
 ---
 
@@ -194,9 +190,7 @@ Read more in `bench/BENCHMARKS.md`.
 
 - **Samples** (consume your locally packed packages):
   ```bash
-  # From repo root, with sibling checkouts at ../../KeelMatrix.Redaction/app
-  # and ../../KeelMatrix.Telemetry/app, or with QW_REDACTION_REPO_ROOT /
-  # QW_TELEMETRY_REPO_ROOT set by CI
+  # From repo root; QueryWatch packages are local and Redaction/Telemetry come from NuGet.org
   pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
   dotnet run --project samples/EFCore.Sqlite/EFCore.Sqlite.csproj -c Release
   ```
@@ -222,8 +216,8 @@ Read more in `bench/BENCHMARKS.md`.
 
 **Pack & install CLI tool**  
 ```powershell
-dotnet pack tools/KeelMatrix.QueryWatch.Cli/KeelMatrix.QueryWatch.Cli.csproj -c Release -p:PackAsDotNetTool=true -p:ToolVersion=0.1.0 -o ./artifacts/packages
-dotnet tool install -g qwatch --add-source ./artifacts/packages
+dotnet pack tools/KeelMatrix.QueryWatch.Cli/KeelMatrix.QueryWatch.Cli.csproj -c Release -p:Version=0.1.0 -o ./artifacts/packages
+dotnet tool install -g qwatch --version 0.1.0 --add-source ./artifacts/packages
 ```
 
 **Publish trimmed single‑file**  

@@ -8,6 +8,25 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
 
+    <!-- Public qwatch .NET tool package -->
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>qwatch</ToolCommandName>
+    <PackageId>qwatch</PackageId>
+    <Authors>KeelMatrix</Authors>
+    <Description>Detect N+1 query regressions and enforce database and SQL performance budgets in CI from QueryWatch JSON summaries.</Description>
+    <PackageTags>querywatch;dotnet-tool;cli;database-testing;sql-performance;n-plus-one;nplusone;ef-core;ci;budgets</PackageTags>
+    <RepositoryUrl>https://github.com/KeelMatrix/QueryWatch</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/KeelMatrix/QueryWatch#cli</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
     <!-- Deterministic builds -->
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
@@ -18,19 +37,6 @@
     <TrimMode Condition="'$(EnableCliTrim)'=='true' and '$(SelfContained)'=='true'">partial</TrimMode>
     <InvariantGlobalization>true</InvariantGlobalization>
 
-    <!-- Optional: pack as a dotnet tool when PackAsDotNetTool=true -->
-    <IsPackable Condition="'$(PackAsDotNetTool)'=='true'">true</IsPackable>
-    <PackAsTool Condition="'$(PackAsDotNetTool)'=='true'">true</PackAsTool>
-    <ToolCommandName Condition="'$(PackAsDotNetTool)'=='true'">qwatch</ToolCommandName>
-    <!-- Keep PackageId short and ergonomic for dotnet tool install -g qwatch -->
-    <PackageId Condition="'$(PackAsDotNetTool)'=='true'">qwatch</PackageId>
-    <Description Condition="'$(PackAsDotNetTool)'=='true'">Inspect QueryWatch JSON summaries and enforce query-performance budgets in CI.</Description>
-    <PackageTags Condition="'$(PackAsDotNetTool)'=='true'">querywatch;cli;database-testing;sql-performance;budgets;ci</PackageTags>
-    <PackageProjectUrl Condition="'$(PackAsDotNetTool)'=='true'">https://github.com/KeelMatrix/QueryWatch#cli</PackageProjectUrl>
-    <!-- Only set PackageReadmeFile if the file actually exists -->
-    <PackageReadmeFile Condition="'$(PackAsDotNetTool)'=='true' and Exists('README.md')">README.md</PackageReadmeFile>
-    <!-- Deterministic versioning path: require ToolVersion when packing as a tool -->
-    <Version Condition="'$(PackAsDotNetTool)'=='true'">$(ToolVersion)</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -41,9 +47,4 @@
   <ItemGroup>
     <PackageReference Include="KeelMatrix.Telemetry" />
   </ItemGroup>
-  
-  <!-- Guard: fail the pack if version is missing when packing a tool -->
-  <Target Name="EnsureToolVersion" BeforeTargets="Pack" Condition="'$(PackAsDotNetTool)'=='true' and '$(ToolVersion)'==''">
-    <Error Text="When PackAsDotNetTool=true, you must pass ToolVersion= &lt;semver&gt; (e.g., dotnet pack -p:PackAsDotNetTool=true -p:ToolVersion=0.1.0)." />
-  </Target>
 </Project>

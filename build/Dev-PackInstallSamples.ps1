@@ -9,74 +9,41 @@ function Run {
   if ($LASTEXITCODE -ne 0) { throw "Command failed: $exe $($args -join ' ')" }
 }
 
-function Resolve-DependencyRepoRoot {
-  param(
-    [Parameter(Mandatory=$true)][string]$EnvVarName,
-    [Parameter(Mandatory=$true)][string]$FallbackRelativePath
-  )
-
-  # CI can override sibling checkout discovery with QW_*_REPO_ROOT.
-  $configured = [Environment]::GetEnvironmentVariable($EnvVarName)
-  if (-not [string]::IsNullOrWhiteSpace($configured)) {
-    return [System.IO.Path]::GetFullPath($configured)
-  }
-
-  return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $FallbackRelativePath))
-}
-
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
-
-$redactionRepoRoot = Resolve-DependencyRepoRoot -EnvVarName 'QW_REDACTION_REPO_ROOT' -FallbackRelativePath "..\..\KeelMatrix.Redaction\app"
-$telemetryRepoRoot = Resolve-DependencyRepoRoot -EnvVarName 'QW_TELEMETRY_REPO_ROOT' -FallbackRelativePath "..\..\KeelMatrix.Telemetry\app"
-$redactionProject = Join-Path $redactionRepoRoot "src\KeelMatrix.Redaction\KeelMatrix.Redaction.csproj"
-$telemetryProject = Join-Path $telemetryRepoRoot "src\KeelMatrix.Telemetry\KeelMatrix.Telemetry.csproj"
-
-if (-not (Test-Path $redactionProject)) { throw "Missing local dependency project: $redactionProject" }
-if (-not (Test-Path $telemetryProject)) { throw "Missing local dependency project: $telemetryProject" }
 
 try {
   Step ".NET SDK info"
   Run dotnet --info | Out-Null
 
-  $artifacts = Join-Path $repoRoot "artifacts"
-  $pkgDir = Join-Path $artifacts "packages"
+  $pkgDir = Join-Path (Join-Path $repoRoot "artifacts") "packages"
   if (-not (Test-Path $pkgDir)) { New-Item -ItemType Directory -Path $pkgDir | Out-Null }
 
-  # 1) Restore local dependency projects first.
-  Step "Restore local dependency projects"
-  Run dotnet restore $redactionProject
-  Run dotnet restore $telemetryProject
+  Step "Restore QueryWatch from NuGet.org"
+  Run dotnet restore "KeelMatrix.QueryWatch.sln" --configfile "NuGet.config"
 
-  # 2) Build local shared packages first.
-  Step "Build local shared packages (Release)"
-  Run dotnet build $redactionProject -c Release --no-restore
-  Run dotnet build $telemetryProject -c Release --no-restore
-
-  # 3) Pack shared packages so QueryWatch can restore from the local feed.
-  Step "Pack local shared packages -> ./artifacts/packages"
-  $packArgs = @('--configuration','Release','--no-build','--include-symbols','--p:SymbolPackageFormat=snupkg','--output',$pkgDir)
-  Run dotnet pack $redactionProject @packArgs
-  Run dotnet pack $telemetryProject @packArgs
-
-  # 4) Restore and build QueryWatch after the local feed is ready.
-  Step "Restore and build QueryWatch solution"
-  Run dotnet restore "KeelMatrix.QueryWatch.sln"
+  Step "Build QueryWatch libraries (Release)"
   Run dotnet build "src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj" -c Release --no-restore
   Run dotnet build "src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj" -c Release --no-restore
 
-  # 5) Pack QueryWatch libraries into the same local feed.
   Step "Pack QueryWatch libraries -> ./artifacts/packages"
+  $packArgs = @(
+    '--configuration','Release',
+    '--no-build',
+    '--include-symbols',
+    '--p:SymbolPackageFormat=snupkg',
+    '--p:Version=0.1.0',
+    '--output', $pkgDir
+  )
   Run dotnet pack "src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj" @packArgs
   Run dotnet pack "src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj" @packArgs
 
-  # 6) Restore samples using their NuGet.config (pins local KeelMatrix.* packages to ../artifacts/packages).
-  Step "Restore samples with samples/NuGet.config"
+  Step "Restore samples with their local QueryWatch package feed"
   Run dotnet restore "samples/QueryWatch.Samples.sln" --configfile "samples/NuGet.config"
 
   Step "Done"
   Write-Host "Packages are in: $pkgDir" -ForegroundColor Green
-  Write-Host "Samples restored against local packages." -ForegroundColor Green
+  Write-Host "Samples restored with QueryWatch packages from the local feed and Redaction/Telemetry from NuGet.org." -ForegroundColor Green
 }
 catch {
   Write-Error $_

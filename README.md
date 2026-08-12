@@ -24,6 +24,7 @@ Typical use cases:
 | --- | --- |
 | `KeelMatrix.QueryWatch` | Core recording, assertions, JSON export, ADO.NET and Dapper wrapping |
 | `KeelMatrix.QueryWatch.EfCore` | EF Core interceptor and `UseQueryWatch(...)` integration |
+| `qwatch` | .NET tool for enforcing query and SQL performance budgets in CI |
 
 ## Install
 
@@ -46,9 +47,13 @@ Optional redaction helpers:
 dotnet add package KeelMatrix.Redaction
 ```
 
-Local development restores `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` from the repo feed at `./artifacts/packages`. Stage those packages from their sibling repos before a fresh QueryWatch restore/build.
+QueryWatch restores `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` 0.1.0 from NuGet.org. The sample helper uses a local feed only for QueryWatch packages built from this repository.
 
-Until `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` are published to NuGet.org, clean CI must bootstrap them into `./artifacts/packages` before any QueryWatch restore/build/test/pack step. Local development can rely on sibling checkouts, while CI uses `QW_REDACTION_REPO_ROOT` and `QW_TELEMETRY_REPO_ROOT` to point the bootstrap scripts at checked-out dependency repos.
+Install the public CI tool:
+
+```bash
+dotnet tool install --global qwatch --version 0.1.0
+```
 
 ## 5-Minute Quick Start
 
@@ -94,7 +99,7 @@ Add redactors to remove secrets, GUID noise, timestamps, or tokens so CI diffs f
 ## Quick Start - Samples (Local)
 
 This repo ships three sample apps that consume local packages built from source.
-The bootstrap scripts resolve `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` from sibling checkouts under `../../KeelMatrix.Redaction/app` and `../../KeelMatrix.Telemetry/app` by default, or from `QW_REDACTION_REPO_ROOT` and `QW_TELEMETRY_REPO_ROOT` when CI overrides those locations.
+The helper scripts pack QueryWatch core and EF Core locally; Redaction and Telemetry restore from NuGet.org.
 
 1. Build and pack the local packages used by the samples:
    - PowerShell: `pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1`

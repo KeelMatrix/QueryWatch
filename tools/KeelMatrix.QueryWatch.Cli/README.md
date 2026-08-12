@@ -1,6 +1,6 @@
 # qwatch
 
-`qwatch` is the QueryWatch command-line tool for evaluating QueryWatch JSON summaries in CI and local verification workflows.
+`qwatch` is the public QueryWatch .NET tool for detecting N+1 query regressions and enforcing database and SQL performance budgets in CI and local verification workflows.
 
 Use it to:
 - fail builds when query counts exceed budget
@@ -11,10 +11,8 @@ Use it to:
 
 ## Install
 
-If packed as a dotnet tool:
-
 ```bash
-dotnet tool install --global qwatch
+dotnet tool install --global qwatch --version 0.1.0
 ```
 
 Or run it from source in this repo:
@@ -147,9 +145,7 @@ In GitHub Actions, the CLI also writes a Markdown summary to the step summary wh
 
 `qwatch` expects QueryWatch summary JSON produced by the core library, for example via `QueryWatchJson.ExportToFile(...)`.
 
-If you only need the file format in another tool, see the contracts package:
-
-- `KeelMatrix.QueryWatch.Contracts`
+The JSON contracts are an internal implementation detail; consume summaries through the core library's `QueryWatchJson` API or the documented file format.
 
 ## Privacy
 

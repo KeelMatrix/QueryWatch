@@ -23,44 +23,19 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    env:
-      QW_REDACTION_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Redaction/app
-      QW_TELEMETRY_REPO_ROOT: ${{ github.workspace }}/_deps/KeelMatrix.Telemetry/app
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-
-      - name: Checkout KeelMatrix.Redaction
-        uses: actions/checkout@v7
-        with:
-          repository: KeelMatrix/Redaction
-          path: _deps/KeelMatrix.Redaction/app
-
-      - name: Checkout KeelMatrix.Telemetry
-        uses: actions/checkout@v7
-        with:
-          repository: KeelMatrix/Telemetry
-          path: _deps/KeelMatrix.Telemetry/app
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "8.0.x"
 
-      - name: Bootstrap local dependency feed (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: pwsh -NoProfile -File build/Dev-PackInstallSamples.ps1
-
-      - name: Bootstrap local dependency feed (Unix)
-        if: runner.os != 'Windows'
-        shell: bash
-        run: bash build/Dev-PackInstallSamples.sh
-
-      # 0) Restore dependencies for the repo (needed before building/packing the libs)
+      # 0) Restore dependencies for the repo (Redaction/Telemetry come from NuGet.org)
       - name: Restore (solution)
-        run: dotnet restore ./KeelMatrix.QueryWatch.sln
+        run: dotnet restore ./KeelMatrix.QueryWatch.sln --configfile ./NuGet.config
 
       # 1) Build the libraries first so pack finds the DLLs (fixes NU5026)
       - name: Build QueryWatch (Release)
