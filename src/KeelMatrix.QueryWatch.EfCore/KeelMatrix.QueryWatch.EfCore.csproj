@@ -59,6 +59,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
+    <!-- Keep the public EF Core package above the patched .NET 8 cache-memory floor. -->
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
   </ItemGroup>
 
 </Project>

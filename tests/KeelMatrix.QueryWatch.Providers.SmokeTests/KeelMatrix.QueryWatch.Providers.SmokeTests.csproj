@@ -34,5 +34,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" PrivateAssets="all" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" PrivateAssets="all" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" PrivateAssets="all" />
+    <PackageReference Include="Azure.Identity" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Identity.Client" PrivateAssets="all" />
   </ItemGroup>
 </Project>

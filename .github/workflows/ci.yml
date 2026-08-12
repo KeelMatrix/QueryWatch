@@ -144,7 +144,7 @@ jobs:
       - name: Verify formatting
         run: dotnet format --verify-no-changes
       - name: Check for vulnerable dependencies
-        run: dotnet list KeelMatrix.QueryWatch.sln package --vulnerable
+        run: dotnet list KeelMatrix.QueryWatch.sln package --vulnerable --include-transitive
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
