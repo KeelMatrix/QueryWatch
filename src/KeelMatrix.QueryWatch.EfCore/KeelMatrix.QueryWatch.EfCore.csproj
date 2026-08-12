@@ -47,6 +47,15 @@
     <ProjectReference Include="..\KeelMatrix.QueryWatch\KeelMatrix.QueryWatch.csproj" />
   </ItemGroup>
 
+  <Target Name="SetQwatchEfCorePackageDependencyRange" BeforeTargets="GenerateNuspec">
+    <ItemGroup>
+      <_ProjectReferencesWithVersions Update="@(_ProjectReferencesWithVersions)"
+                                      Condition="'%(Filename)' == 'KeelMatrix.QueryWatch'">
+        <ProjectVersion>[$(PackageVersion)]</ProjectVersion>
+      </_ProjectReferencesWithVersions>
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />

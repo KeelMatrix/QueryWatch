@@ -23,13 +23,6 @@ The local feed is only for QueryWatch packages built from this repository. Redac
 - **`Get-CodeScanningAlerts.ps1`** — Fetches GitHub code scanning alerts for a repository, categorizes them, and writes raw, categorized, and summary JSON outputs under `build/artifacts/security` by default.  
   → `build/Get-CodeScanningAlerts.ps1`
 
-- **`Pack-Sign-Push.ps1`** — End-to-end **pack → (optional) sign → push** workflow.  
-  Stubs for signing/publishing (customize for your environment).  
-  → `build/Pack-Sign-Push.ps1`
-
-- **`New-DevSecrets.ps1`** — Stub that documents how to configure your **NuGet API key** and import a **code-signing certificate** locally. Safe to customize for your organization.  
-  → `build/New-DevSecrets.ps1`
-
 > PowerShell (`.ps1`) and Bash (`.sh`) variants are provided to support cross-platform workflows.
 
 ---
@@ -111,15 +104,6 @@ Prerequisites:
 
 ---
 
-### End-to-end pack → (optional) sign → push
-
-Customize first, then run:
-```powershell
-./build/Pack-Sign-Push.ps1
-```
-
----
-
 ## 🧩 Prerequisites
 
 - **.NET SDK 8.x+** → check via:
@@ -127,8 +111,6 @@ Customize first, then run:
   dotnet --info
   ```
   See: `docs/DEV.md`
-- For signing/publish flows: configure your **NuGet API key** and (optional) **code-signing certificate** locally.  
-  See: `build/New-DevSecrets.ps1`
 
 ---
 

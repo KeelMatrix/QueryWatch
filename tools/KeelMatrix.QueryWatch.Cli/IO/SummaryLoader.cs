@@ -15,7 +15,7 @@ namespace KeelMatrix.QueryWatch.Cli.IO {
             foreach (string p in paths) {
                 try {
                     await using var fs = File.OpenRead(p);
-                    // Use the shared source-generated context from the internal contracts project
+                    // Use the shared source-generated context compiled into qwatch.
                     var s = await JsonSerializer.DeserializeAsync(fs, QueryWatchJsonContext.Default.Summary).ConfigureAwait(false) ??
                         throw new JsonException("File did not contain a valid summary payload.");
                     list.Add(s);

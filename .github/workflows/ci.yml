@@ -122,9 +122,18 @@ jobs:
             Write-Host "No QueryWatch JSON found; skipping QueryWatch gate."
           }
       - name: Pack (core)
-        run: dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+        run: dotnet pack ./src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg -p:Version=0.1.0 --output ./artifacts/packages
       - name: Pack (EF Core adapter)
-        run: dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg --output ./artifacts/packages
+        run: dotnet pack ./src/KeelMatrix.QueryWatch.EfCore/KeelMatrix.QueryWatch.EfCore.csproj --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg -p:Version=0.1.0 --output ./artifacts/packages
+      - name: Pack (qwatch)
+        run: dotnet pack ./tools/KeelMatrix.QueryWatch.Cli/KeelMatrix.QueryWatch.Cli.csproj --configuration Release --no-build --include-symbols --p:SymbolPackageFormat=snupkg -p:Version=0.1.0 --output ./artifacts/packages
+      - name: Install and smoke-test qwatch package
+        shell: bash
+        run: |
+          dotnet tool install qwatch --tool-path ./artifacts/qwatch-tool --version 0.1.0 --add-source ./artifacts/packages --configfile ./NuGet.config
+          ./artifacts/qwatch-tool/qwatch --help
+          ./artifacts/qwatch-tool/qwatch --input ./tests/KeelMatrix.QueryWatch.Cli.IntegrationTests/Fixtures/current_ok.json --max-queries 200
+          dotnet tool uninstall qwatch --tool-path ./artifacts/qwatch-tool
       - name: Upload packages
         uses: actions/upload-artifact@v7
         with:

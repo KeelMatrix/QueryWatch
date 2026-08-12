@@ -156,7 +156,7 @@ Telemetry management commands do not emit telemetry. Use `qwatch telemetry statu
 It does not send heartbeat events. Reason: `qwatch` is typically a short-lived CI/local tool, so weekly heartbeat would mostly reflect retained pipeline wiring rather than meaningful interactive product usage.
 
 See:
-- [Repository privacy summary](../../PRIVACY.md)
+- [Repository privacy summary](https://github.com/KeelMatrix/QueryWatch/blob/main/PRIVACY.md)
 - [KeelMatrix.Telemetry README](https://github.com/KeelMatrix/Telemetry#readme)
 
 ## Related Documentation

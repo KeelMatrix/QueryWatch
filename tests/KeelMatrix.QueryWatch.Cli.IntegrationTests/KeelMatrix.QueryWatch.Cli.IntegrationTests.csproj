@@ -30,7 +30,5 @@
                       Condition="Exists('..\..\tools\KeelMatrix.QueryWatch.Cli\KeelMatrix.QueryWatch.Cli.csproj')" />
     <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch\KeelMatrix.QueryWatch.csproj"
                       Condition="Exists('..\..\src\KeelMatrix.QueryWatch\KeelMatrix.QueryWatch.csproj')" />
-    <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj"
-                      Condition="Exists('..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj')" />
   </ItemGroup>
 </Project>

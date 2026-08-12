@@ -36,15 +36,27 @@
     <PublishTrimmed Condition="'$(EnableCliTrim)'=='true' and '$(SelfContained)'=='true'">true</PublishTrimmed>
     <TrimMode Condition="'$(EnableCliTrim)'=='true' and '$(SelfContained)'=='true'">partial</TrimMode>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
 
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\KeelMatrix.QueryWatch.Contracts\KeelMatrix.QueryWatch.Contracts.csproj" />
+    <!-- Keep Contracts non-packable and compile its shared source into qwatch. -->
+    <Compile Include="..\..\src\KeelMatrix.QueryWatch.Contracts\QueryWatchContracts.cs" Link="Contracts\QueryWatchContracts.cs" />
+    <Compile Include="..\..\src\KeelMatrix.QueryWatch.Contracts\QueryWatchJsonContext.cs" Link="Contracts\QueryWatchJsonContext.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="KeelMatrix.Telemetry" />
   </ItemGroup>
+
+  <!-- PackAsTool suppresses dependencies by default; retain the published Telemetry dependency in qwatch.nuspec. -->
+  <Target Name="EnableQwatchPackageDependencies"
+          BeforeTargets="_GetFrameworksWithSuppressedDependencies"
+          Condition="'$(PackAsTool)' == 'true'">
+    <PropertyGroup>
+      <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
+    </PropertyGroup>
+  </Target>
 </Project>
