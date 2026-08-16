@@ -22,7 +22,7 @@
 
     <!-- Security floors for transitive .NET and authentication dependencies. -->
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
-    <PackageVersion Include="Azure.Identity" Version="1.11.4" />
+    <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.61.3" />
 
     <!-- Keep SQLite test coverage while requiring SQLite 3.50.2 or newer. -->
