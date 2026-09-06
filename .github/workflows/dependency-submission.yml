@@ -23,7 +23,7 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config
       - name: Submit resolved NuGet dependency graph
-        uses: advanced-security/component-detection-dependency-submission-action@v0.1.4
+        uses: advanced-security/component-detection-dependency-submission-action@v0.1.6
         with:
           filePath: .
           detectorsCategories: NuGet
