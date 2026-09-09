@@ -36,7 +36,7 @@
 	<PackageVersion Include="Npgsql" Version="8.0.3" />
 	<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.29" />
 	<PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
-    <PackageVersion Include="MySqlConnector" Version="2.3.6" />
-    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+    <PackageVersion Include="MySqlConnector" Version="2.6.2" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
   </ItemGroup>
 </Project>
