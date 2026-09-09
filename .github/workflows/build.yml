@@ -27,7 +27,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '8.0.408'
+          dotnet-version: '8.0.424'
 
       - name: Restore
         run: dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config
@@ -69,7 +69,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '8.0.408'
+          dotnet-version: '8.0.424'
 
       - name: Restore
         run: dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config
@@ -93,7 +93,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '8.0.408'
+          dotnet-version: '8.0.424'
 
       - name: Restore
         run: dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config
