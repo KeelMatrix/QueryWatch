@@ -28,7 +28,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '8.0.408'
+          dotnet-version: '8.0.424'
       - name: Restore dependencies
         run: dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config
       - name: Build for ${{ matrix.tfm }}
@@ -64,7 +64,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '8.0.408'
+          dotnet-version: '8.0.424'
       - name: Restore dependencies
         run: dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config
       - name: Build
@@ -87,7 +87,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '8.0.408'
+          dotnet-version: '8.0.424'
       - name: Restore dependencies
         run: dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config
       - name: Run smoke tests
@@ -108,7 +108,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '8.0.408'
+          dotnet-version: '8.0.424'
       - name: Restore dependencies
         run: dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config
       - name: Build
@@ -163,7 +163,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v6
-        with: { dotnet-version: '8.0.408' }
+        with: { dotnet-version: '8.0.424' }
       - name: Run perf benchmarks (${{ matrix.shard.name }})
         shell: pwsh
         run: >
