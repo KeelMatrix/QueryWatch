@@ -32,7 +32,7 @@
     <PackageVersion Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.12" />
 	<PackageVersion Include="Dapper" Version="2.1.35" />
 	<PackageVersion Include="BenchmarkDotNet" Version="0.13.12" />
-	<PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.0" />
+	<PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />
 	<PackageVersion Include="Npgsql" Version="8.0.3" />
 	<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.29" />
 	<PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
