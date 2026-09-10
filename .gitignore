@@ -8,6 +8,7 @@
 /**/obj/
 /docs/CLI_FLAGS.generated.md
 /keelmatrix.telemetry.json
+/.agents/
 
 # NuGet outputs (don’t commit built packages or local feeds)
 *.nupkg

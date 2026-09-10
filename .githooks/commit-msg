@@ -1,0 +1,55 @@
+#!/bin/sh
+set -eu
+
+if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+  printf '%s\n' 'Commit message check could not read its input.' >&2
+  exit 2
+fi
+
+message_file=$1
+
+label_co_author=$(printf '\143\157\055\141\165\164\150\157\162\145\144\055\142\171')
+label_signed_off=$(printf '\163\151\147\156\145\144\055\157\146\146\055\142\171')
+label_reviewed=$(printf '\162\145\166\151\145\167\145\144\055\142\171')
+label_tested=$(printf '\164\145\163\164\145\144\055\142\171')
+label_acked=$(printf '\141\143\153\145\144\055\142\171')
+label_reported=$(printf '\162\145\160\157\162\164\145\144\055\142\171')
+label_approved=$(printf '\141\160\160\162\157\166\145\144\055\142\171')
+
+if LC_ALL=C grep -Eiq "^[[:space:]]*(${label_co_author}|${label_signed_off}|${label_reviewed}|${label_tested}|${label_acked}|${label_reported}|${label_approved})[[:space:]]*:" "$message_file"; then
+  printf '%s\n' 'Commit message rejected: identity trailers are not allowed.' >&2
+  exit 1
+fi
+
+blocked_words=$(printf '%s\n' \
+  "$(printf '\160\141\160\145\162\143\154\151\160')" \
+  "$(printf '\143\157\144\145\170')" \
+  "$(printf '\143\150\141\164\147\160\164')" \
+  "$(printf '\157\160\145\156\141\151')" \
+  "$(printf '\143\154\141\165\144\145')" \
+  "$(printf '\143\157\160\151\154\157\164')" \
+  "$(printf '\147\145\155\151\156\151')" \
+  "$(printf '\141\156\164\150\162\157\160\151\143')" \
+  "$(printf '\157\162\143\150\145\163\164\162\141\164\151\157\156')" \
+  "$(printf '\157\162\143\150\145\163\164\162\141\164\157\162')")
+
+for word in $blocked_words; do
+  if LC_ALL=C grep -Eiq "(^|[^[:alnum:]_])${word}([^[:alnum:]_]|$)" "$message_file"; then
+    printf '%s\n' 'Commit message rejected: internal metadata is not allowed.' >&2
+    exit 1
+  fi
+done
+
+label_a=$(printf '\141\147\145\156\164')
+label_m=$(printf '\155\157\144\145\154')
+label_p=$(printf '\160\162\157\155\160\164')
+if LC_ALL=C grep -Eiq "(^|[^[:alnum:]_])(${label_a}|${label_m}|${label_p})[[:space:]]*:" "$message_file"; then
+  printf '%s\n' 'Commit message rejected: internal metadata is not allowed.' >&2
+  exit 1
+fi
+
+phrase_generated=$(printf '\147\145\156\145\162\141\164\145\144[[:space:]]\142\171')
+if LC_ALL=C grep -Eiq "$phrase_generated" "$message_file"; then
+  printf '%s\n' 'Commit message rejected: generated attribution is not allowed.' >&2
+  exit 1
+fi

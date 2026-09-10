@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+temporary_file=$(mktemp "${TMPDIR:-/tmp}/commit-history.XXXXXX")
+trap 'rm -f "$temporary_file"' EXIT HUP INT TERM
+
+if [ "$#" -eq 0 ]; then
+  commits=$(git rev-list --all)
+elif [ "$#" -eq 2 ]; then
+  start=$1
+  end=$2
+  if [ -z "$start" ] || [ "$start" = '0000000000000000000000000000000000000000' ]; then
+    commits=$(git rev-list "$end")
+  else
+    commits=$(git rev-list "$start..$end")
+  fi
+else
+  printf '%s\n' 'History check expects zero arguments or a start and end revision.' >&2
+  exit 2
+fi
+
+for commit in $commits; do
+  git show --no-patch --format=%B "$commit" > "$temporary_file"
+  if ! "$script_dir/commit-msg" "$temporary_file" >/dev/null; then
+    printf 'History check failed at %s.\n' "$commit" >&2
+    exit 1
+  fi
+done

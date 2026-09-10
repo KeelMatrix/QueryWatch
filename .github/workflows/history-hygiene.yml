@@ -1,0 +1,32 @@
+name: Commit history hygiene
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  commit-history:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check introduced commits
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          EVENT_SHA: ${{ github.sha }}
+          REQUEST_BASE: ${{ github.event.pull_request.base.sha }}
+          REQUEST_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            sh .githooks/check-history "$REQUEST_BASE" "$REQUEST_HEAD"
+          else
+            sh .githooks/check-history "$EVENT_BEFORE" "$EVENT_SHA"
+          fi
