@@ -32,7 +32,7 @@ namespace KeelMatrix.QueryWatch.Tests {
             _ = summary.Should().NotBeNull();
             _ = summary!.Schema.Should().Be(QueryWatchJson.SchemaVersion);
             _ = summary.Meta.Should().ContainKey("sampleTop").WhoseValue.Should().Be("2");
-            _ = summary.Events.Count.Should().BeLessOrEqualTo(2);
+            _ = summary.Events.Count.Should().BeLessThanOrEqualTo(2);
         }
     }
 }
