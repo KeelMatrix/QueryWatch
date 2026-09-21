@@ -16,10 +16,16 @@ label_acked=$(printf '\141\143\153\145\144\055\142\171')
 label_reported=$(printf '\162\145\160\157\162\164\145\144\055\142\171')
 label_approved=$(printf '\141\160\160\162\157\166\145\144\055\142\171')
 
-if LC_ALL=C grep -Eiq "^[[:space:]]*(${label_co_author}|${label_signed_off}|${label_reviewed}|${label_tested}|${label_acked}|${label_reported}|${label_approved})[[:space:]]*:" "$message_file"; then
-  printf '%s\n' 'Commit message rejected: identity trailers are not allowed.' >&2
-  exit 1
-fi
+identity_trailers="^[[:space:]]*(${label_co_author}|${label_signed_off}|${label_reviewed}|${label_tested}|${label_acked}|${label_reported}|${label_approved})[[:space:]]*:"
+dependabot_trailer="^[[:space:]]*(${label_co_author}|${label_signed_off})[[:space:]]*:[[:space:]]*dependabot\\[bot\\][[:space:]]*<((support@github.com)|(49699333\\+dependabot\\[bot\\]@users\\.noreply\\.github\\.com))>[[:space:]]*$"
+
+while IFS= read -r line; do
+  if printf '%s\n' "$line" | LC_ALL=C grep -Eiq "$identity_trailers" &&
+    ! printf '%s\n' "$line" | LC_ALL=C grep -Eiq "$dependabot_trailer"; then
+    printf '%s\n' 'Commit message rejected: identity trailers are not allowed.' >&2
+    exit 1
+  fi
+done < "$message_file"
 
 blocked_words=$(printf '%s\n' \
   "$(printf '\160\141\160\145\162\143\154\151\160')" \
