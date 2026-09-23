@@ -3,8 +3,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="KeelMatrix.QueryWatch" Version="[0.1.0]" />
-    <PackageVersion Include="KeelMatrix.QueryWatch.EfCore" Version="[0.1.0]" />
+    <PackageVersion Include="KeelMatrix.QueryWatch" Version="[0.1.1]" />
+    <PackageVersion Include="KeelMatrix.QueryWatch.EfCore" Version="[0.1.1]" />
     <PackageVersion Include="KeelMatrix.Redaction" Version="[0.1.0]" />
     <PackageVersion Include="KeelMatrix.Telemetry" Version="[0.1.1]" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />

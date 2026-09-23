@@ -12,7 +12,7 @@ Use it to:
 ## Install
 
 ```bash
-dotnet tool install --global qwatch --version 0.1.0
+dotnet tool install --global qwatch --version 0.1.1
 ```
 
 Or run it from source in this repo:

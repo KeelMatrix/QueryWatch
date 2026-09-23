@@ -75,7 +75,7 @@ try {
     '--no-build',
     '--include-symbols',
     '--p:SymbolPackageFormat=snupkg',
-    '--p:Version=0.1.0',
+    '--p:Version=0.1.1',
     '--output', $pkgDir
   )
   Run dotnet pack "src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj" @packArgs

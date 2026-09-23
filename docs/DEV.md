@@ -63,10 +63,10 @@ dotnet publish tools/KeelMatrix.QueryWatch.Cli/KeelMatrix.QueryWatch.Cli.csproj 
 ```bash
 # pack as tool with explicit version (deterministic)
 dotnet pack tools/KeelMatrix.QueryWatch.Cli/KeelMatrix.QueryWatch.Cli.csproj \
-  -c Release -p:Version=0.1.0 -o ./artifacts/packages
+  -c Release -p:Version=0.1.1 -o ./artifacts/packages
 
 # local install (global)
-dotnet tool install -g qwatch --version 0.1.0 --add-source ./artifacts/packages
+dotnet tool install -g qwatch --version 0.1.1 --add-source ./artifacts/packages
 
 # verify
 qwatch --help
@@ -216,8 +216,8 @@ Read more in `bench/BENCHMARKS.md`.
 
 **Pack & install CLI tool**  
 ```powershell
-dotnet pack tools/KeelMatrix.QueryWatch.Cli/KeelMatrix.QueryWatch.Cli.csproj -c Release -p:Version=0.1.0 -o ./artifacts/packages
-dotnet tool install -g qwatch --version 0.1.0 --add-source ./artifacts/packages
+dotnet pack tools/KeelMatrix.QueryWatch.Cli/KeelMatrix.QueryWatch.Cli.csproj -c Release -p:Version=0.1.1 -o ./artifacts/packages
+dotnet tool install -g qwatch --version 0.1.1 --add-source ./artifacts/packages
 ```
 
 **Publish trimmed single‑file**  

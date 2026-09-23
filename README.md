@@ -52,7 +52,7 @@ QueryWatch restores `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` 0.1.1 from
 Install the public CI tool:
 
 ```bash
-dotnet tool install --global qwatch --version 0.1.0
+dotnet tool install --global qwatch --version 0.1.1
 ```
 
 ## 5-Minute Quick Start

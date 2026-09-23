@@ -68,7 +68,7 @@ COMMON_PACK_ARGS=(
   '--no-build'
   '--include-symbols'
   '--p:SymbolPackageFormat=snupkg'
-  '--p:Version=0.1.0'
+  '--p:Version=0.1.1'
   '--output' "$PKG_DIR"
 )
 run dotnet pack "src/KeelMatrix.QueryWatch/KeelMatrix.QueryWatch.csproj" "${COMMON_PACK_ARGS[@]}"
