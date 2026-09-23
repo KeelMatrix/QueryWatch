@@ -8,7 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-- Updated the `KeelMatrix.Telemetry` dependency to `0.1.1`.
+- Updated the `KeelMatrix.Telemetry` dependency from `0.1.0` to `0.1.1`.
+- Updated the `netstandard2.0` `System.Text.Json` dependency from `10.0.10` to `10.0.12`.
+- Updated the EF Core adapter dependency graph from EF Core `8.0.29` to `8.0.31` and raised `Microsoft.Extensions.Caching.Memory` from `8.0.1` to `10.0.12`.
 
 ## [0.1.0] - 2026-08-12
 
