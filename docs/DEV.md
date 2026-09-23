@@ -10,7 +10,7 @@
 - .NET SDK 8.x or newer installed (`dotnet --info` should show a compatible SDK).
 - Windows PowerShell (`pwsh`) recommended, but Bash works too (Linux/macOS).
 - Git (for SourceLink & versioning).
-- `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` 0.1.0 restore from NuGet.org.
+- `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` 0.1.1 restore from NuGet.org.
 - The sample helper scripts use `./artifacts/packages` only for QueryWatch packages built from this repository.
 - For EF Core tests: nothing extra — they use SQLite in-memory.
 

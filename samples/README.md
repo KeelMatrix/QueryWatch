@@ -12,7 +12,7 @@ Tiny apps that consume the local `KeelMatrix.QueryWatch*` packages, plus the sha
 ## Start here
 Follow the **[Quick Start — Samples (local)](../README.md#quick-start--samples-local)** in the root README.
 
-The helper scripts pack QueryWatch packages locally and restore Redaction and Telemetry 0.1.0 from NuGet.org. Run `pwsh -NoProfile -File ../build/Dev-PackInstallSamples.ps1` (or `bash ../build/Dev-PackInstallSamples.sh`) once from the repo root.
+The helper scripts pack QueryWatch packages locally and restore Redaction and Telemetry 0.1.1 from NuGet.org. Run `pwsh -NoProfile -File ../build/Dev-PackInstallSamples.ps1` (or `bash ../build/Dev-PackInstallSamples.sh`) once from the repo root.
 
 ### Run a sample
 ```bash

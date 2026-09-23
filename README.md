@@ -47,7 +47,7 @@ Optional redaction helpers:
 dotnet add package KeelMatrix.Redaction
 ```
 
-QueryWatch restores `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` 0.1.0 from NuGet.org. The sample helper uses a local feed only for QueryWatch packages built from this repository.
+QueryWatch restores `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` 0.1.1 from NuGet.org. The sample helper uses a local feed only for QueryWatch packages built from this repository.
 
 Install the public CI tool:
 
