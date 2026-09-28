@@ -25,6 +25,12 @@ jobs:
         tfm: [net8.0, netstandard2.0]
     steps:
       - uses: actions/checkout@v7
+      - name: Verify hidden child PowerShell launch guard
+        shell: pwsh
+        run: ./build/Test-NestedPwshLaunch.ps1 -SelfTest
+      - name: Scan repository child PowerShell launches
+        shell: pwsh
+        run: ./build/Test-NestedPwshLaunch.ps1
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
