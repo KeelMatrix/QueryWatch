@@ -25,6 +25,9 @@ jobs:
         tfm: [net8.0, netstandard2.0]
     steps:
       - uses: actions/checkout@v7
+      - name: Validate website package metadata
+        shell: pwsh
+        run: ./build/Test-WebsiteMetadata.ps1
       - name: Verify hidden child PowerShell launch guard
         shell: pwsh
         run: ./build/Test-NestedPwshLaunch.ps1 -SelfTest

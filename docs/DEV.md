@@ -8,7 +8,7 @@
 ## 0) Prereqs
 
 - .NET SDK 8.x or newer installed (`dotnet --info` should show a compatible SDK).
-- Windows PowerShell (`pwsh`) recommended, but Bash works too (Linux/macOS).
+- PowerShell 7+ (`pwsh`) for website package metadata validation; Bash works for the sample scripts too (Linux/macOS).
 - Git (for SourceLink & versioning).
 - `KeelMatrix.Redaction` and `KeelMatrix.Telemetry` 0.1.1 restore from NuGet.org.
 - The sample helper scripts use `./artifacts/packages` only for QueryWatch packages built from this repository.
@@ -23,6 +23,9 @@ dotnet --info
 ## 1) Build & Test (fast iteration)
 
 ```bash
+# validate NuGet website classification and package metadata
+pwsh -NoProfile -File build/Test-WebsiteMetadata.ps1
+
 # restore once
 dotnet restore KeelMatrix.QueryWatch.sln --configfile NuGet.config
 

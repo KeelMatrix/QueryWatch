@@ -28,6 +28,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Validate website package metadata
+        shell: pwsh
+        run: ./build/Test-WebsiteMetadata.ps1
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:

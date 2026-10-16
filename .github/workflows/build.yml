@@ -25,6 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Validate website package metadata
+        shell: pwsh
+        run: ./build/Test-WebsiteMetadata.ps1
+
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.424'

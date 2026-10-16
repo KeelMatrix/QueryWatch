@@ -15,9 +15,9 @@
     <PackageId>qwatch</PackageId>
     <Authors>KeelMatrix</Authors>
     <Description>Detect N+1 query regressions and enforce database and SQL performance budgets in CI from QueryWatch JSON summaries.</Description>
-    <PackageTags>querywatch;dotnet-tool;cli;database-testing;sql-performance;n-plus-one;nplusone;ef-core;ci;budgets</PackageTags>
+    <PackageTags>querywatch;dotnet-tool;cli;database-testing;sql-performance;n-plus-one;nplusone;ef-core;ci;budgets;keelmatrix-public-product;keelmatrix-component</PackageTags>
     <RepositoryUrl>https://github.com/KeelMatrix/QueryWatch</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/KeelMatrix/QueryWatch#cli</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/KeelMatrix/QueryWatch</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>

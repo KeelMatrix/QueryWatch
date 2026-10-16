@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "packages": {
+    "KeelMatrix.QueryWatch": {
+      "visibility": "public-product",
+      "role": "primary"
+    },
+    "KeelMatrix.QueryWatch.EfCore": {
+      "visibility": "public-product",
+      "role": "component"
+    },
+    "qwatch": {
+      "visibility": "public-product",
+      "role": "component"
+    }
+  }
+}

@@ -11,9 +11,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>KeelMatrix.QueryWatch</PackageId>
     <Description>Catch N+1 queries and slow SQL in tests. Export JSON summaries for CI gates.</Description>
-    <PackageTags>querywatch;database-testing;sql-performance;n-plus-one;nplusone;ef-core;dapper;ado.net;ci</PackageTags>
+    <PackageTags>querywatch;database-testing;sql-performance;n-plus-one;nplusone;ef-core;dapper;ado.net;ci;keelmatrix-public-product;keelmatrix-primary</PackageTags>
     <RepositoryUrl>https://github.com/KeelMatrix/QueryWatch</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/KeelMatrix/QueryWatch#readme</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/KeelMatrix/QueryWatch</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>

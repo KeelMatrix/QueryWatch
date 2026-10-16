@@ -10,6 +10,7 @@
 ## Commands
 
 * Restore once: `dotnet restore KeelMatrix.QueryWatch.sln`
+* Validate website package metadata: `pwsh -NoProfile -File build/Test-WebsiteMetadata.ps1`
 * Build narrow project first: `dotnet build <project.csproj> -c Release --no-restore`
 * Test narrow project first: `dotnet test <test.csproj> -c Release --no-build --framework net8.0`
 * Fast default validation: `dotnet test KeelMatrix.QueryWatch.sln -c Release --no-build --framework net8.0 --filter "FullyQualifiedName!~KeelMatrix.QueryWatch.Providers.SmokeTests"` 

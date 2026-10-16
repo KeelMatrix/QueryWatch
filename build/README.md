@@ -20,6 +20,9 @@ The local feed is only for QueryWatch packages built from this repository. Redac
   Writes fallback output to `docs/CLI_FLAGS.generated.md` if markers are missing.  
   → `build/Update-ReadmeFlags.ps1`
 
+- **`Test-WebsiteMetadata.ps1`** — Checks that every packable package has one matching repository manifest entry, valid classification tags, canonical source URLs, package README/license/author metadata, and the correct `qwatch` tool type.
+  → `build/Test-WebsiteMetadata.ps1`
+
 - **`Get-CodeScanningAlerts.ps1`** — Fetches GitHub code scanning alerts for a repository, categorizes them, and writes raw, categorized, and summary JSON outputs under `build/artifacts/security` by default.  
   → `build/Get-CodeScanningAlerts.ps1`
 

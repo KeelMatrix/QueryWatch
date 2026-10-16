@@ -11,9 +11,9 @@
     <EnablePublicApiAnalyzers>true</EnablePublicApiAnalyzers>
     <PackageId>KeelMatrix.QueryWatch.EfCore</PackageId>
     <Description>EF Core adapter for KeelMatrix.QueryWatch: wires a DbCommand interceptor and a UseQueryWatch(...) extension.</Description>
-    <PackageTags>querywatch;ef-core;entity-framework-core;database-testing;sql-performance;n-plus-one;db-interceptor;ci</PackageTags>
+    <PackageTags>querywatch;ef-core;entity-framework-core;database-testing;sql-performance;n-plus-one;db-interceptor;ci;keelmatrix-public-product;keelmatrix-component</PackageTags>
     <RepositoryUrl>https://github.com/KeelMatrix/QueryWatch</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/KeelMatrix/QueryWatch#ef-core-wiring</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/KeelMatrix/QueryWatch</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
