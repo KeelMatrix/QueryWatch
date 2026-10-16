@@ -36,5 +36,6 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" PrivateAssets="all" />
     <PackageReference Include="Azure.Identity" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Identity.Client" PrivateAssets="all" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 </Project>
