@@ -16,7 +16,6 @@ on:
 
 jobs:
   supported-tfms:
-    if: github.actor != 'dependabot[bot]'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -61,7 +60,6 @@ jobs:
           exit $LASTEXITCODE
 
   test:
-    if: github.actor != 'dependabot[bot]'
     runs-on: ${{ matrix.os }}
     needs: supported-tfms
     strategy:
@@ -87,7 +85,6 @@ jobs:
           --results-directory ./artifacts/TestResults
           --filter "FullyQualifiedName!~KeelMatrix.QueryWatch.Providers.SmokeTests"
   smoke-tests:
-    if: github.actor != 'dependabot[bot]'
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 20
