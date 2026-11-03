@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Security
+
+- Updated the non-packable provider smoke tests to MySqlConnector `2.6.1` and pinned System.Security.Cryptography.Pkcs to `8.0.2`, resolving GHSA-473q-m89c-ghf8, GHSA-846f-f764-76mx, and GHSA-2fmv-rv2c-59x7. Shipping package dependencies are unchanged.
+
 ## [0.1.1] - 2026-09-23
 
 ### Changed
