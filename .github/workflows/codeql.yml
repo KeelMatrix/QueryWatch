@@ -88,6 +88,6 @@ jobs:
           dotnet build KeelMatrix.QueryWatch.sln --configuration Release --no-restore
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@256d634097be96e792d6764f9edaefc4320557b1
+        uses: github/codeql-action/analyze@0911ee96d2d6c8def97122c36c5cadd93829a4b4
         with:
           category: "/language:${{ matrix.language }}"
