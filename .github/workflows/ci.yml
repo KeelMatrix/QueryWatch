@@ -106,7 +106,6 @@ jobs:
           --filter "FullyQualifiedName~KeelMatrix.QueryWatch.Providers.SmokeTests"
 
   package-and-analyze:
-    if: github.actor != 'dependabot[bot]'
     needs: [test, smoke-tests]
     runs-on: ubuntu-latest
     steps:
